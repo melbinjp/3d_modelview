@@ -44,11 +44,11 @@
 
         .toggle-controls {
             position: fixed;
-            left: 10px;
-            top: 10px;
+            left: 20px;  /* Initial position when sidebar is hidden */
+            top: 20px;
             z-index: 1001;
             padding: 12px;
-            background: rgba(17, 125, 28, 0.74);
+            background: rgba(33, 150, 243, 0.9);
             color: white;
             border: none;
             border-radius: 8px;
@@ -316,7 +316,7 @@
                 </div>
                 <div>Supported: GLB, GLTF, OBJ, STL, FBX, DAE, 3DS</div>
             </div>
-
+            <div class="controls hidden"></div>
             <div class="control-group">
                 <label>Camera Controls</label>
                 <label class="switch">
@@ -329,7 +329,7 @@
                 <div class="direction-toggle-container">
                     <span class="direction-label">Left</span>
                     <label class="switch">
-                        <input type="checkbox" id="rotationDirection">
+                        <input type="checkbox" id="rotationDirection" checked>
                         <span class="slider"></span>
                     </label>
                     <span class="direction-label">Right</span>
@@ -341,7 +341,7 @@
             <div class="control-group">
                 <label>Auto-Rotate</label>
                 <label class="switch">
-                    <input type="checkbox" id="autoRotate">
+                    <input type="checkbox" id="autoRotate" checked>
                     <span class="slider"></span>
                 </label>
             </div>
@@ -431,9 +431,9 @@
         let scene, camera, renderer, controls;
         let currentModel = null;
         let ambientLight, directionalLight;
-        let autoRotateEnabled = false;
-        let rotateClockwise = true;
-        let heroStopAngle = (270 * Math.PI) / 180; // Convert default 270 degrees to radians
+        let autoRotateEnabled = true;
+        let rotateClockwise = false;
+        let heroStopAngle = (45 * Math.PI) / 180; 
 
         // Add superhero mode variables here
         let superheroModeActive = false;
@@ -514,6 +514,13 @@
             window.addEventListener('resize', onWindowResize, false);
         }
 
+        // Add this after init()
+        window.addEventListener('load', () => {
+            const controls = document.querySelector('.controls');
+            const button = document.getElementById('toggleControls');
+            controls.classList.add('hidden');
+            button.style.left = '20px';
+        });
         // Modify the animate function
         function animate() {
             requestAnimationFrame(animate);
@@ -857,13 +864,13 @@
                 document.getElementById('heroStopAngleValue').textContent = '0°';
                 
                 // Reset global variables to initial states
-                autoRotateEnabled = false;
-                rotateClockwise = true;
+                autoRotateEnabled = true;
+                rotateClockwise = false;
                 superheroModeActive = false;
                 rotationSpeed = 0;
                 
                 // Reset all toggles
-                document.getElementById('autoRotate').checked = false;
+                document.getElementById('autoRotate').checked = true;
                 document.getElementById('rotationDirection').checked = false;
                 document.getElementById('superheroMode').checked = false;
                 document.getElementById('orbitControls').checked = true;
