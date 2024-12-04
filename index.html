@@ -316,6 +316,7 @@
                 </div>
                 <div>Supported: GLB, GLTF, OBJ, STL, FBX, DAE, 3DS</div>
             </div>
+            
             <div class="controls hidden"></div>
             <div class="control-group">
                 <label>Camera Controls</label>
@@ -353,7 +354,7 @@
                 <input type="range" id="heroStopAngle" min="-180" max="180" step="1" value="0">
                 <span id="heroStopAngleValue">0°</span>
             </div>
-
+            
             
             <div class="control-group">
                 <label>Hero Sound</label>
@@ -582,7 +583,6 @@
             
             loadingIndicator.style.display = 'block';
             
-            // Create object URLs for all files
             const gltfUrl = URL.createObjectURL(gltfFile);
             const fileMap = new Map();
             
@@ -591,7 +591,6 @@
                 fileMap.set(file.name, url);
             });
             
-            // Set up path handling
             manager.setURLModifier((url) => {
                 const fileName = url.split('/').pop();
                 return fileMap.get(fileName) || url;
@@ -600,46 +599,11 @@
             loader.manager = manager;
             
             loader.load(gltfUrl, 
+                // Success callback
                 function(gltf) {
-                    if (currentModel) scene.remove(currentModel);
-                    currentModel = gltf.scene;
-                    
-                    // Center and scale model
-                    const box = new THREE.Box3().setFromObject(currentModel);
-                    const center = box.getCenter(new THREE.Vector3());
-                    const size = box.getSize(new THREE.Vector3());
-                    const maxDim = Math.max(size.x, size.y, size.z);
-                    const scale = 3 / maxDim;
-                    currentModel.scale.multiplyScalar(scale);
-                    currentModel.position.sub(center.multiplyScalar(scale));
-                    
-                    scene.add(currentModel);
-                    setModelToFrontView(currentModel);
-                    // Clean up URLs
-                    URL.revokeObjectURL(gltfUrl);
-                    fileMap.forEach(url => URL.revokeObjectURL(url));
-                    loadingIndicator.style.display = 'none';
-                },
-                undefined,
-                function(error) {
-                    console.error('Error loading model:', error);
-                    loadingIndicator.style.display = 'none';
-                    alert('Error loading model. Please ensure all required files are included.');
-                }
-            );
-        }
-        
-        function loadSingleFile(file, LoaderClass) {
-            loadingIndicator.style.display = 'block';
-            
-            try {
-                const loader = new LoaderClass();
-                const url = URL.createObjectURL(file);
-
-                loader.load(url, 
-                    function(object) {
+                    try {
                         if (currentModel) scene.remove(currentModel);
-                        currentModel = object instanceof THREE.Scene ? object : object.scene || object;
+                        currentModel = gltf.scene;
                         
                         const box = new THREE.Box3().setFromObject(currentModel);
                         const center = box.getCenter(new THREE.Vector3());
@@ -648,24 +612,76 @@
                         const scale = 3 / maxDim;
                         currentModel.scale.multiplyScalar(scale);
                         currentModel.position.sub(center.multiplyScalar(scale));
-
+                        
                         scene.add(currentModel);
                         setModelToFrontView(currentModel);
-                        URL.revokeObjectURL(url);
+                        
+                        // Cleanup
+                        URL.revokeObjectURL(gltfUrl);
+                        fileMap.forEach(url => URL.revokeObjectURL(url));
                         loadingIndicator.style.display = 'none';
-                    },
-                    undefined,
-                    function(error) {
-                        console.error('Error loading model:', error);
+                    } catch (err) {
+                        console.error('Error processing model:', err);
                         loadingIndicator.style.display = 'none';
+                    }
+                },
+                // Progress callback
+                undefined,
+                // Error callback
+                function(error) {
+                    console.error('Error loading model:', error);
+                    loadingIndicator.style.display = 'none';
+                    // Only show alert if it's a real error
+                    if (!currentModel) {
                         alert('Error loading model. Please try another file.');
                     }
-                );
-            } catch (error) {
-                console.error('Error:', error);
-                loadingIndicator.style.display = 'none';
-                alert('Error loading model. Please try another file.');
-            }
+                }
+            );
+        }
+        
+        function loadSingleFile(file, LoaderClass) {
+            loadingIndicator.style.display = 'block';
+            const loader = new LoaderClass();
+            const url = URL.createObjectURL(file);
+
+            loader.load(url, 
+                // Success callback
+                (result) => {
+                    if (currentModel) {
+                        scene.remove(currentModel);
+                    }
+                    
+                    // Handle both GLTF/GLB and other formats
+                    currentModel = result.scene || result;
+                    
+                    // Center and scale model
+                    const box = new THREE.Box3().setFromObject(currentModel);
+                    const center = box.getCenter(new THREE.Vector3());
+                    const size = box.getSize(new THREE.Vector3());
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    const scale = 3 / maxDim;
+                    
+                    currentModel.scale.multiplyScalar(scale);
+                    currentModel.position.sub(center.multiplyScalar(scale));
+                    
+                    scene.add(currentModel);
+                    setModelToFrontView(currentModel);
+                    
+                    // Cleanup
+                    URL.revokeObjectURL(url);
+                    loadingIndicator.style.display = 'none';
+                },
+                // Progress callback
+                (xhr) => {
+                    // Optional: Add loading progress here
+                },
+                // Error callback
+                (error) => {
+                    loadingIndicator.style.display = 'none';
+                    URL.revokeObjectURL(url);
+                    console.error('Error loading model:', error);
+                }
+            );
         }
 
         function onWindowResize() {
@@ -703,21 +719,33 @@
             previewButton.textContent = 'Play Sound';
         });
 
-        // Add touch/click event for superhero mode
-        document.getElementById('modelViewer').addEventListener('click', (e) => {
-            if (!controls.enabled) return; // Don't trigger if orbit controls are disabled
-            
+        // Add the new implementation
+        container.addEventListener('click', (e) => {
+            if (!controls.enabled) return;
             if (superheroModeActive) {
-                // Trigger slow down
+                e.preventDefault();
                 superheroButton.click();
             }
         });
 
-        // Prevent touch events from interfering with orbit controls
         container.addEventListener('touchstart', (e) => {
+            if (!controls.enabled) return;
             if (superheroModeActive) {
                 e.preventDefault();
                 e.stopPropagation();
+                superheroButton.click();
+            }
+        }, { passive: false });
+
+        container.addEventListener('touchmove', (e) => {
+            if (superheroModeActive) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        container.addEventListener('touchend', (e) => {
+            if (superheroModeActive) {
+                e.preventDefault();
             }
         }, { passive: false });
 
@@ -822,6 +850,16 @@
                 currentModel.rotation.y += angleDiff;
             }
         });
+
+        function handleInteraction(e) {
+            if (!controls.enabled) return;
+            
+            if (superheroModeActive) {
+                e.preventDefault();
+                e.stopPropagation();
+                superheroButton.click();
+            }
+        }
 
         // Add a new complete reset function
         function resetAll() {
