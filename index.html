@@ -6,6 +6,33 @@
     <title>3D Model Viewer</title>
     <style>
 
+        .loading {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+        .url-input-container {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .url-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .url-input:focus {
+            border-color: #2196F3;
+            outline: none;
+        }
         .container {
             display: flex;
             padding: 0;
@@ -36,10 +63,6 @@
         #superheroButton {
             background: rgba(196, 36, 36, 0.884);
             backdrop-filter: blur(5px);
-        }
-
-        .controls.hidden {
-            transform: translateX(-100%);
         }
 
         .toggle-controls {
@@ -267,13 +290,6 @@
             transform: translateX(26px);
         }
        
-        .control-group {
-            margin-bottom: 15px;
-        }
-        .control-group label {
-            display: block;
-            margin-bottom: 5px;
-        }
         .file-upload {
             margin-bottom: 20px;
             padding: 10px;
@@ -309,6 +325,10 @@
     <div class="container">
         <div class="controls">
             <div class="file-upload">
+                <div class="url-input-container">
+                    <input type="text" id="modelUrl" placeholder="Enter model URL (.glb, .gltf, etc.)" class="url-input">
+                    <button id="loadUrlModel" class="control-button">Load from URL</button>
+                </div>
                 <div class="drag-area" id="dragArea">
                     Drag & Drop model file here or
                     <input type="file" id="fileInput" accept=".glb,.gltf,.obj,.stl,.fbx,.dae,.3ds" style="display: none;">
@@ -316,7 +336,6 @@
                 </div>
                 <div>Supported: GLB, GLTF, OBJ, STL, FBX, DAE, 3DS</div>
             </div>
-            
             <div class="controls hidden"></div>
             <div class="control-group">
                 <label>Camera Controls</label>
@@ -449,10 +468,12 @@
         const heroMusic = document.getElementById('heroMusic');
         const defaultAudioIndicator = document.querySelector('.default-audio-indicator');
 
-        init();
-        animate();
+        (async () => {
+            await init();
+            animate();
+        })();
 
-        function init() {
+        async function init() {
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
             camera.position.z = 5;
@@ -484,38 +505,12 @@
                 controls.screenSpacePanning = e.target.checked;
             });
 
-
-
             // Load default model
-            loadingIndicator.style.display = 'block';
-            const loader = new GLTFLoader();
-            loader.load(
-                'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF-Binary/Duck.glb',
-                function(gltf) {
-                    currentModel = gltf.scene;
-                    scene.add(currentModel);
-                    
-                    const box = new THREE.Box3().setFromObject(currentModel);
-                    const center = box.getCenter(new THREE.Vector3());
-                    const size = box.getSize(new THREE.Vector3());
-                    const maxDim = Math.max(size.x, size.y, size.z);
-                    const scale = 3 / maxDim;
-                    currentModel.scale.multiplyScalar(scale);
-                    currentModel.position.sub(center.multiplyScalar(scale));
-                    
-                    loadingIndicator.style.display = 'none';
-                },
-                undefined,
-                function(error) {
-                    console.error('Error loading default model:', error);
-                    loadingIndicator.style.display = 'none';
-                }
-            );
-            
+            const defaultUrl = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF-Binary/Duck.glb';
+            await loadModelWithLoader(new GLTFLoader(), defaultUrl);
             window.addEventListener('resize', onWindowResize, false);
         }
 
-        // Add this after init()
         window.addEventListener('load', () => {
             const controls = document.querySelector('.controls');
             const button = document.getElementById('toggleControls');
@@ -541,153 +536,14 @@
             renderer.render(scene, camera);
         }
 
-
-        async function loadModel(file) {
-            const extension = file.name.split('.').pop().toLowerCase();
-            if (extension === 'gltf') {
-                // Create a file input for additional files
-                const fileInput = document.createElement('input');
-                fileInput.type = 'file';
-                fileInput.multiple = true;
-                fileInput.accept = '.bin,.jpg,.png,.jpeg';
-                
-                fileInput.onchange = function(e) {
-                    const files = Array.from(e.target.files);
-                    handleGLTFFiles(file, files);
-                };
-                
-                fileInput.click();
-            } else {
-                // Handle other formats as before
-                const LoaderClass = {
-                    'glb': GLTFLoader,
-                    'obj': OBJLoader,
-                    'stl': STLLoader,
-                    'fbx': FBXLoader,
-                    'dae': ColladaLoader,
-                    '3ds': TDSLoader
-                }[extension];
-
-                if (!LoaderClass) {
-                    alert(`Format .${extension} is not supported.`);
-                    return;
-                }
-
-                loadSingleFile(file, LoaderClass);
-            }
-        }
-
-        function handleGLTFFiles(gltfFile, additionalFiles) {
-            const loader = new GLTFLoader();
-            const manager = new THREE.LoadingManager();
-            
-            loadingIndicator.style.display = 'block';
-            
-            const gltfUrl = URL.createObjectURL(gltfFile);
-            const fileMap = new Map();
-            
-            additionalFiles.forEach(file => {
-                const url = URL.createObjectURL(file);
-                fileMap.set(file.name, url);
-            });
-            
-            manager.setURLModifier((url) => {
-                const fileName = url.split('/').pop();
-                return fileMap.get(fileName) || url;
-            });
-            
-            loader.manager = manager;
-            
-            loader.load(gltfUrl, 
-                // Success callback
-                function(gltf) {
-                    try {
-                        if (currentModel) scene.remove(currentModel);
-                        currentModel = gltf.scene;
-                        
-                        const box = new THREE.Box3().setFromObject(currentModel);
-                        const center = box.getCenter(new THREE.Vector3());
-                        const size = box.getSize(new THREE.Vector3());
-                        const maxDim = Math.max(size.x, size.y, size.z);
-                        const scale = 3 / maxDim;
-                        currentModel.scale.multiplyScalar(scale);
-                        currentModel.position.sub(center.multiplyScalar(scale));
-                        
-                        scene.add(currentModel);
-                        setModelToFrontView(currentModel);
-                        
-                        // Cleanup
-                        URL.revokeObjectURL(gltfUrl);
-                        fileMap.forEach(url => URL.revokeObjectURL(url));
-                        loadingIndicator.style.display = 'none';
-                    } catch (err) {
-                        console.error('Error processing model:', err);
-                        loadingIndicator.style.display = 'none';
-                    }
-                },
-                // Progress callback
-                undefined,
-                // Error callback
-                function(error) {
-                    console.error('Error loading model:', error);
-                    loadingIndicator.style.display = 'none';
-                    // Only show alert if it's a real error
-                    if (!currentModel) {
-                        alert('Error loading model. Please try another file.');
-                    }
-                }
-            );
-        }
-        
-        function loadSingleFile(file, LoaderClass) {
-            loadingIndicator.style.display = 'block';
-            const loader = new LoaderClass();
-            const url = URL.createObjectURL(file);
-
-            loader.load(url, 
-                // Success callback
-                (result) => {
-                    if (currentModel) {
-                        scene.remove(currentModel);
-                    }
-                    
-                    // Handle both GLTF/GLB and other formats
-                    currentModel = result.scene || result;
-                    
-                    // Center and scale model
-                    const box = new THREE.Box3().setFromObject(currentModel);
-                    const center = box.getCenter(new THREE.Vector3());
-                    const size = box.getSize(new THREE.Vector3());
-                    const maxDim = Math.max(size.x, size.y, size.z);
-                    const scale = 3 / maxDim;
-                    
-                    currentModel.scale.multiplyScalar(scale);
-                    currentModel.position.sub(center.multiplyScalar(scale));
-                    
-                    scene.add(currentModel);
-                    setModelToFrontView(currentModel);
-                    
-                    // Cleanup
-                    URL.revokeObjectURL(url);
-                    loadingIndicator.style.display = 'none';
-                },
-                // Progress callback
-                (xhr) => {
-                    // Optional: Add loading progress here
-                },
-                // Error callback
-                (error) => {
-                    loadingIndicator.style.display = 'none';
-                    URL.revokeObjectURL(url);
-                    console.error('Error loading model:', error);
-                }
-            );
-        }
-
         function onWindowResize() {
             camera.aspect = container.clientWidth / container.clientHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        function setModelToFrontView(model) {
+            model.rotation.set(0, Math.PI, 0);
         }
 
         document.getElementById('audioInput').addEventListener('change', (e) => {
@@ -702,6 +558,39 @@
                 }, { once: true });
             }
         });
+
+        async function loadModelWithLoader(loader, url, isFile = false) {
+            loadingIndicator.style.display = 'block';
+            try {
+                const result = await new Promise((resolve, reject) => {
+                    loader.load(url, resolve, undefined, reject);
+                });
+                
+                if (currentModel) scene.remove(currentModel);
+                currentModel = result.scene || result;
+                setupModel(currentModel);
+                if (isFile) URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('Error loading model:', error);
+                if (isFile) URL.revokeObjectURL(url);
+                alert('Error loading model. Please try again.');
+            } finally {
+                loadingIndicator.style.display = 'none';
+            }
+        }
+
+        function setupModel(model) {
+            const box = new THREE.Box3().setFromObject(model);
+            const center = box.getCenter(new THREE.Vector3());
+            const size = box.getSize(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const scale = 3 / maxDim;
+            
+            model.scale.multiplyScalar(scale);
+            model.position.sub(center.multiplyScalar(scale));
+            scene.add(model);
+            setModelToFrontView(model);
+        }
 
         previewButton.addEventListener('click', () => {
             if (heroMusic.paused) {
@@ -783,9 +672,28 @@
 
 
 
-        document.getElementById('fileInput').addEventListener('change', (e) => {
+        document.getElementById('fileInput').addEventListener('change', async (e) => {
             const file = e.target.files[0];
-            if (file) loadModel(file);
+            if (file) {
+                const extension = file.name.split('.').pop().toLowerCase();
+                const LoaderClass = {
+                    'glb': GLTFLoader,
+                    'gltf': GLTFLoader,
+                    'obj': OBJLoader,
+                    'stl': STLLoader,
+                    'fbx': FBXLoader,
+                    'dae': ColladaLoader,
+                    '3ds': TDSLoader
+                }[extension];
+
+                if (!LoaderClass) {
+                    alert(`Format .${extension} is not supported.`);
+                    return;
+                }
+
+                const url = URL.createObjectURL(file);
+                await loadModelWithLoader(new LoaderClass(), url, true);
+            }
         });
 
         const dragArea = document.getElementById('dragArea');
@@ -808,6 +716,32 @@
         // Control event listeners
         document.getElementById('orbitControls').addEventListener('change', (e) => {
             controls.enabled = e.target.checked;
+        });
+
+        document.getElementById('loadUrlModel').addEventListener('click', async () => {
+            const url = document.getElementById('modelUrl').value.trim();
+            if (!url) {
+                alert('Please enter a valid URL');
+                return;
+            }
+
+            const extension = url.split('.').pop().toLowerCase();
+            const LoaderClass = {
+                'glb': GLTFLoader,
+                'gltf': GLTFLoader,
+                'obj': OBJLoader,
+                'stl': STLLoader,
+                'fbx': FBXLoader,
+                'dae': ColladaLoader,
+                '3ds': TDSLoader
+            }[extension];
+
+            if (!LoaderClass) {
+                alert('Unsupported file format');
+                return;
+            }
+
+            await loadModelWithLoader(new LoaderClass(), url);
         });
 
         // Add superhero mode event listeners here
@@ -859,6 +793,57 @@
                 e.stopPropagation();
                 superheroButton.click();
             }
+        }
+
+        function toggleWireframe(enabled) {
+            currentModel.traverse(child => {
+                if (child.isMesh) {
+                    child.material.wireframe = enabled;
+                }
+            });
+        }
+
+        function captureScreenshot() {
+            const link = document.createElement('a');
+            link.download = 'model-screenshot.png';
+            link.href = renderer.domElement.toDataURL('image/png');
+            link.click();
+        }
+
+        let mixer;
+        function setupAnimations(model) {
+            if (model.animations?.length) {
+                mixer = new THREE.AnimationMixer(model);
+                model.animations.forEach(clip => {
+                    mixer.clipAction(clip).play();
+                });
+            }
+        }
+
+        function updateLoadingProgress(xhr) {
+            if (xhr.lengthComputable) {
+                const percentComplete = (xhr.loaded / xhr.total) * 100;
+                loadingIndicator.textContent = `Loading: ${Math.round(percentComplete)}%`;
+            }
+        }
+
+        function smoothRotateToAngle(targetAngle, duration = 1000) {
+            const startAngle = currentModel.rotation.y;
+            const startTime = Date.now();
+            
+            function animate() {
+                const now = Date.now();
+                const progress = (now - startTime) / duration;
+                
+                if (progress < 1) {
+                    currentModel.rotation.y = THREE.MathUtils.lerp(startAngle, targetAngle, progress);
+                    requestAnimationFrame(animate);
+                } else {
+                    currentModel.rotation.y = targetAngle;
+                }
+            }
+            
+            animate();
         }
 
         // Add a new complete reset function
@@ -955,7 +940,6 @@
                 }
             }
         });
-
 
         // Mirror angle when direction changes
         document.getElementById('rotationDirection').addEventListener('change', (e) => {
