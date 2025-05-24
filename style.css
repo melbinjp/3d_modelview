@@ -1,0 +1,540 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333; /* var(--text-color) */
+    line-height: 1.6;
+    background-color: #f8f9fa; /* var(--light-bg) - Added a light page background */
+}
+
+/* Optional: Color Variables - uncomment if needed later, for now direct values are used */
+/*
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --light-bg: #f8f9fa;
+    --text-color: #333;
+    --border-color: #ced4da; 
+    --border-light-transparent: rgba(0, 0, 0, 0.1);
+    --focus-ring-color: rgba(0,123,255,.25);
+}
+*/
+
+/* Base Button Style */
+button, .control-button, .hero-button {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    padding: 10px 15px; /* Adjusted padding */
+    border-radius: 6px; /* Slightly more rounded */
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; /* Added border-color transition */
+    font-weight: 500;
+}
+button:hover, .control-button:hover, .hero-button:hover {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+button:active, .control-button:active, .hero-button:active {
+    transform: translateY(1px);
+    box-shadow: none; /* Remove shadow on active for a "pressed" feel */
+}
+
+/* Primary Buttons (.control-button, .drag-area button) */
+.control-button, 
+.drag-area button /* Ensure button inside drag area gets this style */ {
+    background-color: #007bff; /* Primary accent color */
+    color: white;
+    border-color: #007bff;
+}
+.control-button:hover,
+.drag-area button:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+    color: white; /* Ensure text remains white */
+}
+
+/* Hero Button Styling */
+.hero-button { /* Default state (Enable Superhero Mode) */
+    background-color: #6c757d; /* A neutral dark gray */
+    color: white;
+    border: 1px solid #6c757d;
+}
+.hero-button:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+}
+.hero-button.active { /* Active state (Slow Down!) */
+    background-color: #dc3545; /* Red for "active" / "slow down" state */
+    color: white;
+    border-color: #dc3545;
+}
+.hero-button.active:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+/* Note: #superheroButton ID specific styles from before are now handled by .hero-button and .hero-button.active */
+/* Remove backdrop-filter for general hero button if not desired for all states */
+
+
+.loading {
+    position: fixed; /* Use fixed for whole page overlay */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.95); /* Lighter background with more opacity */
+    color: #333; /* Darker text */
+    padding: 20px 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    display: none; /* Keep hidden by default */
+    z-index: 2000; /* Ensure it's on top */
+    font-size: 16px;
+    animation: pulse 1.5s infinite; /* Keep animation */
+}
+
+@keyframes pulse { /* Re-checked opacity for new background */
+   0% { opacity: 0.7; }
+   50% { opacity: 1; }
+   100% { opacity: 0.7; }
+}
+
+.url-input-container {
+    margin-bottom: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+/* Input Fields Styling */
+.url-input, .audio-input, input[type="color"] {
+    padding: 8px 12px;
+    border: 1px solid #ced4da; /* Standard border color */
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    background-color: #fff; /* Ensure background is white */
+    color: #495057; /* Standard input text color */
+}
+.url-input:focus, .audio-input:focus, input[type="color"]:focus {
+    border-color: #80bdff; /* Lighter blue for focus */
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+input[type="color"] { /* Specific for color picker */
+   height: 40px; /* Ensure it's not too small */
+   padding: 5px; /* Adjust padding for color type */
+}
+/* General text inputs if any are not covered by specific classes */
+input[type="text"]:not(.url-input) {
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+input[type="text"]:not(.url-input):focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+
+.container {
+    display: flex;
+    padding: 0;
+    position: relative;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+.controls {
+    min-width: 300px;
+    max-width: 300px;
+    height: 100vh;
+    padding: 25px; 
+    background: rgba(255, 255, 255, 0.85); /* Slightly more opaque */ 
+    backdrop-filter: blur(8px); /* Slightly less blur, adjust as needed */
+    border-right: 1px solid rgba(0, 0, 0, 0.07); /* Softer border */ 
+    overflow-y: auto;
+    transition: transform 0.3s ease; 
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+}
+
+.controls::-webkit-scrollbar {
+    width: 8px;
+}
+.controls::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.3); /* Darker scrollbar thumb */
+    border-radius: 4px;
+}
+.controls::-webkit-scrollbar-track {
+    background-color: rgba(0,0,0,0.05); /* Subtle track */
+}
+
+
+.toggle-controls {
+    position: fixed;
+    left: 20px;  
+    top: 20px;
+    z-index: 1001;
+    /* Styles inherited from base button, but can override if needed */
+    background-color: #007bff; /* Matches primary buttons */
+    color: white;
+    padding: 10px 12px; /* Adjusted padding for a more compact toggle */
+}
+.toggle-controls:hover {
+    background-color: #0056b3;
+}
+
+
+#modelViewer {
+    flex: 1;
+    width: 100vw;
+    height: 100vh;
+    /* background-color: #ffffff; Default, can be overridden by user */
+}
+
+/* Section Styling */
+.control-section {
+    margin-bottom: 20px; 
+    padding-bottom: 15px; 
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08); 
+}
+.control-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+.control-section-title {
+    font-size: 16px; 
+    font-weight: 600; /* Slightly less bold than 700, more harmonious */ 
+    color: #007bff; /* Accent color */
+    margin-top: 10px; 
+    margin-bottom: 18px; /* More space below title */
+    padding-bottom: 5px;
+}
+
+/* Control Groups */
+.control-group {
+    padding: 6px 0px; /* Reduced padding for tighter groups */
+    margin-bottom: 12px; /* Consistent spacing */
+}
+
+.control-group:last-child {
+     margin-bottom: 0;
+}
+
+.control-group label {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    font-size: 14px; 
+    font-weight: 500; /* Standard weight for labels */
+    color: #495057; /* Softer text color for labels */
+    margin-bottom: 8px; /* Space between label and control */
+    display: block; 
+}
+
+/* Slider Styling (input[type="range"]) */
+input[type="range"] { /* Track styling */
+   width: 100%; /* Ensure it takes full width of its container */
+   height: 6px; /* Slimmer track */
+   background: #dee2e6; /* Light grey track */
+   border-radius: 3px;
+   margin: 10px 0; /* Adjusted margin for consistency */
+   -webkit-appearance: none; 
+   appearance: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none; 
+    width: 18px; 
+    height: 18px;
+    background: #007bff; /* Accent color */
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    margin-top: -6px; /* Adjust to center thumb on track */
+}
+input[type="range"]::-moz-range-thumb { /* Firefox */
+    width: 18px;
+    height: 18px;
+    background: #007bff;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none; 
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+input[type="range"]:focus::-webkit-slider-thumb { 
+   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+input[type="range"]:focus::-moz-range-thumb { 
+   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+
+.controls.hidden {
+    transform: translateX(-100%);
+}
+.controls:not(.hidden) {
+    transform: translateX(0);
+}
+
+.direction-toggle-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 5px; 
+}
+
+.direction-label {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    font-size: 13px; 
+    font-weight: normal; 
+    color: #555; 
+}
+
+/* Toggle Switch Styling */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px; 
+    height: 28px;
+    vertical-align: middle; /* Align switches better with labels */
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider { /* This is the track of the switch */
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #adb5bd; /* Neutral color for off state */
+    transition: .4s;
+    border-radius: 28px; 
+}
+
+.slider:before { /* This is the thumb of the switch */
+    position: absolute;
+    content: "";
+    height: 20px; 
+    width: 20px;  
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Subtle shadow on thumb */
+}
+
+input:checked + .slider {
+    background-color: #007bff; /* Accent color */
+}
+
+input:checked + .slider:before {
+    transform: translateX(22px); 
+}
+
+.file-upload { 
+    padding: 10px 0px; 
+}
+
+/* Drag & Drop Area */
+.drag-area {
+    border: 2px dashed #007bff; /* Accent color for border */
+    background-color: #f8f9fa; /* Light background */
+    padding: 30px; /* More padding */
+    text-align: center;
+    margin-bottom: 15px;
+    cursor: pointer;
+    border-radius: 6px;
+    color: #495057; /* Text color */
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+.drag-area.active { /* When dragging over */
+    border-color: #0056b3; /* Darker accent */
+    background-color: #e9ecef; /* Slightly darker bg */
+}
+.drag-area button { 
+    margin-top: 10px; 
+}
+
+
+.audio-input {
+    width: 100%;
+    /* padding, border, etc. inherited from general input styles */
+    margin-top: 5px; 
+    box-sizing: border-box; 
+}
+
+.audio-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.default-audio-indicator {
+    color: #28a745; 
+    font-size: 13px;
+    font-weight: normal;
+    display: inline-block;
+}
+
+.default-audio-indicator.hidden {
+    display: none;
+}
+
+#heroStopAngleValue {
+    font-size: 13px;
+    font-weight: normal;
+    color: #555;
+    margin-left: 8px; 
+    display: inline-block; 
+}
+
+/* Preset Angle Buttons Styling */
+.preset-angles label { /* Already styled by .control-group label, but can be more specific */
+    display: block; 
+    margin-bottom: 8px; 
+}
+.preset-angle-buttons-container {
+    display: flex;
+    flex-wrap: wrap; 
+    gap: 8px; 
+}
+.preset-angle-btn {
+    flex-grow: 1; 
+    /* Inherits .control-button styling */
+    padding: 8px 10px; /* Slightly smaller padding for these specific buttons */
+    min-width: 60px; 
+    font-size: 13px; /* Slightly smaller font */
+}
+
+/* Current Model Angle Display Styling */
+#currentModelAngleDisplay {
+    font-weight: bold;
+    color: #007bff; /* Accent color for the value */
+    margin-left: 5px; /* Add some space if label and value are on the same line conceptually */
+    display: inline; /* Or inline-block if more spacing control is needed */
+}
+
+/* Sweep Controls Styling */
+.sweep-controls label {
+    display: block; 
+    margin-top: 10px;
+}
+.sweep-controls input[type="range"] {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+.sweep-controls span { /* For the value displays */
+    display: inline-block;
+    margin-left: 10px;
+    font-weight: normal;
+    color: #555;
+}
+
+/* Saved Camera Views Styling */
+.camera-view-slots .camera-view-slot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #eee; /* Light separator for each slot */
+}
+.camera-view-slots .camera-view-slot:last-child {
+    border-bottom: none;
+}
+.camera-view-slots .camera-view-slot span {
+    font-weight: 500;
+    margin-right: 10px;
+}
+.camera-view-slots .save-view-btn,
+.camera-view-slots .load-view-btn {
+    padding: 6px 10px; /* Slightly smaller padding for these buttons */
+    font-size: 13px;
+    margin-left: 5px;
+    flex-shrink: 0; /* Prevent buttons from shrinking too much */
+}
+.camera-view-slots .load-view-btn[disabled] {
+   background-color: #ccc;
+   border-color: #ccc;
+   cursor: not-allowed;
+}
+.camera-view-slots .load-view-btn[disabled]:hover {
+   background-color: #ccc; /* Override hover style for disabled load */
+   border-color: #ccc;
+}
+
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+    .controls {
+        min-width: 90%; 
+        max-width: 90%;
+        padding: 20px; 
+        backdrop-filter: blur(5px); /* Reduce blur on mobile if performance is a concern */
+    }
+
+    .control-section-title {
+        font-size: 15px; 
+        margin-bottom: 12px;
+    }
+    
+    .control-group {
+         margin-bottom: 10px;
+    }
+
+    input[type="range"] {
+        /* height: 25px; Already handled by general slider styles, ensure it looks good */
+    }
+
+    .switch {
+        /* width: 60px; height: 34px; Already handled by general switch styles */
+    }
+
+    .slider:before {
+        /* height: 26px; width: 26px; Already handled by general switch styles */
+    }
+
+    .control-button, 
+    .hero-button,
+    .drag-area button { /* Ensure all buttons consistent on mobile */
+        padding: 12px 15px; /* Larger tap targets */
+        font-size: 15px;
+    }
+
+    .preset-angle-btn { /* Adjust preset buttons for mobile if needed */
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+
+    .camera-view-slots .save-view-btn,
+    .camera-view-slots .load-view-btn {
+        padding: 8px 12px; /* Slightly larger for mobile tap targets */
+    }
+    
+    .toggle-controls {
+        padding: 12px 14px; /* Slightly larger toggle on mobile */
+    }
+
+    .controls {
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 70px; 
+    }
+
+    .loading {
+        padding: 15px 20px;
+        font-size: 15px;
+    }
+}
