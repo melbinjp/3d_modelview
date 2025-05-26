@@ -1,0 +1,73 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    line-height: 1.6;
+    background-color: #f8f9fa;
+    margin: 0; /* Ensure no default margin */
+    overflow: hidden; /* Prevent scrollbars from body if viewer is full screen */
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+}
+
+.container {
+    display: flex; /* Kept for potential future layout, but not strictly necessary if only modelViewer is direct child */
+    position: relative; /* For positioning loading indicator */
+    width: 100%;
+    height: 100%;
+}
+
+#modelViewer {
+    flex: 1; /* If container is flex, this makes viewer take all space */
+    width: 100%; /* Fallback if container is not flex */
+    height: 100%;
+    background-color: #ffffff; /* Default background for the viewer area */
+}
+
+.loading {
+    position: fixed; 
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.95); 
+    color: #333; 
+    padding: 20px 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    display: none; 
+    z-index: 2000; 
+    font-size: 16px;
+    animation: pulse 1.5s infinite; 
+}
+
+@keyframes pulse { 
+   0% { opacity: 0.7; }
+   50% { opacity: 1; }
+   100% { opacity: 0.7; }
+}
+
+/* Minimal button style for the master toggle - can be expanded later */
+#master-ui-toggle {
+    position: fixed; /* Ensure it's positioned relative to the viewport */
+    top: 10px;
+    left: 10px;
+    z-index: 2000; /* Ensure it's above other content but below modals if any */
+    padding: 8px 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    cursor: pointer;
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+}
+#master-ui-toggle:hover {
+    background-color: #0056b3;
+}
+#master-ui-toggle.hidden {
+    opacity: 0;
+    pointer-events: none; /* Important so it doesn't intercept clicks when invisible */
+}
