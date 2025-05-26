@@ -12,7 +12,7 @@
 <body>
     <div class="container">
         <div class="controls">
-            <!-- Section 1: Load Model -->
+            <!-- Section 1: Load Model (Remains in Simple Mode) -->
             <div class="file-upload control-section">
                 <h4 class="control-section-title">Load Model</h4>
                 <div class="url-input-container">
@@ -27,201 +27,213 @@
                 <div>Supported: GLB, GLTF, OBJ, STL, FBX, DAE, 3DS</div>
             </div>
 
-            <!-- Section 2: Scene Settings -->
-            <div class="control-section">
-                <h4 class="control-section-title">Scene</h4>
+            <!-- Simple View Controls Section -->
+            <div class="control-section" id="simpleViewControls">
+                <h4 class="control-section-title">View</h4>
                 <div class="control-group">
-                    <label>Background Color</label>
-                    <input type="color" id="bgColor" value="#ffffff00">
-                </div>
-                <div class="control-group">
-                    <label>Ambient Light Intensity</label>
-                    <input type="range" id="ambientLight" min="0" max="2" step="0.1" value="1">
-                </div>
-                <div class="control-group">
-                    <label>Directional Light Intensity</label>
-                    <input type="range" id="directionalLight" min="0" max="2" step="0.1" value="1">
-                </div>
-            </div>
-
-            <!-- Section 3: Model Manipulation -->
-            <div class="control-section">
-                <h4 class="control-section-title">Model</h4>
-                <div class="control-group">
-                    <label>Model Scale</label>
-                    <input type="range" id="modelScale" min="0.1" max="2" step="0.1" value="1">
-                </div>
-                <div class="control-group">
-                    <button id="centerModel" class="control-button">Center Model</button>
-                </div>
-                 <div class="control-group">
-                    <button id="resetAll" class="control-button">Reset All Controls</button>
-                </div>
-            </div>
-
-            <!-- Section 4: Camera & Navigation -->
-            <div class="control-section">
-                <h4 class="control-section-title">Camera & Navigation</h4>
-                <div class="control-group">
-                    <label>Enable Orbit Controls</label>
+                    <label for="orbitControls">Enable Orbit Controls</label>
                     <label class="switch">
                         <input type="checkbox" id="orbitControls" checked>
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div class="control-group">
-                    <label>Enable Pan</label>
+                    <label for="enablePan">Enable Pan</label>
                     <label class="switch">
                         <input type="checkbox" id="enablePan" checked>
                         <span class="slider"></span>
                     </label>
                 </div>
-            </div>
-            
-            <!-- Section: Saved Camera Views -->
-            <div class="control-section">
-                <h4 class="control-section-title">Saved Camera Views</h4>
-                <div class="control-group camera-view-slots">
-                    <p style="font-size: 0.9em; color: #555; margin-bottom: 10px;">Camera views are stored for the current session only.</p>
-                    <div class="camera-view-slot">
-                        <span>View 1:</span>
-                        <button class="control-button save-view-btn" data-slot="1" title="Save current camera view to Slot 1">Save</button>
-                        <button class="control-button load-view-btn" data-slot="1" title="Load camera view from Slot 1" disabled>Load</button>
-                    </div>
-                    <div class="camera-view-slot">
-                        <span>View 2:</span>
-                        <button class="control-button save-view-btn" data-slot="2" title="Save current camera view to Slot 2">Save</button>
-                        <button class="control-button load-view-btn" data-slot="2" title="Load camera view from Slot 2" disabled>Load</button>
-                    </div>
-                    <div class="camera-view-slot">
-                        <span>View 3:</span>
-                        <button class="control-button save-view-btn" data-slot="3" title="Save current camera view to Slot 3">Save</button>
-                        <button class="control-button load-view-btn" data-slot="3" title="Load camera view from Slot 3" disabled>Load</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Section 5: Rotation Animation -->
-            <div class="control-section">
-                <h4 class="control-section-title">Rotation Animation</h4>
                 <div class="control-group">
-                    <label>Auto-Rotate Y-Axis</label>
+                    <label for="autoRotateY">Auto-Rotate Model</label> <!-- Changed from "Auto-Rotate Y-Axis" for simplicity -->
                     <label class="switch">
                         <input type="checkbox" id="autoRotateY" checked>
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div class="control-group">
-                    <label>Auto-Rotate X-Axis</label>
-                    <label class="switch">
-                        <input type="checkbox" id="autoRotateX">
-                        <span class="slider"></span>
-                    </label>
+                    <button id="resetSimpleViewBtn" class="control-button">Reset View</button>
                 </div>
-                <div class="control-group">
-                    <label>Auto-Rotate Z-Axis</label>
-                    <label class="switch">
-                        <input type="checkbox" id="autoRotateZ">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="control-group">
-                    <label>Rotation Speed</label>
-                    <input type="range" id="rotationSpeed" min="0" max="5" step="0.1" value="1">
-                </div>
-                <div class="control-group">
-                    <label>Rotation Direction</label>
-                    <div class="direction-toggle-container">
-                        <span class="direction-label">Counter-CW</span>
-                        <label class="switch">
-                            <input type="checkbox" id="rotationDirection" checked> <!-- Assuming checked is Clockwise -->
-                            <span class="slider"></span>
-                        </label>
-                        <span class="direction-label">Clockwise</span>
-                    </div>
-                </div>
-                <div class="control-group">
-                    <label>Enable Y-Axis Sweep</label>
-                    <label class="switch">
-                        <input type="checkbox" id="enableYSweep">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="control-group sweep-controls" id="sweepControlsContainer" style="display: none;">
-                    <label for="sweepAngleMax">Sweep Max Angle (degrees from center):</label>
-                    <input type="range" id="sweepAngleMax" min="5" max="180" step="1" value="45">
-                    <span id="sweepAngleMaxValueDisplay">45°</span>
-                    <br> 
-                    <label for="sweepSpeedFactor">Sweep Speed Multiplier:</label>
-                    <input type="range" id="sweepSpeedFactor" min="0.1" max="3" step="0.1" value="1">
-                    <span id="sweepSpeedFactorValueDisplay">1.0x</span>
-                </div>
-                <div class="control-group">
-                    <label for="currentModelAngleDisplay">Current Y-Axis Angle:</label>
-                    <span id="currentModelAngleDisplay" role="status" aria-live="polite">0°</span>
-                </div>
-            </div>
-            
-            <!-- Section: Experimental Image to 2.5D -->
-            <div class="control-section">
-                <h4 class="control-section-title">Experimental: Image to 2.5D</h4>
-                <p style="font-size: 0.9em; color: #555; margin-bottom: 10px;">
-                    Best results with simple logos/shapes with clear transparency (e.g., PNG). Complex images may not work well. This feature replaces the currently loaded model.
-                </p>
-                <div class="control-group">
-                    <label for="imageTo3DInput">Upload Image (PNG, SVG):</label>
-                    <input type="file" id="imageTo3DInput" class="audio-input" accept="image/png, image/svg+xml">
-                </div>
-                <div class="control-group">
-                    <label for="extrusionDepth">Extrusion Depth:</label>
-                    <input type="range" id="extrusionDepth" min="0.1" max="5" step="0.1" value="1">
-                    <span id="extrusionDepthValue">1.0</span>
-                </div>
-                <div class="control-group">
-                    <label for="extrusionColor">Model Color:</label>
-                    <input type="color" id="extrusionColor" value="#007bff">
-                </div>
-                <div class="control-group">
-                    <button id="generate25DModelBtn" class="control-button" disabled>Generate 2.5D Model</button>
-                </div>
-                <div class="control-group">
-                    <button id="clear25DModelBtn" class="control-button" disabled>Clear Generated Model</button>
-                </div>
-                <canvas id="imageProcessingCanvas" style="display:none;"></canvas> <!-- Hidden canvas for processing -->
             </div>
 
-            <!-- Section 6: Superhero Mode -->
-            <div class="control-section">
-                <h4 class="control-section-title">Superhero Mode</h4>
-                <div class="control-group">
-                    <button id="superheroButton" class="hero-button">Enable Superhero Mode</button>
-                </div>
-                <div class="control-group">
-                    <label>Superhero Stop Angle (degrees)</label>
-                    <input type="range" id="heroStopAngle" min="-180" max="180" step="1" value="0">
-                    <span id="heroStopAngleValue">0°</span>
-                </div>
-                <div class="control-group preset-angles">
-                    <label>Preset Stop Angles:</label>
-                    <div class="preset-angle-buttons-container">
-                        <button class="preset-angle-btn control-button" data-angle="0">Front</button>
-                        <button class="preset-angle-btn control-button" data-angle="90">Right</button>
-                        <button class="preset-angle-btn control-button" data-angle="180">Back</button>
-                        <button class="preset-angle-btn control-button" data-angle="-90">Left</button>
-                    </div>
-                </div>
-                <div class="control-group">
-                    <label>Hero Sound</label>
-                    <div class="audio-status">
-                        <span class="default-audio-indicator">Default Hero Theme ✓</span>
-                        <input type="file" id="audioInput" accept="audio/*" class="audio-input">
-                    </div>
-                    <button id="previewSound" class="control-button">Play Sound</button>
-                    <audio id="heroMusic" preload="auto">
-                        <source src="https://cdn.pixabay.com/download/audio/2021/09/06/audio_dd0555553e.mp3?filename=superhero-theme-7963.mp3" type="audio/mpeg">
-                    </audio>
-                </div>
+            <!-- Toggle Advanced Settings Button -->
+            <div class="control-group" id="toggleAdvancedContainer">
+                <button id="toggleAdvancedSettingsBtn" class="control-button">Show Advanced Settings</button>
             </div>
+
+            <!-- Advanced Controls Container -->
+            <div class="advanced-controls-container" id="advancedControlsContainer">
+                <!-- Section 2: Scene Settings (Moved to Advanced) -->
+                <div class="control-section">
+                    <h4 class="control-section-title">Scene</h4>
+                    <div class="control-group">
+                        <label>Background Color</label>
+                        <input type="color" id="bgColor" value="#ffffff00">
+                    </div>
+                    <div class="control-group">
+                        <label>Ambient Light Intensity</label>
+                        <input type="range" id="ambientLight" min="0" max="2" step="0.1" value="1">
+                    </div>
+                    <div class="control-group">
+                        <label>Directional Light Intensity</label>
+                        <input type="range" id="directionalLight" min="0" max="2" step="0.1" value="1">
+                    </div>
+                </div>
+
+                <!-- Section 3: Model Manipulation (Moved to Advanced) -->
+                <div class="control-section">
+                    <h4 class="control-section-title">Model</h4>
+                    <div class="control-group">
+                        <label>Model Scale</label>
+                        <input type="range" id="modelScale" min="0.1" max="2" step="0.1" value="1">
+                    </div>
+                    <div class="control-group">
+                        <button id="centerModel" class="control-button">Center Model</button>
+                    </div>
+                     <div class="control-group">
+                        <button id="resetAll" class="control-button">Reset All Controls</button>
+                    </div>
+                </div>
+                
+                <!-- Section: Saved Camera Views (Moved to Advanced) -->
+                <div class="control-section">
+                    <h4 class="control-section-title">Saved Camera Views</h4>
+                    <div class="control-group camera-view-slots">
+                        <p style="font-size: 0.9em; color: #555; margin-bottom: 10px;">Camera views are stored for the current session only.</p>
+                        <div class="camera-view-slot">
+                            <span>View 1:</span>
+                            <button class="control-button save-view-btn" data-slot="1" title="Save current camera view to Slot 1">Save</button>
+                            <button class="control-button load-view-btn" data-slot="1" title="Load camera view from Slot 1" disabled>Load</button>
+                        </div>
+                        <div class="camera-view-slot">
+                            <span>View 2:</span>
+                            <button class="control-button save-view-btn" data-slot="2" title="Save current camera view to Slot 2">Save</button>
+                            <button class="control-button load-view-btn" data-slot="2" title="Load camera view from Slot 2" disabled>Load</button>
+                        </div>
+                        <div class="camera-view-slot">
+                            <span>View 3:</span>
+                            <button class="control-button save-view-btn" data-slot="3" title="Save current camera view to Slot 3">Save</button>
+                            <button class="control-button load-view-btn" data-slot="3" title="Load camera view from Slot 3" disabled>Load</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 5: Rotation Animation (Moved to Advanced) -->
+                <div class="control-section">
+                    <h4 class="control-section-title">Rotation Animation</h4>
+                    <!-- Note: Auto-Rotate Y is in Simple mode, X and Z are advanced -->
+                    <div class="control-group">
+                        <label>Auto-Rotate X-Axis</label>
+                        <label class="switch">
+                            <input type="checkbox" id="autoRotateX">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="control-group">
+                        <label>Auto-Rotate Z-Axis</label>
+                        <label class="switch">
+                            <input type="checkbox" id="autoRotateZ">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="control-group">
+                        <label>Rotation Speed</label>
+                        <input type="range" id="rotationSpeed" min="0" max="5" step="0.1" value="1">
+                    </div>
+                    <div class="control-group">
+                        <label>Rotation Direction</label>
+                        <div class="direction-toggle-container">
+                            <span class="direction-label">Counter-CW</span>
+                            <label class="switch">
+                                <input type="checkbox" id="rotationDirection" checked> <!-- Assuming checked is Clockwise -->
+                                <span class="slider"></span>
+                            </label>
+                            <span class="direction-label">Clockwise</span>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label>Enable Y-Axis Sweep</label>
+                        <label class="switch">
+                            <input type="checkbox" id="enableYSweep">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="control-group sweep-controls" id="sweepControlsContainer" style="display: none;">
+                        <label for="sweepAngleMax">Sweep Max Angle (degrees from center):</label>
+                        <input type="range" id="sweepAngleMax" min="5" max="180" step="1" value="45">
+                        <span id="sweepAngleMaxValueDisplay">45°</span>
+                        <br> 
+                        <label for="sweepSpeedFactor">Sweep Speed Multiplier:</label>
+                        <input type="range" id="sweepSpeedFactor" min="0.1" max="3" step="0.1" value="1">
+                        <span id="sweepSpeedFactorValueDisplay">1.0x</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="currentModelAngleDisplay">Current Y-Axis Angle:</label>
+                        <span id="currentModelAngleDisplay" role="status" aria-live="polite">0°</span>
+                    </div>
+                </div>
+                
+                <!-- Section: Experimental Image to 2.5D (Moved to Advanced) -->
+                <div class="control-section">
+                    <h4 class="control-section-title">Experimental: Image to 2.5D</h4>
+                    <p style="font-size: 0.9em; color: #555; margin-bottom: 10px;">
+                        Best results with simple logos/shapes with clear transparency (e.g., PNG). Complex images may not work well. This feature replaces the currently loaded model.
+                    </p>
+                    <div class="control-group">
+                        <label for="imageTo3DInput">Upload Image (PNG, SVG):</label>
+                        <input type="file" id="imageTo3DInput" class="audio-input" accept="image/png, image/svg+xml">
+                    </div>
+                    <div class="control-group">
+                        <label for="extrusionDepth">Extrusion Depth:</label>
+                        <input type="range" id="extrusionDepth" min="0.1" max="5" step="0.1" value="1">
+                        <span id="extrusionDepthValue">1.0</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="extrusionColor">Model Color:</label>
+                        <input type="color" id="extrusionColor" value="#007bff">
+                    </div>
+                    <div class="control-group">
+                        <button id="generate25DModelBtn" class="control-button" disabled>Generate 2.5D Model</button>
+                    </div>
+                    <div class="control-group">
+                        <button id="clear25DModelBtn" class="control-button" disabled>Clear Generated Model</button>
+                    </div>
+                    <canvas id="imageProcessingCanvas" style="display:none;"></canvas> <!-- Hidden canvas for processing -->
+                </div>
+
+                <!-- Section 6: Superhero Mode (Moved to Advanced) -->
+                <div class="control-section">
+                    <h4 class="control-section-title">Superhero Mode</h4>
+                    <div class="control-group">
+                        <button id="superheroButton" class="hero-button">Enable Superhero Mode</button>
+                    </div>
+                    <div class="control-group">
+                        <label>Superhero Stop Angle (degrees)</label>
+                        <input type="range" id="heroStopAngle" min="-180" max="180" step="1" value="0">
+                        <span id="heroStopAngleValue">0°</span>
+                    </div>
+                    <div class="control-group preset-angles">
+                        <label>Preset Stop Angles:</label>
+                        <div class="preset-angle-buttons-container">
+                            <button class="preset-angle-btn control-button" data-angle="0">Front</button>
+                            <button class="preset-angle-btn control-button" data-angle="90">Right</button>
+                            <button class="preset-angle-btn control-button" data-angle="180">Back</button>
+                            <button class="preset-angle-btn control-button" data-angle="-90">Left</button>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label>Hero Sound</label>
+                        <div class="audio-status">
+                            <span class="default-audio-indicator">Default Hero Theme ✓</span>
+                            <input type="file" id="audioInput" accept="audio/*" class="audio-input">
+                        </div>
+                        <button id="previewSound" class="control-button">Play Sound</button>
+                        <audio id="heroMusic" preload="auto">
+                            <source src="https://cdn.pixabay.com/download/audio/2021/09/06/audio_dd0555553e.mp3?filename=superhero-theme-7963.mp3" type="audio/mpeg">
+                        </audio>
+                    </div>
+                </div>
+            </div> <!-- End of advancedControlsContainer -->
         </div>
         <button class="toggle-controls" id="toggleControls">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

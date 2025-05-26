@@ -53,6 +53,28 @@ button:active, .control-button:active, .hero-button:active {
     color: white; /* Ensure text remains white */
 }
 
+/* Specific button styling for toggle advanced settings */
+#toggleAdvancedSettingsBtn {
+    width: 100%;
+    padding: 10px 15px;
+    background-color: #6c757d; /* A neutral, secondary color */
+    color: white;
+    border: none; /* It already inherits border: 1px solid transparent; from base */
+    border-color: #6c757d; /* Match background for a solid look */
+    text-align: center;
+    margin-top: 15px; 
+    /* margin-bottom is handled by its container #toggleAdvancedContainer */
+}
+#toggleAdvancedSettingsBtn:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+}
+#toggleAdvancedSettingsBtn.active { /* When advanced settings are visible */
+    background-color: #007bff; 
+    border-color: #007bff;
+}
+
+
 /* Hero Button Styling */
 .hero-button { /* Default state (Enable Superhero Mode) */
     background-color: #6c757d; /* A neutral dark gray */
@@ -72,27 +94,24 @@ button:active, .control-button:active, .hero-button:active {
     background-color: #c82333;
     border-color: #bd2130;
 }
-/* Note: #superheroButton ID specific styles from before are now handled by .hero-button and .hero-button.active */
-/* Remove backdrop-filter for general hero button if not desired for all states */
-
 
 .loading {
-    position: fixed; /* Use fixed for whole page overlay */
+    position: fixed; 
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(255, 255, 255, 0.95); /* Lighter background with more opacity */
-    color: #333; /* Darker text */
+    background: rgba(255, 255, 255, 0.95); 
+    color: #333; 
     padding: 20px 30px;
     border-radius: 8px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    display: none; /* Keep hidden by default */
-    z-index: 2000; /* Ensure it's on top */
+    display: none; 
+    z-index: 2000; 
     font-size: 16px;
-    animation: pulse 1.5s infinite; /* Keep animation */
+    animation: pulse 1.5s infinite; 
 }
 
-@keyframes pulse { /* Re-checked opacity for new background */
+@keyframes pulse { 
    0% { opacity: 0.7; }
    50% { opacity: 1; }
    100% { opacity: 0.7; }
@@ -104,26 +123,24 @@ button:active, .control-button:active, .hero-button:active {
     gap: 10px;
 }
 
-/* Input Fields Styling */
 .url-input, .audio-input, input[type="color"] {
     padding: 8px 12px;
-    border: 1px solid #ced4da; /* Standard border color */
+    border: 1px solid #ced4da; 
     border-radius: 4px;
     font-size: 14px;
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-    background-color: #fff; /* Ensure background is white */
-    color: #495057; /* Standard input text color */
+    background-color: #fff; 
+    color: #495057; 
 }
 .url-input:focus, .audio-input:focus, input[type="color"]:focus {
-    border-color: #80bdff; /* Lighter blue for focus */
+    border-color: #80bdff; 
     outline: 0;
     box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
 }
-input[type="color"] { /* Specific for color picker */
-   height: 40px; /* Ensure it's not too small */
-   padding: 5px; /* Adjust padding for color type */
+input[type="color"] { 
+   height: 40px; 
+   padding: 5px; 
 }
-/* General text inputs if any are not covered by specific classes */
 input[type="text"]:not(.url-input) {
     padding: 8px 12px;
     border: 1px solid #ced4da;
@@ -151,9 +168,9 @@ input[type="text"]:not(.url-input):focus {
     max-width: 300px;
     height: 100vh;
     padding: 25px; 
-    background: rgba(255, 255, 255, 0.85); /* Slightly more opaque */ 
-    backdrop-filter: blur(8px); /* Slightly less blur, adjust as needed */
-    border-right: 1px solid rgba(0, 0, 0, 0.07); /* Softer border */ 
+    background: rgba(255, 255, 255, 0.85); 
+    backdrop-filter: blur(8px); 
+    border-right: 1px solid rgba(0, 0, 0, 0.07); 
     overflow-y: auto;
     transition: transform 0.3s ease; 
     position: fixed;
@@ -166,11 +183,11 @@ input[type="text"]:not(.url-input):focus {
     width: 8px;
 }
 .controls::-webkit-scrollbar-thumb {
-    background-color: rgba(0,0,0,0.3); /* Darker scrollbar thumb */
+    background-color: rgba(0,0,0,0.3); 
     border-radius: 4px;
 }
 .controls::-webkit-scrollbar-track {
-    background-color: rgba(0,0,0,0.05); /* Subtle track */
+    background-color: rgba(0,0,0,0.05); 
 }
 
 
@@ -179,10 +196,9 @@ input[type="text"]:not(.url-input):focus {
     left: 20px;  
     top: 20px;
     z-index: 1001;
-    /* Styles inherited from base button, but can override if needed */
-    background-color: #007bff; /* Matches primary buttons */
+    background-color: #007bff; 
     color: white;
-    padding: 10px 12px; /* Adjusted padding for a more compact toggle */
+    padding: 10px 12px; 
 }
 .toggle-controls:hover {
     background-color: #0056b3;
@@ -193,7 +209,6 @@ input[type="text"]:not(.url-input):focus {
     flex: 1;
     width: 100vw;
     height: 100vh;
-    /* background-color: #ffffff; Default, can be overridden by user */
 }
 
 /* Section Styling */
@@ -202,46 +217,85 @@ input[type="text"]:not(.url-input):focus {
     padding-bottom: 15px; 
     border-bottom: 1px solid rgba(0, 0, 0, 0.08); 
 }
-.control-section:last-child {
+.control-section:last-child { 
     border-bottom: none;
-    margin-bottom: 0;
+    margin-bottom: 0; 
     padding-bottom: 0;
 }
+
+#simpleViewControls {
+    margin-bottom: 0; 
+    padding-bottom: 0; 
+    border-bottom: none; 
+}
+#simpleViewControls .control-group:last-child {
+    margin-bottom: 0; 
+}
+
+#toggleAdvancedContainer {
+    border-top: 1px solid rgba(0,0,0,0.08); 
+    padding-top: 15px; 
+    padding-bottom: 15px; 
+    margin-bottom: 0; /* Advanced controls will have margin-top if visible */
+    /* border-bottom will only appear if advanced controls are hidden */
+}
+.advanced-controls-container:not(.visible) + #toggleAdvancedContainer {
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+
+
+.advanced-controls-container {
+    display: none; /* Hidden by default */
+    padding-top: 15px; 
+    margin-top: 20px; /* Space between toggle button container and start of advanced */
+    border-top: 1px solid rgba(0,0,0,0.1); 
+}
+.advanced-controls-container.visible {
+    display: block; /* Shown when .visible class is added by JS */
+}
+
+.advanced-controls-container > .control-section:first-child {
+    margin-top: 0; 
+    padding-top: 0;
+}
+.advanced-controls-container > .control-section:first-child .control-section-title {
+    margin-top: 0; 
+}
+
+
 .control-section-title {
     font-size: 16px; 
-    font-weight: 600; /* Slightly less bold than 700, more harmonious */ 
-    color: #007bff; /* Accent color */
+    font-weight: 600;  
+    color: #007bff; 
     margin-top: 10px; 
-    margin-bottom: 18px; /* More space below title */
+    margin-bottom: 18px; 
     padding-bottom: 5px;
 }
 
-/* Control Groups */
 .control-group {
-    padding: 6px 0px; /* Reduced padding for tighter groups */
-    margin-bottom: 12px; /* Consistent spacing */
+    padding: 6px 0px; 
+    margin-bottom: 12px; 
 }
 
 .control-group:last-child {
-     margin-bottom: 0;
+     margin-bottom: 0; 
 }
 
 .control-group label {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
     font-size: 14px; 
-    font-weight: 500; /* Standard weight for labels */
-    color: #495057; /* Softer text color for labels */
-    margin-bottom: 8px; /* Space between label and control */
+    font-weight: 500; 
+    color: #495057; 
+    margin-bottom: 8px; 
     display: block; 
 }
 
-/* Slider Styling (input[type="range"]) */
-input[type="range"] { /* Track styling */
-   width: 100%; /* Ensure it takes full width of its container */
-   height: 6px; /* Slimmer track */
-   background: #dee2e6; /* Light grey track */
+input[type="range"] { 
+   width: 100%; 
+   height: 6px; 
+   background: #dee2e6; 
    border-radius: 3px;
-   margin: 10px 0; /* Adjusted margin for consistency */
+   margin: 10px 0; 
    -webkit-appearance: none; 
    appearance: none;
 }
@@ -250,13 +304,13 @@ input[type="range"]::-webkit-slider-thumb {
     appearance: none; 
     width: 18px; 
     height: 18px;
-    background: #007bff; /* Accent color */
+    background: #007bff; 
     border-radius: 50%;
     cursor: pointer;
     box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    margin-top: -6px; /* Adjust to center thumb on track */
+    margin-top: -6px; 
 }
-input[type="range"]::-moz-range-thumb { /* Firefox */
+input[type="range"]::-moz-range-thumb { 
     width: 18px;
     height: 18px;
     background: #007bff;
@@ -295,13 +349,12 @@ input[type="range"]:focus::-moz-range-thumb {
     color: #555; 
 }
 
-/* Toggle Switch Styling */
 .switch {
     position: relative;
     display: inline-block;
     width: 50px; 
     height: 28px;
-    vertical-align: middle; /* Align switches better with labels */
+    vertical-align: middle; 
 }
 
 .switch input {
@@ -310,19 +363,19 @@ input[type="range"]:focus::-moz-range-thumb {
     height: 0;
 }
 
-.slider { /* This is the track of the switch */
+.slider { 
     position: absolute;
     cursor: pointer;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #adb5bd; /* Neutral color for off state */
+    background-color: #adb5bd; 
     transition: .4s;
     border-radius: 28px; 
 }
 
-.slider:before { /* This is the thumb of the switch */
+.slider:before { 
     position: absolute;
     content: "";
     height: 20px; 
@@ -332,11 +385,11 @@ input[type="range"]:focus::-moz-range-thumb {
     background-color: white;
     transition: .4s;
     border-radius: 50%;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Subtle shadow on thumb */
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1); 
 }
 
 input:checked + .slider {
-    background-color: #007bff; /* Accent color */
+    background-color: #007bff; 
 }
 
 input:checked + .slider:before {
@@ -347,21 +400,20 @@ input:checked + .slider:before {
     padding: 10px 0px; 
 }
 
-/* Drag & Drop Area */
 .drag-area {
-    border: 2px dashed #007bff; /* Accent color for border */
-    background-color: #f8f9fa; /* Light background */
-    padding: 30px; /* More padding */
+    border: 2px dashed #007bff; 
+    background-color: #f8f9fa; 
+    padding: 30px; 
     text-align: center;
     margin-bottom: 15px;
     cursor: pointer;
     border-radius: 6px;
-    color: #495057; /* Text color */
+    color: #495057; 
     transition: border-color 0.2s ease, background-color 0.2s ease;
 }
-.drag-area.active { /* When dragging over */
-    border-color: #0056b3; /* Darker accent */
-    background-color: #e9ecef; /* Slightly darker bg */
+.drag-area.active { 
+    border-color: #0056b3; 
+    background-color: #e9ecef; 
 }
 .drag-area button { 
     margin-top: 10px; 
@@ -370,7 +422,6 @@ input:checked + .slider:before {
 
 .audio-input {
     width: 100%;
-    /* padding, border, etc. inherited from general input styles */
     margin-top: 5px; 
     box-sizing: border-box; 
 }
@@ -401,8 +452,7 @@ input:checked + .slider:before {
     display: inline-block; 
 }
 
-/* Preset Angle Buttons Styling */
-.preset-angles label { /* Already styled by .control-group label, but can be more specific */
+.preset-angles label { 
     display: block; 
     margin-bottom: 8px; 
 }
@@ -413,21 +463,18 @@ input:checked + .slider:before {
 }
 .preset-angle-btn {
     flex-grow: 1; 
-    /* Inherits .control-button styling */
-    padding: 8px 10px; /* Slightly smaller padding for these specific buttons */
+    padding: 8px 10px; 
     min-width: 60px; 
-    font-size: 13px; /* Slightly smaller font */
+    font-size: 13px; 
 }
 
-/* Current Model Angle Display Styling */
 #currentModelAngleDisplay {
     font-weight: bold;
-    color: #007bff; /* Accent color for the value */
-    margin-left: 5px; /* Add some space if label and value are on the same line conceptually */
-    display: inline; /* Or inline-block if more spacing control is needed */
+    color: #007bff; 
+    margin-left: 5px; 
+    display: inline; 
 }
 
-/* Sweep Controls Styling */
 .sweep-controls label {
     display: block; 
     margin-top: 10px;
@@ -436,21 +483,20 @@ input:checked + .slider:before {
     margin-top: 5px;
     margin-bottom: 5px;
 }
-.sweep-controls span { /* For the value displays */
+.sweep-controls span { 
     display: inline-block;
     margin-left: 10px;
     font-weight: normal;
     color: #555;
 }
 
-/* Saved Camera Views Styling */
 .camera-view-slots .camera-view-slot {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 8px 0;
     margin-bottom: 8px;
-    border-bottom: 1px solid #eee; /* Light separator for each slot */
+    border-bottom: 1px solid #eee; 
 }
 .camera-view-slots .camera-view-slot:last-child {
     border-bottom: none;
@@ -461,10 +507,10 @@ input:checked + .slider:before {
 }
 .camera-view-slots .save-view-btn,
 .camera-view-slots .load-view-btn {
-    padding: 6px 10px; /* Slightly smaller padding for these buttons */
+    padding: 6px 10px; 
     font-size: 13px;
     margin-left: 5px;
-    flex-shrink: 0; /* Prevent buttons from shrinking too much */
+    flex-shrink: 0; 
 }
 .camera-view-slots .load-view-btn[disabled] {
    background-color: #ccc;
@@ -472,7 +518,7 @@ input:checked + .slider:before {
    cursor: not-allowed;
 }
 .camera-view-slots .load-view-btn[disabled]:hover {
-   background-color: #ccc; /* Override hover style for disabled load */
+   background-color: #ccc; 
    border-color: #ccc;
 }
 
@@ -483,7 +529,7 @@ input:checked + .slider:before {
         min-width: 90%; 
         max-width: 90%;
         padding: 20px; 
-        backdrop-filter: blur(5px); /* Reduce blur on mobile if performance is a concern */
+        backdrop-filter: blur(5px); 
     }
 
     .control-section-title {
@@ -495,37 +541,26 @@ input:checked + .slider:before {
          margin-bottom: 10px;
     }
 
-    input[type="range"] {
-        /* height: 25px; Already handled by general slider styles, ensure it looks good */
-    }
-
-    .switch {
-        /* width: 60px; height: 34px; Already handled by general switch styles */
-    }
-
-    .slider:before {
-        /* height: 26px; width: 26px; Already handled by general switch styles */
-    }
-
     .control-button, 
     .hero-button,
-    .drag-area button { /* Ensure all buttons consistent on mobile */
-        padding: 12px 15px; /* Larger tap targets */
+    .drag-area button,
+    #toggleAdvancedSettingsBtn { /* Ensure toggle button also gets larger tap target */
+        padding: 12px 15px; 
         font-size: 15px;
     }
 
-    .preset-angle-btn { /* Adjust preset buttons for mobile if needed */
+    .preset-angle-btn { 
         padding: 10px 12px;
         font-size: 14px;
     }
 
     .camera-view-slots .save-view-btn,
     .camera-view-slots .load-view-btn {
-        padding: 8px 12px; /* Slightly larger for mobile tap targets */
+        padding: 8px 12px; 
     }
     
     .toggle-controls {
-        padding: 12px 14px; /* Slightly larger toggle on mobile */
+        padding: 12px 14px; 
     }
 
     .controls {

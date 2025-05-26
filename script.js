@@ -68,6 +68,11 @@ const ctx = imageProcessingCanvas.getContext('2d');
 let currentImageFor25D = null;
 let generated25DModel = null; // To keep track of the generated model
 
+// Simple/Advanced Mode DOM Elements
+const toggleAdvancedSettingsBtn = document.getElementById('toggleAdvancedSettingsBtn');
+const advancedControlsContainer = document.getElementById('advancedControlsContainer');
+const resetSimpleViewBtn = document.getElementById('resetSimpleViewBtn');
+
 
 (async () => {
     await init();
@@ -529,6 +534,27 @@ function smoothRotateToAngle(targetAngle, duration = 1000) {
 
 // Add a new complete reset function
 function resetAll() {
+    // Reset Simple View Controls first, as they are part of the overall state
+    if (camera && controls) { // Ensure camera and controls are initialized
+        camera.position.set(0, 0, 5);
+        controls.target.set(0, 0, 0);
+        camera.zoom = 1;
+        camera.updateProjectionMatrix();
+        controls.update();
+        document.getElementById('orbitControls').checked = true;
+        controls.enabled = true;
+        document.getElementById('enablePan').checked = true;
+        controls.enablePan = true; // Assuming true is default
+        autoRotateYCheckbox.checked = true;
+        autoRotateYEnabled = true;
+    }
+    
+    // Reset Advanced Controls Toggle
+    advancedControlsContainer.classList.remove('visible');
+    toggleAdvancedSettingsBtn.classList.remove('active');
+    toggleAdvancedSettingsBtn.textContent = 'Show Advanced Settings';
+
+
     if (currentModel) {
         // Reset position and scale using the same logic as initialization
         const box = new THREE.Box3().setFromObject(currentModel);
@@ -988,6 +1014,41 @@ document.querySelectorAll('.load-view-btn').forEach(button => {
 
 // Ensure all controls elements are correctly referenced
 document.addEventListener('DOMContentLoaded', () => {
+    // Simple View Reset Button
+    resetSimpleViewBtn.addEventListener('click', () => {
+        if (camera && controls) { // Ensure camera and controls are initialized
+            // Reset camera position and target
+            camera.position.set(0, 0, 5);
+            controls.target.set(0, 0, 0);
+            camera.zoom = 1; // Reset zoom
+            camera.updateProjectionMatrix(); // Apply zoom changes
+            controls.update(); // Update controls to reflect changes
+
+            // Reset simple view UI elements to their defaults
+            document.getElementById('orbitControls').checked = true;
+            controls.enabled = true; // Re-enable orbit controls if they were off
+
+            document.getElementById('enablePan').checked = true;
+            controls.enablePan = true; // Assuming default is true
+
+            autoRotateYCheckbox.checked = true; // Assuming default is Y-axis rotation enabled
+            autoRotateYEnabled = true;
+
+            // Optionally, if X/Z/Sweep were part of simple view reset, handle here:
+            // autoRotateXCheckbox.checked = false;
+            // autoRotateXEnabled = false;
+            // autoRotateZCheckbox.checked = false;
+            // autoRotateZEnabled = false;
+            // enableYSweepCheckbox.checked = false;
+            // ySweepEnabled = false;
+            // sweepControlsContainer.style.display = 'none';
+        }
+        // If a model is loaded, reset its rotation to front-facing.
+        if (currentModel) {
+            setModelToFrontView(currentModel);
+        }
+    });
+
     // This ensures all DOM elements are loaded before attaching event listeners
     // This is especially important if script is loaded in <head> or before all HTML elements
     // However, since we are moving to bottom of body, this might be redundant but good practice.
