@@ -16,6 +16,19 @@ class ModelViewer {
         this.superheroAudio = null;
         this.customAudioFile = null;
         this.animationPaused = false;
+        this.cinematicLights = [];
+        this.energyParticles = null;
+        this.lensFlare = null;
+        this.beatDetected = false;
+        this.lastBeatTime = 0;
+        this.beatThreshold = 100;
+        this.musicTimeline = null;
+        this.currentBeat = 0;
+        this.beatHistory = [];
+        this.keyLight = null;
+        this.originalLights = null;
+        this.audioListener = null;
+        this.audioAnalyser = null;
         
         this.init();
         this.setupEventListeners();
@@ -201,15 +214,15 @@ class ModelViewer {
             e.preventDefault();
             audioDrop.classList.remove('dragover');
             const files = e.dataTransfer.files;
-            if (files.length > 0) this.loadAudioFile(files[0]);
+            if (files.length > 0 && this.loadAudioFile) this.loadAudioFile(files[0]);
         });
         
         audioInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) this.loadAudioFile(e.target.files[0]);
+            if (e.target.files.length > 0 && this.loadAudioFile) this.loadAudioFile(e.target.files[0]);
         });
         
         document.getElementById('clearAudio').addEventListener('click', () => {
-            this.clearCustomAudio();
+            if (this.clearCustomAudio) this.clearCustomAudio();
         });
 
         // File loading
@@ -331,7 +344,7 @@ class ModelViewer {
             if (this.mixer) {
                 this.mixer.timeScale = 1;
             }
-            if (this.superheroMode && this.superheroAudio) {
+            if (this.superheroMode && this.superheroAudio && this.fadeInAudio) {
                 this.fadeInAudio();
             }
         });
@@ -341,7 +354,7 @@ class ModelViewer {
             if (this.mixer) {
                 this.mixer.timeScale = 0;
             }
-            if (this.superheroMode && this.superheroAudio) {
+            if (this.superheroMode && this.superheroAudio && this.fadeOutAudio) {
                 this.fadeOutAudio();
             }
         });
@@ -351,7 +364,7 @@ class ModelViewer {
             if (this.mixer) {
                 this.mixer.setTime(0);
             }
-            if (this.superheroMode) {
+            if (this.superheroMode && this.exitSuperheroMode) {
                 this.exitSuperheroMode();
             }
         });
@@ -685,7 +698,7 @@ class ModelViewer {
         }
         
         // Superhero camera animation (only if not paused)
-        if (this.superheroMode && this.currentModel && !this.animationPaused) {
+        if (this.superheroMode && this.currentModel && !this.animationPaused && this.updateSuperheroCamera) {
             this.updateSuperheroCamera();
         }
 
@@ -701,403 +714,17 @@ class ModelViewer {
         }
     }
     
-    activateSuperheroMode() {
-        if (!this.currentModel || this.superheroMode) return;
-        
-        // Store original camera position
-        this.originalCameraPos = {
-            position: this.camera.position.clone(),
-            target: this.controls.target.clone()
-        };
-        
-        // Pitch black fade with silence
-        const overlay = document.getElementById('fadeOverlay');
-        overlay.classList.remove('hidden');
-        overlay.classList.add('pitch-black');
-        
-        // Step 1: Silence/Ambience (1s)
-        this.playAmbientDrone();
-        
-        setTimeout(() => {
-            // Step 2: THUMP (1.5s) + Echo tail (0.5s)
-            this.playBassThump();
-        }, 1000);
-        
-        setTimeout(() => {
-            // Step 3: Music + Camera starts (after 3s total)
-            this.playSuperheroMusic();
-        }, 3000);
-        
-        setTimeout(() => {
-            this.superheroMode = true;
-            this.controls.enabled = false;
-            
-            // Store original scene settings
-            this.originalBackground = this.scene.background;
-            this.originalFog = this.scene.fog;
-            
-            // Dark cinematic background with fog
-            this.scene.background = new THREE.Color(0x000000);
-            this.scene.fog = new THREE.Fog(0x000000, 5, 30);
-            
-            // Enable cinematic bloom
-            if (this.bloomPass) {
-                this.bloomPass.enabled = true;
-                this.bloomPass.strength = 0.4;
-                this.bloomPass.radius = 0.3;
-                this.bloomPass.threshold = 0.7;
-            }
-            
-            // Dramatic superhero lighting
-            this.lights.ambient.intensity = 0.1;
-            this.lights.directional.intensity = 0.5;
-            
-            // Add spotlight for dramatic effect
-            const box = new THREE.Box3().setFromObject(this.currentModel);
-            const center = box.getCenter(new THREE.Vector3());
-            const size = box.getSize(new THREE.Vector3());
-            const maxSize = Math.max(size.x, size.y, size.z);
-            
-            this.spotlight = new THREE.SpotLight(0xffffff, 2.0, 0, Math.PI / 6, 0.3);
-            this.spotlight.position.set(center.x + maxSize, center.y + maxSize * 2, center.z + maxSize);
-            this.spotlight.target.position.copy(center);
-            this.spotlight.castShadow = true;
-            this.scene.add(this.spotlight);
-            this.scene.add(this.spotlight.target);
-            
-            // Add rim light for silhouette
-            this.rimLight = new THREE.DirectionalLight(0x4488ff, 1.2);
-            this.rimLight.position.set(center.x - maxSize, center.y, center.z - maxSize);
-            this.scene.add(this.rimLight);
-            
-            // Start camera animation (synced with music)
-            this.superheroStartTime = Date.now() - 3000; // Account for pre-sequence
-            
-            // Gradual fade from pitch black
-            setTimeout(() => {
-                overlay.classList.remove('pitch-black');
-                overlay.classList.add('active');
-                setTimeout(() => {
-                    overlay.classList.remove('active');
-                    setTimeout(() => overlay.classList.add('hidden'), 800);
-                }, 1500);
-            }, 500);
-            
-            // Auto-exit when music ends
-            if (this.superheroAudio) {
-                this.superheroAudio.addEventListener('ended', () => this.exitSuperheroMode());
-            } else {
-                setTimeout(() => this.exitSuperheroMode(), 30000);
-            }
-        }, 1000);
-    }
-    
-    updateSuperheroCamera() {
-        const elapsed = (Date.now() - this.superheroStartTime) / 1000;
-        const box = new THREE.Box3().setFromObject(this.currentModel);
-        const center = box.getCenter(new THREE.Vector3());
-        const size = box.getSize(new THREE.Vector3());
-        const maxSize = Math.max(size.x, size.y, size.z);
-        
-        // Get music duration and analyze audio for dynamic sync
-        const musicDuration = this.superheroAudio ? (this.superheroAudio.duration || 30) : 30;
-        const progress = elapsed / musicDuration;
-        
-        // Get audio frequency data for dynamic movement
-        let audioIntensity = 1;
-        if (this.audioAnalyser) {
-            const dataArray = new Uint8Array(this.audioAnalyser.frequencyBinCount);
-            this.audioAnalyser.getByteFrequencyData(dataArray);
-            audioIntensity = (dataArray.reduce((a, b) => a + b) / dataArray.length) / 128;
-        }
-        
-        // Sky-to-model cinematic sequence
-        if (progress < 0.1) {
-            // Sky descent: Start from high above (0-10%)
-            const t = progress / 0.1;
-            const skyHeight = maxSize * (8 - t * 6); // Descend from sky
-            const distance = maxSize * (3 - t * 1.5);
-            
-            this.camera.position.set(
-                center.x + distance * 0.3,
-                center.y + skyHeight,
-                center.z + distance * 0.5
-            );
-            
-        } else if (progress < 0.25) {
-            // Dramatic reveal: Focus on model (10-25%)
-            const t = (progress - 0.1) / 0.15;
-            const distance = maxSize * (1.5 - t * 0.3);
-            const angle = t * Math.PI * 0.3;
-            
-            this.camera.position.set(
-                center.x + Math.cos(angle) * distance,
-                center.y + maxSize * (2 - t * 1.2),
-                center.z + Math.sin(angle) * distance
-            );
-            
-        } else if (progress < 0.6) {
-            // Dynamic orbit: Music-synced rotation (25-60%)
-            const t = (progress - 0.25) / 0.35;
-            const speed = audioIntensity * 2; // Music-driven speed
-            const angle = t * Math.PI * 4 * speed;
-            const distance = maxSize * (1.2 + audioIntensity * 0.5);
-            const verticalMove = Math.sin(t * Math.PI * 2) * maxSize * 0.4;
-            
-            this.camera.position.set(
-                center.x + Math.cos(angle) * distance,
-                center.y + maxSize * 0.8 + verticalMove,
-                center.z + Math.sin(angle) * distance
-            );
-            
-        } else {
-            // Epic finale: Pullback reveal (60-100%)
-            const t = (progress - 0.6) / 0.4;
-            const angle = Math.PI * 8 + t * Math.PI * audioIntensity;
-            const distance = maxSize * (1.0 + t * 2.5);
-            const heroicRise = t * t * 1.5; // Quadratic rise
-            
-            this.camera.position.set(
-                center.x + Math.cos(angle) * distance,
-                center.y + maxSize * (0.6 + heroicRise),
-                center.z + Math.sin(angle) * distance
-            );
-        }
-        
-        // Music-reactive look target
-        const lookTarget = center.clone();
-        lookTarget.y += maxSize * (0.2 + audioIntensity * 0.1);
-        this.camera.lookAt(lookTarget);
-        
-        // Audio-reactive camera shake
-        if (audioIntensity > 1.2) {
-            const shakeIntensity = (audioIntensity - 1.2) * 0.02;
-            this.camera.position.x += (Math.random() - 0.5) * shakeIntensity;
-            this.camera.position.y += (Math.random() - 0.5) * shakeIntensity;
-        }
-    }
-    
-    exitSuperheroMode() {
-        // Fade out music first
-        if (this.superheroAudio) {
-            this.fadeOutAudio();
-            setTimeout(() => {
-                if (this.superheroAudio) {
-                    this.superheroAudio.stop ? this.superheroAudio.stop() : this.superheroAudio.pause();
-                    this.superheroAudio = null;
-                }
-            }, 1000);
-        }
-        
-        this.superheroMode = false;
-        this.controls.enabled = true;
-        
-        // Restore original settings
-        if (this.originalCameraPos) {
-            this.camera.position.copy(this.originalCameraPos.position);
-            this.controls.target.copy(this.originalCameraPos.target);
-        }
-        
-        // Restore original scene
-        this.scene.background = this.originalBackground;
-        this.scene.fog = this.originalFog;
-        
-        // Reset lighting
-        this.lights.ambient.intensity = 0.4;
-        this.lights.directional.intensity = 1.0;
-        this.lights.directional.position.set(5, 5, 5);
-        
-        // Remove superhero lights
-        if (this.spotlight) {
-            this.scene.remove(this.spotlight);
-            this.scene.remove(this.spotlight.target);
-            this.spotlight = null;
-        }
-        if (this.rimLight) {
-            this.scene.remove(this.rimLight);
-            this.rimLight = null;
-        }
-        
-        // Reset bloom
-        if (this.bloomPass) {
-            this.bloomPass.enabled = false;
-            this.bloomPass.strength = 1.5;
-            this.bloomPass.radius = 0.4;
-            this.bloomPass.threshold = 0.85;
-        }
-        
-        this.controls.update();
-    }
-    
-    playAmbientDrone() {
-        try {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = audioContext.createOscillator();
-            const gain = audioContext.createGain();
-            
-            osc.connect(gain);
-            gain.connect(audioContext.destination);
-            
-            // Low ambient drone
-            osc.frequency.setValueAtTime(55, audioContext.currentTime);
-            osc.type = 'sine';
-            
-            gain.gain.setValueAtTime(0, audioContext.currentTime);
-            gain.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.5);
-            gain.gain.linearRampToValueAtTime(0.001, audioContext.currentTime + 1.0);
-            
-            osc.start();
-            osc.stop(audioContext.currentTime + 1.0);
-        } catch (e) {
-            console.log('Audio context not supported');
-        }
-    }
-    
-    async playBassThump() {
-        try {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
-            // --- Master output
-            const masterGain = audioContext.createGain();
-            masterGain.gain.value = 0.9;
-            masterGain.connect(audioContext.destination);
 
-            // --- REVERB tail
-            const convolver = audioContext.createConvolver();
-            convolver.connect(masterGain);
 
-            // --- Load an impulse response file for reverb (required for cinematic feel)
-            const reverbBuffer = await fetch('impulse-response.wav') // you need this file
-                .then(r => r.arrayBuffer())
-                .then(b => audioContext.decodeAudioData(b));
-            convolver.buffer = reverbBuffer;
 
-            // --- Layer 1: Deep BASS sine
-            const osc1 = audioContext.createOscillator();
-            const gain1 = audioContext.createGain();
-            osc1.type = 'sine';
-            osc1.frequency.setValueAtTime(40, audioContext.currentTime);
-            gain1.gain.setValueAtTime(1.0, audioContext.currentTime);
-            gain1.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 2.5);
-            osc1.connect(gain1);
-            gain1.connect(convolver);
-            osc1.start();
-            osc1.stop(audioContext.currentTime + 2.5);
 
-            // --- Layer 2: Higher frequency punch (adds realism)
-            const osc2 = audioContext.createOscillator();
-            const gain2 = audioContext.createGain();
-            osc2.type = 'triangle';
-            osc2.frequency.setValueAtTime(120, audioContext.currentTime);
-            gain2.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gain2.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 1.0);
-            osc2.connect(gain2);
-            gain2.connect(convolver);
-            osc2.start();
-            osc2.stop(audioContext.currentTime + 1.0);
 
-            // --- Layer 3: Low rumble (optional)
-            const rumble = audioContext.createOscillator();
-            const rumbleGain = audioContext.createGain();
-            rumble.type = 'sawtooth';
-            rumble.frequency.setValueAtTime(10, audioContext.currentTime);
-            rumbleGain.gain.setValueAtTime(0.2, audioContext.currentTime);
-            rumbleGain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 3.0);
-            rumble.connect(rumbleGain);
-            rumbleGain.connect(convolver);
-            rumble.start();
-            rumble.stop(audioContext.currentTime + 3.0);
 
-            // Optional: Ambient fade-in before thump
-            // Use setTimeout(() => this.playCinematicThump(), 4000) to delay
 
-        } catch (err) {
-            console.error("Error playing thump:", err);
-        }
-    }
 
-    
-    loadAudioFile(file) {
-        const supportedFormats = ['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac', 'wma'];
-        const extension = file.name.split('.').pop().toLowerCase();
-        
-        if (!supportedFormats.includes(extension)) {
-            this.showError('Unsupported audio format. Please use MP3, WAV, OGG, M4A, AAC, FLAC, or WMA.');
-            return;
-        }
-        
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const blob = new Blob([e.target.result], { type: file.type });
-            this.customAudioFile = URL.createObjectURL(blob);
-            
-            // Update UI
-            const indicator = document.querySelector('.audio-indicator');
-            const clearBtn = document.getElementById('clearAudio');
-            indicator.textContent = `🎵 ${file.name} loaded`;
-            clearBtn.style.display = 'block';
-        };
-        reader.readAsArrayBuffer(file);
-    }
-    
-    clearCustomAudio() {
-        if (this.customAudioFile) {
-            URL.revokeObjectURL(this.customAudioFile);
-            this.customAudioFile = null;
-        }
-        
-        const indicator = document.querySelector('.audio-indicator');
-        const clearBtn = document.getElementById('clearAudio');
-        indicator.textContent = '🎵 Default theme loaded';
-        clearBtn.style.display = 'none';
-    }
-    
-    playSuperheroMusic() {
-        try {
-            const audioSource = this.customAudioFile || 'superhero-theme.mp3';
-            
-            // Use HTML5 Audio for better compatibility
-            this.superheroAudio = new Audio(audioSource);
-            this.superheroAudio.volume = 0;
-            this.superheroAudio.play().then(() => {
-                this.fadeInAudio();
-            }).catch(e => {
-                console.log('Audio play failed:', e);
-            });
-        } catch (e) {
-            console.log('Audio not supported');
-        }
-    }
-    
-    fadeInAudio() {
-        if (!this.superheroAudio) return;
-        
-        if (this.superheroAudio.paused) {
-            this.superheroAudio.play();
-        }
-        
-        const fadeIn = () => {
-            if (this.superheroAudio.volume < 0.7) {
-                this.superheroAudio.volume = Math.min(0.7, this.superheroAudio.volume + 0.02);
-                setTimeout(fadeIn, 50);
-            }
-        };
-        fadeIn();
-    }
-    
-    fadeOutAudio() {
-        if (!this.superheroAudio) return;
-        
-        const fadeOut = () => {
-            if (this.superheroAudio.volume > 0) {
-                this.superheroAudio.volume = Math.max(0, this.superheroAudio.volume - 0.02);
-                setTimeout(fadeOut, 50);
-            } else {
-                this.superheroAudio.pause();
-            }
-        };
-        fadeOut();
-    }
+
+
 }
 
 // Initialize the viewer when the page loads
