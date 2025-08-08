@@ -953,7 +953,7 @@ class ModelViewer {
         }
     }
     
-    async playBassThump() {
+    playBassThump() {
         try {
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -961,16 +961,6 @@ class ModelViewer {
             const masterGain = audioContext.createGain();
             masterGain.gain.value = 0.9;
             masterGain.connect(audioContext.destination);
-
-            // --- REVERB tail
-            const convolver = audioContext.createConvolver();
-            convolver.connect(masterGain);
-
-            // --- Load an impulse response file for reverb (required for cinematic feel)
-            const reverbBuffer = await fetch('impulse-response.wav') // you need this file
-                .then(r => r.arrayBuffer())
-                .then(b => audioContext.decodeAudioData(b));
-            convolver.buffer = reverbBuffer;
 
             // --- Layer 1: Deep BASS sine
             const osc1 = audioContext.createOscillator();
@@ -980,7 +970,7 @@ class ModelViewer {
             gain1.gain.setValueAtTime(1.0, audioContext.currentTime);
             gain1.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 2.5);
             osc1.connect(gain1);
-            gain1.connect(convolver);
+            gain1.connect(masterGain);
             osc1.start();
             osc1.stop(audioContext.currentTime + 2.5);
 
@@ -992,7 +982,7 @@ class ModelViewer {
             gain2.gain.setValueAtTime(0.3, audioContext.currentTime);
             gain2.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 1.0);
             osc2.connect(gain2);
-            gain2.connect(convolver);
+            gain2.connect(masterGain);
             osc2.start();
             osc2.stop(audioContext.currentTime + 1.0);
 
@@ -1004,12 +994,9 @@ class ModelViewer {
             rumbleGain.gain.setValueAtTime(0.2, audioContext.currentTime);
             rumbleGain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 3.0);
             rumble.connect(rumbleGain);
-            rumbleGain.connect(convolver);
+            rumbleGain.connect(masterGain);
             rumble.start();
             rumble.stop(audioContext.currentTime + 3.0);
-
-            // Optional: Ambient fade-in before thump
-            // Use setTimeout(() => this.playCinematicThump(), 4000) to delay
 
         } catch (err) {
             console.error("Error playing thump:", err);
