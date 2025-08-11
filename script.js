@@ -14,9 +14,13 @@ class ModelViewer {
         this.superheroMode = false;
         this.originalCameraPos = null;
         this.superheroAudio = null;
+        this.audioContext = null;
+        this.audioSource = null;
+        this.audioAnalyser = null;
         this.customAudioFile = null;
         this.animationPaused = false;
         this.superheroAnimationPaused = false;
+        this.smoothedAudioIntensity = 0;
         this.icons = {
             superhero: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3zM12 11l-4 4 1.41 1.41L12 13.83l2.59 2.58L16 15l-4-4z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
             close: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 6L6 18" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 6L18 18" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
@@ -662,50 +666,40 @@ class ModelViewer {
         const center = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3());
         const maxSize = Math.max(size.x, size.y, size.z);
-        
-        const musicDuration = this.superheroAudio ? (this.superheroAudio.duration || 30) : 30;
-        const progress = elapsed / musicDuration;
-        
-        let audioIntensity = 1;
+
+        let audioIntensity = 0;
         if (this.audioAnalyser) {
             const dataArray = new Uint8Array(this.audioAnalyser.frequencyBinCount);
             this.audioAnalyser.getByteFrequencyData(dataArray);
-            audioIntensity = (dataArray.reduce((a, b) => a + b) / dataArray.length) / 128;
+
+            const bassBins = dataArray.slice(0, Math.floor(dataArray.length / 3));
+            const averageBass = bassBins.reduce((a, b) => a + b, 0) / bassBins.length;
+
+            const normalizedIntensity = Math.pow(averageBass / 255, 2);
+            audioIntensity = normalizedIntensity * 5;
+
+            const smoothingFactor = 0.08;
+            this.smoothedAudioIntensity += (audioIntensity - this.smoothedAudioIntensity) * smoothingFactor;
         }
         
-        if (progress < 0.1) {
-            const t = progress / 0.1;
-            const skyHeight = maxSize * (8 - t * 6);
-            const distance = maxSize * (3 - t * 1.5);
-            this.camera.position.set(center.x + distance * 0.3, center.y + skyHeight, center.z + distance * 0.5);
-        } else if (progress < 0.25) {
-            const t = (progress - 0.1) / 0.15;
-            const distance = maxSize * (1.5 - t * 0.3);
-            const angle = t * Math.PI * 0.3;
-            this.camera.position.set(center.x + Math.cos(angle) * distance, center.y + maxSize * (2 - t * 1.2), center.z + Math.sin(angle) * distance);
-        } else if (progress < 0.6) {
-            const t = (progress - 0.25) / 0.35;
-            const speed = audioIntensity * 2;
-            const angle = t * Math.PI * 4 * speed;
-            const distance = maxSize * (1.2 + audioIntensity * 0.5);
-            const verticalMove = Math.sin(t * Math.PI * 2) * maxSize * 0.4;
-            this.camera.position.set(center.x + Math.cos(angle) * distance, center.y + maxSize * 0.8 + verticalMove, center.z + Math.sin(angle) * distance);
-        } else {
-            const t = (progress - 0.6) / 0.4;
-            const angle = Math.PI * 8 + t * Math.PI * audioIntensity;
-            const distance = maxSize * (1.0 + t * 2.5);
-            const heroicRise = t * t * 1.5;
-            this.camera.position.set(center.x + Math.cos(angle) * distance, center.y + maxSize * (0.6 + heroicRise), center.z + Math.sin(angle) * distance);
-        }
-        
+        const intensity = this.smoothedAudioIntensity;
+
+        const angle = elapsed * 0.5;
+        const distance = maxSize * (1.5 + intensity * 1.5);
+        const height = center.y + maxSize * 0.5 + Math.sin(elapsed * 2) * (maxSize * 0.2 * intensity);
+
+        this.camera.position.x = center.x + Math.cos(angle) * distance;
+        this.camera.position.z = center.z + Math.sin(angle) * distance;
+        this.camera.position.y = height;
+
         const lookTarget = center.clone();
-        lookTarget.y += maxSize * (0.2 + audioIntensity * 0.1);
+        lookTarget.y += maxSize * (0.2 + intensity * 0.2);
         this.camera.lookAt(lookTarget);
         
-        if (audioIntensity > 1.2) {
-            const shakeIntensity = (audioIntensity - 1.2) * 0.02;
-            this.camera.position.x += (Math.random() - 0.5) * shakeIntensity;
-            this.camera.position.y += (Math.random() - 0.5) * shakeIntensity;
+        if (intensity > 0.8) {
+            const shake = (intensity - 0.8) * maxSize * 0.05;
+            this.camera.position.x += (Math.random() - 0.5) * shake;
+            this.camera.position.y += (Math.random() - 0.5) * shake;
         }
     }
     
@@ -713,6 +707,14 @@ class ModelViewer {
         if (this.superheroAudio) {
             this.fadeOutAudio();
         }
+
+        if (this.audioSource) {
+            this.audioSource.disconnect();
+            this.audioSource = null;
+            this.audioAnalyser = null;
+            this.audioContext = null;
+        }
+        this.smoothedAudioIntensity = 0;
         
         this.superheroMode = false;
         this.controls.enabled = true;
@@ -815,6 +817,22 @@ class ModelViewer {
         }
     }
 
+    setupAudioAnalysis() {
+        if (this.audioContext) return;
+
+        try {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            this.audioSource = this.audioContext.createMediaElementSource(this.superheroAudio);
+            this.audioAnalyser = this.audioContext.createAnalyser();
+
+            this.audioSource.connect(this.audioAnalyser);
+            this.audioAnalyser.connect(this.audioContext.destination);
+
+            this.audioAnalyser.fftSize = 256;
+        } catch (e) {
+            console.error("Web Audio API is not supported in this browser.", e);
+        }
+    }
     
     loadAudioFile(file) {
         const supportedFormats = ['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac', 'wma'];
@@ -856,6 +874,9 @@ class ModelViewer {
             
             this.superheroAudio = new Audio(audioSource);
             this.superheroAudio.volume = 0;
+
+            this.setupAudioAnalysis();
+
             this.superheroAudio.play().then(() => {
                 this.fadeInAudio();
             }).catch(e => {
