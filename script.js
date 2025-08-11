@@ -136,7 +136,6 @@ class ModelViewer {
             toggleBtn.classList.toggle('active');
         });
 
-
         document.addEventListener('click', (e) => {
             const sidebar = document.getElementById('sidebar');
             const toggleBtn = document.getElementById('sidebarToggleBtn');
@@ -703,12 +702,6 @@ class ModelViewer {
     exitSuperheroMode() {
         if (this.superheroAudio) {
             this.fadeOutAudio();
-            setTimeout(() => {
-                if (this.superheroAudio) {
-                    this.superheroAudio.stop ? this.superheroAudio.stop() : this.superheroAudio.pause();
-                    this.superheroAudio = null;
-                }
-            }, 1000);
         }
         
         this.superheroMode = false;
@@ -880,15 +873,16 @@ class ModelViewer {
     }
     
     fadeOutAudio() {
-        if (!this.superheroAudio) return;
-        
         const fadeOut = () => {
-            if (this.superheroAudio.volume > 0) {
-                this.superheroAudio.volume = Math.max(0, this.superheroAudio.volume - 0.02);
-                setTimeout(fadeOut, 50);
-            } else {
-                this.superheroAudio.pause();
+            if (!this.superheroAudio || this.superheroAudio.volume <= 0) {
+                if (this.superheroAudio) {
+                    this.superheroAudio.pause();
+                    this.superheroAudio = null;
+                }
+                return;
             }
+            this.superheroAudio.volume = Math.max(0, this.superheroAudio.volume - 0.02);
+            setTimeout(fadeOut, 50);
         };
         fadeOut();
     }
