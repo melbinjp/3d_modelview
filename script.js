@@ -16,6 +16,11 @@ class ModelViewer {
         this.superheroAudio = null;
         this.customAudioFile = null;
         this.animationPaused = false;
+        this.superheroAnimationPaused = false;
+        this.icons = {
+            superhero: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3L20 7.5V16.5L12 21L4 16.5V7.5L12 3Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 12L20 7.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 12V21" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 12L4 7.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 5.25L8 9.75" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+            close: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 6L6 18" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 6L18 18" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+        };
         
         this.init();
         this.setupEventListeners();
@@ -217,6 +222,20 @@ class ModelViewer {
                 this.exitSuperheroMode();
             } else {
                 this.activateSuperheroMode();
+            }
+        });
+
+        // Superhero controls
+        document.getElementById('superheroPlay').addEventListener('click', () => {
+            this.superheroAnimationPaused = false;
+        });
+        document.getElementById('superheroPause').addEventListener('click', () => {
+            this.superheroAnimationPaused = true;
+        });
+        document.getElementById('superheroReset').addEventListener('click', () => {
+            this.superheroAnimationPaused = false;
+            if (this.superheroMode) {
+                this.superheroStartTime = Date.now();
             }
         });
         
@@ -709,7 +728,7 @@ class ModelViewer {
         }
         
         // Superhero camera animation (only if not paused)
-        if (this.superheroMode && this.currentModel && !this.animationPaused) {
+        if (this.superheroMode && this.currentModel && !this.superheroAnimationPaused) {
             this.updateSuperheroCamera();
         }
 
@@ -756,6 +775,19 @@ class ModelViewer {
             this.superheroMode = true;
             this.controls.enabled = false;
             
+            // Show superhero controls and change icon
+            document.getElementById('superheroControls').classList.remove('hidden');
+            document.getElementById('superheroBtn').innerHTML = this.icons.close;
+
+            // Collapse sidebar
+            const sidebar = document.getElementById('sidebar');
+            if (!sidebar.classList.contains('collapsed')) {
+                sidebar.classList.add('collapsed');
+            }
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebarToggleBtn').classList.remove('active');
+            }
+
             // Store original scene settings
             this.originalBackground = this.scene.background;
             this.originalFog = this.scene.fog;
@@ -916,6 +948,15 @@ class ModelViewer {
         this.superheroMode = false;
         this.controls.enabled = true;
         
+        // Hide superhero controls and change icon
+        document.getElementById('superheroControls').classList.add('hidden');
+        document.getElementById('superheroBtn').innerHTML = this.icons.superhero;
+
+        // Restore sidebar
+        if (window.innerWidth > 768) {
+            document.getElementById('sidebar').classList.remove('collapsed');
+        }
+
         // Restore original settings
         if (this.originalCameraPos) {
             this.camera.position.copy(this.originalCameraPos.position);

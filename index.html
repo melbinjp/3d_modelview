@@ -155,7 +155,16 @@
                     </div>
 
                     <div class="accordion-item">
-                        <h3 class="accordion-header">🎭 Superhero Mode</h3>
+                        <h3 class="accordion-header">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 10px;">
+                                <path d="M12 3L20 7.5V16.5L12 21L4 16.5V7.5L12 3Z" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                <path d="M12 12L20 7.5" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                <path d="M12 12V21" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                <path d="M12 12L4 7.5" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                <path d="M16 5.25L8 9.75" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            </svg>
+                            Superhero Mode
+                        </h3>
                         <div class="accordion-content">
                             <div class="control-section">
                                 <div class="audio-upload">
@@ -204,6 +213,11 @@
 
             <div id="viewport" class="viewport">
                 <div id="viewerContainer"></div>
+                <div id="superheroControls" class="superhero-controls hidden">
+                    <button id="superheroPlay" class="btn secondary">▶️</button>
+                    <button id="superheroPause" class="btn secondary">⏸️</button>
+                    <button id="superheroReset" class="btn secondary">🔄</button>
+                </div>
                 <div id="stats" class="stats-panel">
                     <div class="stats-header">
                         <span class="stats-title">📊 Stats</span>
