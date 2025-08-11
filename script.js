@@ -136,13 +136,7 @@ class ModelViewer {
             toggleBtn.classList.toggle('active');
         });
 
-        document.getElementById('sidebarToggle').addEventListener('click', () => {
-            const sidebar = document.getElementById('sidebar');
-            const toggleBtn = document.getElementById('sidebarToggleBtn');
-            sidebar.classList.add('collapsed');
-            toggleBtn.classList.remove('active');
-        });
-        
+
         document.addEventListener('click', (e) => {
             const sidebar = document.getElementById('sidebar');
             const toggleBtn = document.getElementById('sidebarToggleBtn');
