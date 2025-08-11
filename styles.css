@@ -661,11 +661,12 @@ body {
     .sidebar {
         position: relative;
         background: rgba(255, 255, 255, 0.95);
-        transition: margin-left 0.3s ease;
     }
 
     .sidebar.collapsed {
-        margin-left: -320px;
+        position: absolute;
+        height: 100%;
+        z-index: 1000;
     }
     
     .sidebar-toggle-btn {
