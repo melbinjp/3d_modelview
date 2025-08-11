@@ -169,12 +169,22 @@ class ModelViewer {
             }
         });
 
-        document.getElementById('superheroPlay').addEventListener('click', () => { this.superheroAnimationPaused = false; });
-        document.getElementById('superheroPause').addEventListener('click', () => { this.superheroAnimationPaused = true; });
+        document.getElementById('superheroPlay').addEventListener('click', () => {
+            this.superheroAnimationPaused = false;
+            if (this.superheroAudio) this.superheroAudio.play();
+        });
+        document.getElementById('superheroPause').addEventListener('click', () => {
+            this.superheroAnimationPaused = true;
+            if (this.superheroAudio) this.superheroAudio.pause();
+        });
         document.getElementById('superheroReset').addEventListener('click', () => {
             this.superheroAnimationPaused = false;
             if (this.superheroMode) {
                 this.superheroStartTime = Date.now();
+                if (this.superheroAudio) {
+                    this.superheroAudio.currentTime = 0;
+                    this.superheroAudio.play();
+                }
             }
         });
         
@@ -864,7 +874,7 @@ class ModelViewer {
         }
         
         const fadeIn = () => {
-            if (this.superheroAudio.volume < 0.7) {
+            if (this.superheroAudio && this.superheroAudio.volume < 0.7) {
                 this.superheroAudio.volume = Math.min(0.7, this.superheroAudio.volume + 0.02);
                 setTimeout(fadeIn, 50);
             }
