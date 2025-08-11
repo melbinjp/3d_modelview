@@ -519,7 +519,7 @@ body {
 }
 
 .sidebar-toggle-btn.active .hamburger-line:nth-child(1) {
-    transform: rotate(-45deg) translate(-4px, 4px);
+    transform: rotate(-45deg) translate(-2px, 2.5px);
 }
 
 .sidebar-toggle-btn.active .hamburger-line:nth-child(2) {
@@ -527,7 +527,7 @@ body {
 }
 
 .sidebar-toggle-btn.active .hamburger-line:nth-child(3) {
-    transform: rotate(45deg) translate(-4px, -4px);
+    transform: rotate(45deg) translate(-2px, -2.5px);
 }
 
 /* Modal */
