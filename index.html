@@ -39,10 +39,7 @@
 
                 <div class="accordion">
                     <div class="accordion-item is-open">
-                        <h3 class="accordion-header">
-                            <svg class="icon" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M12 3v12M8 11l4 4 4-4"/></svg>
-                            Load Model
-                        </h3>
+                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M12 3v12M8 11l4 4 4-4"/></svg> Load Model</h3>
                         <div class="accordion-content">
                             <div class="control-section">
                                 <div class="input-group">
@@ -52,22 +49,13 @@
                                 <div class="file-drop" id="fileDrop">
                                     <input type="file" id="fileInput" accept=".glb,.gltf,.fbx,.obj,.dae,.stl,.ply,.mtl" hidden>
                                     <div class="drop-content">
-                                        <div class="upload-icon">
-                                            <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg>
-                                        </div>
+                                        <div class="upload-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg></div>
                                         <p><strong>Drag & Drop</strong> or <span class="link-text">browse</span></p>
-                                        <div class="format-tags">
-                                            <span class="format-tag">GLB</span>
-                                            <span class="format-tag">GLTF</span>
-                                            <span class="format-tag">FBX</span>
-                                        </div>
+                                        <div class="format-tags"><span class="format-tag">GLB</span><span class="format-tag">GLTF</span><span class="format-tag">FBX</span></div>
                                     </div>
                                 </div>
                                 <div class="quick-samples">
-                                    <h4>
-                                        <svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                                        Quick Samples
-                                    </h4>
+                                    <h4><svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg> Quick Samples</h4>
                                     <div class="sample-buttons">
                                         <button class="sample-btn" data-url="https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf">Helmet</button>
                                         <button class="sample-btn" data-url="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF/Duck.gltf">Duck</button>
@@ -79,24 +67,15 @@
                     </div>
 
                     <div class="accordion-item">
-                        <h3 class="accordion-header">
-                            <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                            Environment
-                        </h3>
+                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 1 18 0M3 20h18"/></svg> Environment</h3>
                         <div class="accordion-content">
                             <div class="control-section">
                                 <div class="control-group">
                                     <label>Background</label>
-                                    <select id="backgroundSelect" class="select-field">
-                                        <option value="gradient">Gradient</option>
-                                        <option value="solid">Solid Color</option>
-                                        <option value="hdri">HDRI</option>
-                                    </select>
+                                    <select id="backgroundSelect" class="select-field"><option value="gradient">Gradient</option><option value="solid">Solid Color</option><option value="hdri">HDRI</option></select>
                                     <input type="color" id="bgColor" value="#f0f0f0" class="color-input">
                                 </div>
-                                <div class="control-group">
-                                    <label class="checkbox-label"><input type="checkbox" id="showGrid"><span class="checkmark"></span>Show Grid</label>
-                                </div>
+                                <div class="control-group"><label class="checkbox-label"><input type="checkbox" id="showGrid"><span class="checkmark"></span>Show Grid</label></div>
                                 <div class="control-group">
                                     <label>Env Intensity</label>
                                     <input type="range" id="envIntensity" min="0" max="2" step="0.1" value="1" class="slider"><span class="value-display">1.0</span>
@@ -106,64 +85,33 @@
                     </div>
 
                     <div class="accordion-item">
-                        <h3 class="accordion-header">
-                            <svg class="icon" viewBox="0 0 24 24"><path d="M12 2v3m0 14v3m6.36-16.36l-2.12 2.12M7.76 16.24l-2.12 2.12m12.72 0l-2.12-2.12M7.76 7.76L5.64 5.64M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12z"/></svg>
-                            Lighting
-                        </h3>
+                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg> Lighting</h3>
                         <div class="accordion-content">
                             <div class="control-section">
-                                <div class="control-group">
-                                    <label>Ambient</label>
-                                    <input type="range" id="ambientIntensity" min="0" max="2" step="0.1" value="0.4" class="slider"><span class="value-display">0.4</span>
-                                </div>
-                                <div class="control-group">
-                                    <label>Directional</label>
-                                    <input type="range" id="directionalIntensity" min="0" max="3" step="0.1" value="1" class="slider"><span class="value-display">1.0</span>
-                                </div>
-                                <div class="control-group">
-                                    <label>Light X</label>
-                                    <input type="range" id="lightPosX" min="-10" max="10" step="0.5" value="5" class="slider"><span class="value-display">5.0</span>
-                                </div>
-                                <div class="control-group">
-                                    <label>Light Y</label>
-                                    <input type="range" id="lightPosY" min="-10" max="10" step="0.5" value="5" class="slider"><span class="value-display">5.0</span>
-                                </div>
+                                <div class="control-group"><label>Ambient</label><input type="range" id="ambientIntensity" min="0" max="2" step="0.1" value="0.4" class="slider"><span class="value-display">0.4</span></div>
+                                <div class="control-group"><label>Directional</label><input type="range" id="directionalIntensity" min="0" max="3" step="0.1" value="1" class="slider"><span class="value-display">1.0</span></div>
+                                <div class="control-group"><label>Light X</label><input type="range" id="lightPosX" min="-10" max="10" step="0.5" value="5" class="slider"><span class="value-display">5.0</span></div>
+                                <div class="control-group"><label>Light Y</label><input type="range" id="lightPosY" min="-10" max="10" step="0.5" value="5" class="slider"><span class="value-display">5.0</span></div>
                             </div>
                         </div>
                     </div>
 
                     <div class="accordion-item">
-                        <h3 class="accordion-header">
-                            <svg class="icon" viewBox="0 0 24 24"><path d="M12 3v18M21 12H3"/></svg>
-                            Effects
-                        </h3>
+                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M12 3L13.5 8.5L19 10L13.5 11.5L12 17L10.5 11.5L5 10L10.5 8.5L12 3zM5 3L6 5L5 7L4 5L5 3zM19 17L20 19L19 21L18 19L19 17z"/></svg> Effects</h3>
                         <div class="accordion-content">
                             <div class="control-section">
-                                <div class="control-group">
-                                    <label class="checkbox-label"><input type="checkbox" id="bloomEnabled"><span class="checkmark"></span>Bloom</label>
-                                </div>
-                                <div class="control-group">
-                                    <label>Bloom Strength</label>
-                                    <input type="range" id="bloomStrength" min="0" max="3" step="0.1" value="1.5" class="slider"><span class="value-display">1.5</span>
-                                </div>
+                                <div class="control-group"><label class="checkbox-label"><input type="checkbox" id="bloomEnabled"><span class="checkmark"></span>Bloom</label></div>
+                                <div class="control-group"><label>Bloom Strength</label><input type="range" id="bloomStrength" min="0" max="3" step="0.1" value="1.5" class="slider"><span class="value-display">1.5</span></div>
                             </div>
                         </div>
                     </div>
 
                     <div class="accordion-item">
-                        <h3 class="accordion-header">
-                            <svg class="icon" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><path d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M17 17h5M17 7h5"/></svg>
-                            Animation
-                        </h3>
+                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><path d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M17 17h5M17 7h5"/></svg> Animation</h3>
                         <div class="accordion-content">
                              <div class="control-section">
-                                <div class="control-group">
-                                    <label class="checkbox-label"><input type="checkbox" id="autoRotate"><span class="checkmark"></span>Auto Rotate</label>
-                                </div>
-                                <div class="control-group">
-                                    <label>Speed</label>
-                                    <input type="range" id="rotationSpeed" min="0" max="5" step="0.1" value="1" class="slider"><span class="value-display">1.0</span>
-                                </div>
+                                <div class="control-group"><label class="checkbox-label"><input type="checkbox" id="autoRotate"><span class="checkmark"></span>Auto Rotate</label></div>
+                                <div class="control-group"><label>Speed</label><input type="range" id="rotationSpeed" min="0" max="5" step="0.1" value="1" class="slider"><span class="value-display">1.0</span></div>
                                 <div class="animation-controls">
                                     <button id="playBtn" class="btn secondary"><svg class="icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> Play</button>
                                     <button id="pauseBtn" class="btn secondary"><svg class="icon" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pause</button>
@@ -174,10 +122,7 @@
                     </div>
 
                     <div class="accordion-item">
-                        <h3 class="accordion-header">
-                            <svg class="icon" viewBox="0 0 24 24"><path d="M12 3L20 7.5V16.5L12 21L4 16.5V7.5L12 3Z" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 12L20 7.5" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 12V21" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 12L4 7.5" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 5.25L8 9.75" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            Superhero Mode
-                        </h3>
+                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3zM12 11l-4 4 1.41 1.41L12 13.83l2.59 2.58L16 15l-4-4z"/></svg> Superhero Mode</h3>
                         <div class="accordion-content">
                             <div class="control-section">
                                 <div class="audio-upload">
@@ -199,25 +144,16 @@
                     </div>
 
                      <div class="accordion-item">
-                        <h3 class="accordion-header">
-                            <svg class="icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                            Camera
-                        </h3>
+                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Camera</h3>
                         <div class="accordion-content">
                             <div class="control-section">
-                                <div class="control-group">
-                                    <button id="resetCamera" class="btn secondary full-width">Reset Camera</button>
-                                    <button id="fitToView" class="btn secondary full-width">Fit to View</button>
-                                </div>
+                                <div class="control-group"><button id="resetCamera" class="btn secondary full-width">Reset Camera</button><button id="fitToView" class="btn secondary full-width">Fit to View</button></div>
                             </div>
                         </div>
                     </div>
 
                     <div class="accordion-item">
-                        <h3 class="accordion-header">
-                            <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-                            Export
-                        </h3>
+                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg> Export</h3>
                         <div class="accordion-content">
                             <div class="control-section">
                                 <div class="control-group">
@@ -238,9 +174,7 @@
                     <button id="superheroReset" class="btn secondary"><svg class="icon" viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Restart</button>
                 </div>
                 <div id="stats" class="stats-panel">
-                    <div class="stats-header">
-                        <span class="stats-title"><svg class="icon" viewBox="0 0 24 24"><path d="M12 20V10M18 20V4M6 20V16"/></svg> Stats</span>
-                    </div>
+                    <div class="stats-header"><span class="stats-title"><svg class="icon" viewBox="0 0 24 24"><path d="M12 20V10M18 20V4M6 20V16"/></svg> Stats</span></div>
                     <div class="stat-item"><span class="stat-label">Vertices</span><span id="vertexCount" class="stat-value">0</span></div>
                     <div class="stat-item"><span class="stat-label">Faces</span><span id="faceCount" class="stat-value">0</span></div>
                     <div class="stat-item"><span class="stat-label">FPS</span><span id="fpsCounter" class="stat-value">60</span></div>
@@ -258,13 +192,7 @@
             </button>
             
             <button id="superheroBtn" class="superhero-btn" title="Cinematic Mode">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 3L20 7.5V16.5L12 21L4 16.5V7.5L12 3Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M12 12L20 7.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M12 12V21" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M12 12L4 7.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M16 5.25L8 9.75" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3zM12 11l-4 4 1.41 1.41L12 13.83l2.59 2.58L16 15l-4-4z"/></svg>
             </button>
             
             <div id="fadeOverlay" class="fade-overlay hidden"></div>
