@@ -34,189 +34,150 @@
         <div id="mainContainer" class="hidden">
             <div id="sidebar" class="sidebar">
                 <div class="sidebar-header">
-                    <h2>3D Controls</h2>
-                    <button id="sidebarToggle" class="toggle-btn">×</button>
+                    <h2>Controls</h2>
                 </div>
 
-                <div class="control-section">
-                    <h3>🎯 Load Model</h3>
-                    <div class="input-group">
-                        <input type="text" id="modelUrl" placeholder="Enter model URL or paste link..." class="input-field">
-                        <button id="loadUrlBtn" class="btn primary">✨ Generate</button>
-                    </div>
-                    <div class="file-drop" id="fileDrop">
-                        <input type="file" id="fileInput" accept=".glb,.gltf,.fbx,.obj,.dae,.stl,.ply,.mtl" hidden>
-                        <div class="drop-content">
-                            <div class="upload-icon">🎨</div>
-                            <p><strong>Drag & Drop</strong> your 3D model</p>
-                            <small>or <span class="link-text">click to browse</span></small>
-                            <div class="format-tags">
-                                <span class="format-tag">GLB</span>
-                                <span class="format-tag">GLTF</span>
-                                <span class="format-tag">FBX</span>
-                                <span class="format-tag">OBJ</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="quick-samples">
-                        <h4>🚀 Quick Start</h4>
-                        <div class="sample-buttons">
-                            <button class="sample-btn" data-url="https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf">Helmet</button>
-                            <button class="sample-btn" data-url="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF/Duck.gltf">Duck</button>
-                            <button class="sample-btn" data-url="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Avocado/glTF/Avocado.gltf">Avocado</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="control-section">
-                    <h3>🌍 Environment</h3>
-                    <div class="control-group">
-                        <label>Background</label>
-                        <select id="backgroundSelect" class="select-field">
-                            <option value="gradient">Gradient</option>
-                            <option value="solid">Solid Color</option>
-                            <option value="hdri">HDRI Environment</option>
-                        </select>
-                        <input type="color" id="bgColor" value="#f0f0f0" class="color-input">
-                    </div>
-                    <div class="control-group">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="showGrid">
-                            <span class="checkmark"></span>
-                            Show Grid
-                        </label>
-                    </div>
-                    <div class="control-group">
-                        <label>Environment Intensity</label>
-                        <input type="range" id="envIntensity" min="0" max="2" step="0.1" value="1" class="slider">
-                        <span class="value-display">1.0</span>
-                    </div>
-                </div>
-
-                <div class="control-section">
-                    <h3>💡 Lighting Studio</h3>
-                    <div class="control-group">
-                        <label>Ambient Light</label>
-                        <input type="range" id="ambientIntensity" min="0" max="2" step="0.1" value="0.4" class="slider">
-                        <span class="value-display">0.4</span>
-                    </div>
-                    <div class="control-group">
-                        <label>Directional Light</label>
-                        <input type="range" id="directionalIntensity" min="0" max="3" step="0.1" value="1" class="slider">
-                        <span class="value-display">1.0</span>
-                    </div>
-                    <div class="control-group">
-                        <label>Light Position X</label>
-                        <input type="range" id="lightPosX" min="-10" max="10" step="0.5" value="5" class="slider">
-                        <span class="value-display">5.0</span>
-                    </div>
-                    <div class="control-group">
-                        <label>Light Position Y</label>
-                        <input type="range" id="lightPosY" min="-10" max="10" step="0.5" value="5" class="slider">
-                        <span class="value-display">5.0</span>
-                    </div>
-                </div>
-
-                <div class="control-section">
-                    <h3>✨ Visual Effects</h3>
-                    <div class="control-group">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="bloomEnabled">
-                            <span class="checkmark"></span>
-                            Bloom Effect
-                        </label>
-                    </div>
-                    <div class="control-group">
-                        <label>Bloom Strength</label>
-                        <input type="range" id="bloomStrength" min="0" max="3" step="0.1" value="1.5" class="slider">
-                        <span class="value-display">1.5</span>
-                    </div>
-                </div>
-
-                <div class="control-section">
-                    <h3>🎬 Animation Control</h3>
-                    <div class="control-group">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="autoRotate">
-                            <span class="checkmark"></span>
-                            Auto Rotate
-                        </label>
-                    </div>
-                    <div class="control-group">
-                        <label>Rotation Speed</label>
-                        <input type="range" id="rotationSpeed" min="0" max="5" step="0.1" value="1" class="slider">
-                        <span class="value-display">1.0</span>
-                    </div>
-                    <div class="animation-controls">
-                        <button id="playBtn" class="btn secondary">▶️ Play</button>
-                        <button id="pauseBtn" class="btn secondary">⏸️ Pause</button>
-                        <button id="resetBtn" class="btn secondary">🔄 Reset</button>
-                    </div>
-                </div>
-
-                <div class="control-section">
-                    <h3>🎵 Superhero Audio</h3>
-                    <div class="audio-upload">
-                        <input type="file" id="audioInput" accept=".mp3,.wav,.ogg,.m4a,.aac,.flac,.wma" hidden>
-                        <div class="audio-drop" id="audioDrop">
-                            <div class="drop-content">
-                                <span class="drop-icon">🎵</span>
-                                <p><strong>Upload Audio</strong> for superhero mode</p>
-                                <small>or <span class="link-text">click to browse</span></small>
-                                <div class="format-tags">
-                                    <span class="format-tag">MP3</span>
-                                    <span class="format-tag">WAV</span>
-                                    <span class="format-tag">OGG</span>
-                                    <span class="format-tag">M4A</span>
+                <div class="accordion">
+                    <div class="accordion-item is-open">
+                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M12 3v12M8 11l4 4 4-4"/></svg> Load Model</h3>
+                        <div class="accordion-content">
+                            <div class="control-section">
+                                <div class="input-group">
+                                    <input type="text" id="modelUrl" placeholder="Enter model URL..." class="input-field">
+                                    <button id="loadUrlBtn" class="btn primary">Load Model</button>
+                                </div>
+                                <div class="file-drop" id="fileDrop">
+                                    <input type="file" id="fileInput" accept=".glb,.gltf,.fbx,.obj,.dae,.stl,.ply,.mtl" hidden>
+                                    <div class="drop-content">
+                                        <div class="upload-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg></div>
+                                        <p><strong>Drag & Drop</strong> or <span class="link-text">browse</span></p>
+                                        <div class="format-tags"><span class="format-tag">GLB</span><span class="format-tag">GLTF</span><span class="format-tag">FBX</span></div>
+                                    </div>
+                                </div>
+                                <div class="quick-samples">
+                                    <h4><svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg> Quick Samples</h4>
+                                    <div class="sample-buttons">
+                                        <button class="sample-btn" data-url="https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf">Helmet</button>
+                                        <button class="sample-btn" data-url="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF/Duck.gltf">Duck</button>
+                                        <button class="sample-btn" data-url="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Avocado/glTF/Avocado.gltf">Avocado</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="audio-status" id="audioStatus">
-                        <span class="audio-indicator">🎵 Default theme loaded</span>
-                        <button id="clearAudio" class="btn secondary" style="display:none">Clear Audio</button>
-                    </div>
-                </div>
 
-                <div class="control-section">
-                    <h3>📷 Camera Control</h3>
-                    <div class="control-group">
-                        <button id="resetCamera" class="btn secondary full-width">Reset Camera</button>
-                        <button id="fitToView" class="btn secondary full-width">Fit to View</button>
+                    <div class="accordion-item">
+                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 1 18 0M3 20h18"/></svg> Environment</h3>
+                        <div class="accordion-content">
+                            <div class="control-section">
+                                <div class="control-group">
+                                    <label>Background</label>
+                                    <select id="backgroundSelect" class="select-field"><option value="gradient">Gradient</option><option value="solid">Solid Color</option><option value="hdri">HDRI</option></select>
+                                    <input type="color" id="bgColor" value="#f0f0f0" class="color-input">
+                                </div>
+                                <div class="control-group"><label class="checkbox-label"><input type="checkbox" id="showGrid"><span class="checkmark"></span>Show Grid</label></div>
+                                <div class="control-group">
+                                    <label>Env Intensity</label>
+                                    <input type="range" id="envIntensity" min="0" max="2" step="0.1" value="1" class="slider"><span class="value-display">1.0</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <div class="control-section">
-                    <h3>💾 Export & Share</h3>
-                    <div class="control-group">
-                        <button id="screenshotBtn" class="btn primary full-width">📸 Screenshot</button>
-                        <button id="exportBtn" class="btn primary full-width">💾 Export Model</button>
+                    <div class="accordion-item">
+                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg> Lighting</h3>
+                        <div class="accordion-content">
+                            <div class="control-section">
+                                <div class="control-group"><label>Ambient</label><input type="range" id="ambientIntensity" min="0" max="2" step="0.1" value="0.4" class="slider"><span class="value-display">0.4</span></div>
+                                <div class="control-group"><label>Directional</label><input type="range" id="directionalIntensity" min="0" max="3" step="0.1" value="1" class="slider"><span class="value-display">1.0</span></div>
+                                <div class="control-group"><label>Light X</label><input type="range" id="lightPosX" min="-10" max="10" step="0.5" value="5" class="slider"><span class="value-display">5.0</span></div>
+                                <div class="control-group"><label>Light Y</label><input type="range" id="lightPosY" min="-10" max="10" step="0.5" value="5" class="slider"><span class="value-display">5.0</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M12 3L13.5 8.5L19 10L13.5 11.5L12 17L10.5 11.5L5 10L10.5 8.5L12 3zM5 3L6 5L5 7L4 5L5 3zM19 17L20 19L19 21L18 19L19 17z"/></svg> Effects</h3>
+                        <div class="accordion-content">
+                            <div class="control-section">
+                                <div class="control-group"><label class="checkbox-label"><input type="checkbox" id="bloomEnabled"><span class="checkmark"></span>Bloom</label></div>
+                                <div class="control-group"><label>Bloom Strength</label><input type="range" id="bloomStrength" min="0" max="3" step="0.1" value="1.5" class="slider"><span class="value-display">1.5</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><path d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M17 17h5M17 7h5"/></svg> Animation</h3>
+                        <div class="accordion-content">
+                             <div class="control-section">
+                                <div class="control-group"><label class="checkbox-label"><input type="checkbox" id="autoRotate"><span class="checkmark"></span>Auto Rotate</label></div>
+                                <div class="control-group"><label>Speed</label><input type="range" id="rotationSpeed" min="0" max="5" step="0.1" value="1" class="slider"><span class="value-display">1.0</span></div>
+                                <div class="animation-controls">
+                                    <button id="playBtn" class="btn secondary"><svg class="icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> Play</button>
+                                    <button id="pauseBtn" class="btn secondary"><svg class="icon" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pause</button>
+                                    <button id="resetBtn" class="btn secondary"><svg class="icon" viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Reset</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3zM12 11l-4 4 1.41 1.41L12 13.83l2.59 2.58L16 15l-4-4z"/></svg> Superhero Mode</h3>
+                        <div class="accordion-content">
+                            <div class="control-section">
+                                <div class="audio-upload">
+                                    <input type="file" id="audioInput" accept=".mp3,.wav,.ogg,.m4a,.aac,.flac,.wma" hidden>
+                                    <div class="audio-drop" id="audioDrop">
+                                        <div class="drop-content">
+                                            <span class="drop-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13M9 18a3 3 0 1 1-3-3 3 3 0 0 1 3 3zm12-2a3 3 0 1 1-3-3 3 3 0 0 1 3 3z"/></svg></span>
+                                            <p><strong>Custom Audio</strong></p>
+                                            <small>or <span class="link-text">click to browse</span></small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="audio-status" id="audioStatus">
+                                    <span class="audio-indicator">Default theme</span>
+                                    <button id="clearAudio" class="btn secondary" style="display:none">Clear</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                     <div class="accordion-item">
+                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Camera</h3>
+                        <div class="accordion-content">
+                            <div class="control-section">
+                                <div class="control-group"><button id="resetCamera" class="btn secondary full-width">Reset Camera</button><button id="fitToView" class="btn secondary full-width">Fit to View</button></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg> Export</h3>
+                        <div class="accordion-content">
+                            <div class="control-section">
+                                <div class="control-group">
+                                    <button id="screenshotBtn" class="btn primary full-width"><svg class="icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Screenshot</button>
+                                    <button id="exportBtn" class="btn primary full-width"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg> Export Model</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div id="viewport" class="viewport">
                 <div id="viewerContainer"></div>
+                <div id="superheroControls" class="superhero-controls hidden">
+                    <button id="superheroPlay" class="btn secondary"><svg class="icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> Play</button>
+                    <button id="superheroPause" class="btn secondary"><svg class="icon" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pause</button>
+                    <button id="superheroReset" class="btn secondary"><svg class="icon" viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Restart</button>
+                </div>
                 <div id="stats" class="stats-panel">
-                    <div class="stats-header">
-                        <span class="stats-title">📊 Model Stats</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Vertices</span>
-                        <span id="vertexCount" class="stat-value">0</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Faces</span>
-                        <span id="faceCount" class="stat-value">0</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">FPS</span>
-                        <span id="fpsCounter" class="stat-value">60</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Quality</span>
-                        <span class="stat-value quality-indicator">🟢 High</span>
-                    </div>
+                    <div class="stats-header"><span class="stats-title"><svg class="icon" viewBox="0 0 24 24"><path d="M12 20V10M18 20V4M6 20V16"/></svg> Stats</span></div>
+                    <div class="stat-item"><span class="stat-label">Vertices</span><span id="vertexCount" class="stat-value">0</span></div>
+                    <div class="stat-item"><span class="stat-label">Faces</span><span id="faceCount" class="stat-value">0</span></div>
+                    <div class="stat-item"><span class="stat-label">FPS</span><span id="fpsCounter" class="stat-value">60</span></div>
                 </div>
                 <div id="progressBar" class="progress-bar hidden">
                     <div class="progress-fill"></div>
@@ -230,7 +191,9 @@
                 <span class="hamburger-line"></span>
             </button>
             
-            <button id="superheroBtn" class="superhero-btn">🦸‍♂️</button>
+            <button id="superheroBtn" class="superhero-btn" title="Cinematic Mode">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3zM12 11l-4 4 1.41 1.41L12 13.83l2.59 2.58L16 15l-4-4z"/></svg>
+            </button>
             
             <div id="fadeOverlay" class="fade-overlay hidden"></div>
         </div>
