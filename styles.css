@@ -500,11 +500,22 @@ body {
 /* Hamburger Menu Lines */
 .hamburger-line {
     display: block;
-    width: 20px;
     height: 2px;
     background: #333;
     transition: 0.3s;
     border-radius: 1px;
+}
+
+.hamburger-line:nth-child(1) { width: 20px; }
+.hamburger-line:nth-child(2) { width: 16px; }
+.hamburger-line:nth-child(3) { width: 12px; }
+
+.sidebar-toggle-btn.active {
+    left: 340px;
+}
+
+.sidebar-toggle-btn.active .hamburger-line {
+    width: 20px;
 }
 
 .sidebar-toggle-btn.active .hamburger-line:nth-child(1) {
