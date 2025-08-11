@@ -104,6 +104,19 @@ body {
     color: #333;
 }
 
+/* Icon Styles */
+.icon {
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.15em;
+    margin-right: 0.5em;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
 /* Accordion Styles */
 .accordion {
     border-top: 1px solid rgba(0,0,0,0.1);
