@@ -26,11 +26,9 @@ class ModelViewer {
         this.setupEventListeners();
         this.animate();
 
-        // Show a more engaging loading message
         const loadingText = document.querySelector('#loadingScreen p');
         loadingText.innerHTML = '🚀 Preparing your 3D experience...';
         
-        // Hide loading screen after initialization and load default model
         setTimeout(() => {
             document.getElementById('loadingScreen').classList.add('hidden');
             document.getElementById('mainContainer').classList.remove('hidden');
@@ -41,15 +39,12 @@ class ModelViewer {
     init() {
         const container = document.getElementById('viewerContainer');
         
-        // Scene setup
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0xf0f0f0);
         
-        // Camera setup
         this.camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
         this.camera.position.set(5, 5, 5);
         
-        // Renderer setup
         this.renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
         this.renderer.setSize(container.clientWidth, container.clientHeight);
         this.renderer.setPixelRatio(window.devicePixelRatio);
@@ -59,7 +54,6 @@ class ModelViewer {
         this.renderer.toneMappingExposure = 1;
         container.appendChild(this.renderer.domElement);
         
-        // Controls setup
         this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.05;
@@ -67,46 +61,27 @@ class ModelViewer {
         this.controls.minDistance = 1;
         this.controls.maxDistance = 100;
         
-        // Lighting setup
         this.setupLighting();
-        
-        // Post-processing setup
         this.setupPostProcessing();
         
-        // Ground plane
         const groundGeometry = new THREE.PlaneGeometry(50, 50);
-        const groundMaterial = new THREE.MeshLambertMaterial({ 
-            color: 0xffffff, 
-            transparent: true, 
-            opacity: 0.1 
-        });
+        const groundMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.1 });
         this.groundPlane = new THREE.Mesh(groundGeometry, groundMaterial);
         this.groundPlane.rotation.x = -Math.PI / 2;
         this.groundPlane.position.y = 0;
         this.groundPlane.receiveShadow = true;
         this.scene.add(this.groundPlane);
         
-        // Grid helper (hidden by default)
         this.gridHelper = new THREE.GridHelper(20, 20, 0x888888, 0xcccccc);
         this.gridHelper.material.transparent = true;
         this.gridHelper.material.opacity = 0.3;
         this.gridHelper.visible = false;
         this.scene.add(this.gridHelper);
         
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            this.onWindowResize();
-            // Reset sidebar state on resize
-            const sidebar = document.getElementById('sidebar');
-            const toggleBtn = document.getElementById('sidebarToggleBtn');
-            if (window.innerWidth <= 768) {
-                sidebar.classList.add('collapsed');
-                toggleBtn.classList.remove('active');
-            } else {
-                sidebar.classList.remove('collapsed');
-                toggleBtn.classList.remove('active');
-            }
-        });
+        window.addEventListener('resize', () => this.onWindowResize());
+
+        document.getElementById('sidebar').classList.add('collapsed');
+        document.getElementById('sidebarToggleBtn').classList.remove('active');
     }
 
     loadDefaultModel() {
@@ -116,11 +91,9 @@ class ModelViewer {
     }
 
     setupLighting() {
-        // Ambient light
         this.lights.ambient = new THREE.AmbientLight(0xffffff, 0.4);
         this.scene.add(this.lights.ambient);
         
-        // Directional light
         this.lights.directional = new THREE.DirectionalLight(0xffffff, 1);
         this.lights.directional.position.set(5, 5, 5);
         this.lights.directional.castShadow = true;
@@ -130,14 +103,12 @@ class ModelViewer {
         this.lights.directional.shadow.camera.far = 50;
         this.scene.add(this.lights.directional);
         
-        // Helper for directional light
         const dirLightHelper = new THREE.DirectionalLightHelper(this.lights.directional, 1);
         dirLightHelper.visible = false;
         this.scene.add(dirLightHelper);
     }
 
     setupPostProcessing() {
-        // Only setup post-processing if all dependencies are available
         if (typeof THREE.EffectComposer !== 'undefined' && 
             typeof THREE.RenderPass !== 'undefined' && 
             typeof THREE.UnrealBloomPass !== 'undefined') {
@@ -147,10 +118,7 @@ class ModelViewer {
             const renderPass = new THREE.RenderPass(this.scene, this.camera);
             this.composer.addPass(renderPass);
             
-            this.bloomPass = new THREE.UnrealBloomPass(
-                new THREE.Vector2(window.innerWidth, window.innerHeight),
-                1.5, 0.4, 0.85
-            );
+            this.bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
             this.bloomPass.enabled = false;
             this.composer.addPass(this.bloomPass);
         } else {
@@ -161,7 +129,6 @@ class ModelViewer {
     }
 
     setupEventListeners() {
-        // Sidebar toggle
         document.getElementById('sidebarToggleBtn').addEventListener('click', () => {
             const sidebar = document.getElementById('sidebar');
             const toggleBtn = document.getElementById('sidebarToggleBtn');
@@ -176,28 +143,21 @@ class ModelViewer {
             toggleBtn.classList.remove('active');
         });
         
-        // Auto-hide sidebar on mobile when clicking outside
         document.addEventListener('click', (e) => {
-            if (window.innerWidth <= 768) {
-                const sidebar = document.getElementById('sidebar');
-                const toggleBtn = document.getElementById('sidebarToggleBtn');
-                if (!sidebar.contains(e.target) && !toggleBtn.contains(e.target)) {
-                    sidebar.classList.add('collapsed');
-                    toggleBtn.classList.remove('active');
-                }
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('sidebarToggleBtn');
+            if (!sidebar.contains(e.target) && !toggleBtn.contains(e.target)) {
+                sidebar.classList.add('collapsed');
+                toggleBtn.classList.remove('active');
             }
         });
 
-        // Accordion functionality
         document.querySelectorAll('.accordion-header').forEach(header => {
             header.addEventListener('click', () => {
                 const item = header.parentElement;
-                const content = item.querySelector('.accordion-content');
-
                 if (item.classList.contains('is-open')) {
                     item.classList.remove('is-open');
                 } else {
-                    // Close other items
                     document.querySelectorAll('.accordion-item.is-open').forEach(openItem => {
                         openItem.classList.remove('is-open');
                     });
@@ -206,17 +166,8 @@ class ModelViewer {
             });
         });
         
-        // Initialize mobile sidebar state
-        if (window.innerWidth <= 768) {
-            document.getElementById('sidebar').classList.add('collapsed');
-        }
+        setTimeout(() => this.renderer.render(this.scene, this.camera), 500);
         
-        // Force initial render
-        setTimeout(() => {
-            this.renderer.render(this.scene, this.camera);
-        }, 500);
-        
-        // Superhero mode
         document.getElementById('superheroBtn').addEventListener('click', () => {
             if (this.superheroMode) {
                 this.exitSuperheroMode();
@@ -225,13 +176,8 @@ class ModelViewer {
             }
         });
 
-        // Superhero controls
-        document.getElementById('superheroPlay').addEventListener('click', () => {
-            this.superheroAnimationPaused = false;
-        });
-        document.getElementById('superheroPause').addEventListener('click', () => {
-            this.superheroAnimationPaused = true;
-        });
+        document.getElementById('superheroPlay').addEventListener('click', () => { this.superheroAnimationPaused = false; });
+        document.getElementById('superheroPause').addEventListener('click', () => { this.superheroAnimationPaused = true; });
         document.getElementById('superheroReset').addEventListener('click', () => {
             this.superheroAnimationPaused = false;
             if (this.superheroMode) {
@@ -239,37 +185,25 @@ class ModelViewer {
             }
         });
         
-        // Audio upload
         const audioDrop = document.getElementById('audioDrop');
         const audioInput = document.getElementById('audioInput');
-        
         audioDrop.addEventListener('click', () => audioInput.click());
-        audioDrop.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            audioDrop.classList.add('dragover');
-        });
+        audioDrop.addEventListener('dragover', (e) => { e.preventDefault(); audioDrop.classList.add('dragover'); });
         audioDrop.addEventListener('dragleave', () => audioDrop.classList.remove('dragover'));
         audioDrop.addEventListener('drop', (e) => {
             e.preventDefault();
             audioDrop.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) this.loadAudioFile(files[0]);
+            if (e.dataTransfer.files.length > 0) this.loadAudioFile(e.dataTransfer.files[0]);
         });
-        
         audioInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) this.loadAudioFile(e.target.files[0]);
         });
-        
-        document.getElementById('clearAudio').addEventListener('click', () => {
-            this.clearCustomAudio();
-        });
+        document.getElementById('clearAudio').addEventListener('click', () => this.clearCustomAudio());
 
-        // File loading
         document.getElementById('loadUrlBtn').addEventListener('click', () => {
             const url = document.getElementById('modelUrl').value.trim();
             if (url) this.loadModelFromUrl(url);
         });
-
         document.getElementById('modelUrl').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 const url = e.target.value.trim();
@@ -277,145 +211,83 @@ class ModelViewer {
             }
         });
 
-        // File drop
         const fileDrop = document.getElementById('fileDrop');
         const fileInput = document.getElementById('fileInput');
-        
         fileDrop.addEventListener('click', () => fileInput.click());
-        fileDrop.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            fileDrop.classList.add('dragover');
-        });
+        fileDrop.addEventListener('dragover', (e) => { e.preventDefault(); fileDrop.classList.add('dragover'); });
         fileDrop.addEventListener('dragleave', () => fileDrop.classList.remove('dragover'));
         fileDrop.addEventListener('drop', (e) => {
             e.preventDefault();
             fileDrop.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) this.loadModelFromFile(files[0]);
+            if (e.dataTransfer.files.length > 0) this.loadModelFromFile(e.dataTransfer.files[0]);
         });
-        
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) this.loadModelFromFile(e.target.files[0]);
         });
 
-        // Controls
         this.setupControlListeners();
         
-        // Error modal
         document.getElementById('closeError').addEventListener('click', () => {
             document.getElementById('errorModal').classList.add('hidden');
         });
     }
 
     setupControlListeners() {
-        // Background controls
-        document.getElementById('backgroundSelect').addEventListener('change', (e) => {
-            this.updateBackground(e.target.value);
-        });
-        
-        document.getElementById('bgColor').addEventListener('input', (e) => {
-            this.scene.background = new THREE.Color(e.target.value);
-        });
-
-        // Lighting controls
+        document.getElementById('backgroundSelect').addEventListener('change', (e) => this.updateBackground(e.target.value));
+        document.getElementById('bgColor').addEventListener('input', (e) => { this.scene.background = new THREE.Color(e.target.value); });
         document.getElementById('ambientIntensity').addEventListener('input', (e) => {
             this.lights.ambient.intensity = parseFloat(e.target.value);
             this.updateValueDisplay(e.target);
         });
-
         document.getElementById('directionalIntensity').addEventListener('input', (e) => {
             this.lights.directional.intensity = parseFloat(e.target.value);
             this.updateValueDisplay(e.target);
         });
-
         document.getElementById('lightPosX').addEventListener('input', (e) => {
             this.lights.directional.position.x = parseFloat(e.target.value);
             this.updateValueDisplay(e.target);
         });
-
         document.getElementById('lightPosY').addEventListener('input', (e) => {
             this.lights.directional.position.y = parseFloat(e.target.value);
             this.updateValueDisplay(e.target);
         });
-
-        // Grid toggle
-        document.getElementById('showGrid').addEventListener('change', (e) => {
-            this.gridHelper.visible = e.target.checked;
-        });
-        
-        // Post-processing controls
-        document.getElementById('bloomEnabled').addEventListener('change', (e) => {
-            this.bloomPass.enabled = e.target.checked;
-        });
-
+        document.getElementById('showGrid').addEventListener('change', (e) => { this.gridHelper.visible = e.target.checked; });
+        document.getElementById('bloomEnabled').addEventListener('change', (e) => { this.bloomPass.enabled = e.target.checked; });
         document.getElementById('bloomStrength').addEventListener('input', (e) => {
             this.bloomPass.strength = parseFloat(e.target.value);
             this.updateValueDisplay(e.target);
         });
-
-        // Animation controls
-        document.getElementById('autoRotate').addEventListener('change', (e) => {
-            this.controls.autoRotate = e.target.checked;
-        });
-
+        document.getElementById('autoRotate').addEventListener('change', (e) => { this.controls.autoRotate = e.target.checked; });
         document.getElementById('rotationSpeed').addEventListener('input', (e) => {
             this.controls.autoRotateSpeed = parseFloat(e.target.value);
             this.updateValueDisplay(e.target);
         });
-
-        // Camera controls
-        document.getElementById('resetCamera').addEventListener('click', () => {
-            this.resetCamera();
-        });
-
-        document.getElementById('fitToView').addEventListener('click', () => {
-            this.fitCameraToModel();
-        });
-
-        // Export controls
-        document.getElementById('screenshotBtn').addEventListener('click', () => {
-            this.takeScreenshot();
-        });
-
-        // Animation controls
+        document.getElementById('resetCamera').addEventListener('click', () => this.resetCamera());
+        document.getElementById('fitToView').addEventListener('click', () => this.fitCameraToModel());
+        document.getElementById('screenshotBtn').addEventListener('click', () => this.takeScreenshot());
         document.getElementById('playBtn').addEventListener('click', () => {
             this.animationPaused = false;
-            if (this.mixer) {
-                this.mixer.timeScale = 1;
-            }
+            if (this.mixer) this.mixer.timeScale = 1;
         });
-        
         document.getElementById('pauseBtn').addEventListener('click', () => {
             this.animationPaused = true;
-            if (this.mixer) {
-                this.mixer.timeScale = 0;
-            }
+            if (this.mixer) this.mixer.timeScale = 0;
         });
-        
         document.getElementById('resetBtn').addEventListener('click', () => {
             this.animationPaused = false;
-            if (this.mixer) {
-                this.mixer.setTime(0);
-            }
+            if (this.mixer) this.mixer.setTime(0);
         });
-
-        // Initialize value displays
-        document.querySelectorAll('.slider').forEach(slider => {
-            this.updateValueDisplay(slider);
-        });
+        document.querySelectorAll('.slider').forEach(slider => this.updateValueDisplay(slider));
     }
 
     updateValueDisplay(slider) {
         const valueDisplay = slider.parentElement.querySelector('.value-display');
-        if (valueDisplay) {
-            valueDisplay.textContent = parseFloat(slider.value).toFixed(1);
-        }
+        if (valueDisplay) valueDisplay.textContent = parseFloat(slider.value).toFixed(1);
     }
 
     updateBackground(type) {
         switch (type) {
             case 'gradient':
-                // Create gradient background using canvas
                 const canvas = document.createElement('canvas');
                 canvas.width = 512;
                 canvas.height = 512;
@@ -433,13 +305,11 @@ class ModelViewer {
                 this.scene.background = new THREE.Color(color);
                 break;
             case 'hdri':
-                // Create HDRI-like environment with sphere mapping
                 const hdriCanvas = document.createElement('canvas');
                 hdriCanvas.width = 1024;
                 hdriCanvas.height = 512;
                 const hdriCtx = hdriCanvas.getContext('2d');
                 
-                // Create sky gradient
                 const skyGradient = hdriCtx.createLinearGradient(0, 0, 0, 512);
                 skyGradient.addColorStop(0, '#87CEEB');
                 skyGradient.addColorStop(0.7, '#98D8E8');
@@ -447,7 +317,6 @@ class ModelViewer {
                 hdriCtx.fillStyle = skyGradient;
                 hdriCtx.fillRect(0, 0, 1024, 512);
                 
-                // Add sun
                 hdriCtx.beginPath();
                 hdriCtx.arc(800, 100, 50, 0, Math.PI * 2);
                 hdriCtx.fillStyle = '#FFF8DC';
@@ -518,7 +387,6 @@ class ModelViewer {
                 if (file.name.toLowerCase().endsWith('.glb') || file.name.toLowerCase().endsWith('.gltf')) {
                     loader.parse(e.target.result, '', (model) => this.onModelLoaded(model));
                 } else {
-                    // For other formats, create object URL
                     const blob = new Blob([e.target.result]);
                     const url = URL.createObjectURL(blob);
                     loader.load(url, (model) => {
@@ -548,46 +416,34 @@ class ModelViewer {
 
     getLoaderForExtension(extension) {
         switch (extension) {
-            case 'glb':
-            case 'gltf':
-                return new THREE.GLTFLoader();
-            case 'fbx':
-                return new THREE.FBXLoader();
-            case 'obj':
-                return new THREE.OBJLoader();
-            case 'dae':
-                return new THREE.ColladaLoader();
-            case 'stl':
-                return new THREE.STLLoader();
-            case 'ply':
-                return new THREE.PLYLoader();
-            default:
-                return null;
+            case 'glb': case 'gltf': return new THREE.GLTFLoader();
+            case 'fbx': return new THREE.FBXLoader();
+            case 'obj': return new THREE.OBJLoader();
+            case 'dae': return new THREE.ColladaLoader();
+            case 'stl': return new THREE.STLLoader();
+            case 'ply': return new THREE.PLYLoader();
+            default: return null;
         }
     }
 
     onModelLoaded(loadedModel) {
-        // Remove existing model
         if (this.currentModel) {
             this.scene.remove(this.currentModel);
         }
 
-        // Process the loaded model based on format
         let model;
         if (loadedModel.scene) {
-            model = loadedModel.scene; // GLTF, Collada
+            model = loadedModel.scene;
         } else if (loadedModel.isBufferGeometry || loadedModel.isGeometry) {
-            // STL, PLY - create mesh from geometry
             const material = new THREE.MeshPhongMaterial({ color: 0x888888 });
             model = new THREE.Mesh(loadedModel, material);
         } else {
-            model = loadedModel; // FBX, OBJ
+            model = loadedModel;
         }
 
         this.currentModel = model;
         this.scene.add(model);
 
-        // Setup animations if available
         if (loadedModel.animations && loadedModel.animations.length > 0) {
             this.mixer = new THREE.AnimationMixer(model);
             loadedModel.animations.forEach(clip => {
@@ -595,7 +451,6 @@ class ModelViewer {
             });
         }
 
-        // Enable shadows
         model.traverse((child) => {
             if (child.isMesh) {
                 child.castShadow = true;
@@ -603,20 +458,10 @@ class ModelViewer {
             }
         });
 
-        // Update stats
         this.updateModelStats(model);
-
-        // Ensure renderer is properly sized
         this.onWindowResize();
-        
-        // Fit camera to model
         this.fitCameraToModel();
-        
-        // Force render in next frame
-        requestAnimationFrame(() => {
-            this.renderer.render(this.scene, this.camera);
-        });
-        
+        requestAnimationFrame(() => this.renderer.render(this.scene, this.camera));
         this.showProgress(false);
     }
 
@@ -653,23 +498,15 @@ class ModelViewer {
         const center = box.getCenter(new THREE.Vector3());
         const maxSize = Math.max(size.x, size.y, size.z);
         
-        // Position model above ground if it's below
         if (box.min.y < 0) {
             this.currentModel.position.y = -box.min.y;
-            // Recalculate box after repositioning
             box.setFromObject(this.currentModel);
             center.copy(box.getCenter(new THREE.Vector3()));
         }
         
-        // Set camera distance based on model size
         const distance = maxSize * 2;
         
-        this.camera.position.set(
-            center.x + distance,
-            center.y + distance * 0.5,
-            center.z + distance
-        );
-        
+        this.camera.position.set(center.x + distance, center.y + distance * 0.5, center.z + distance);
         this.camera.lookAt(center);
         this.controls.target.copy(center);
         this.controls.update();
@@ -684,10 +521,9 @@ class ModelViewer {
 
     takeScreenshot() {
         this.renderer.render(this.scene, this.camera);
-        const canvas = this.renderer.domElement;
         const link = document.createElement('a');
         link.download = 'model-screenshot.png';
-        link.href = canvas.toDataURL();
+        link.href = this.renderer.domElement.toDataURL();
         link.click();
     }
 
@@ -708,35 +544,28 @@ class ModelViewer {
             this.composer.setSize(width, height);
         }
         
-        // Force render after resize
         this.renderer.render(this.scene, this.camera);
     }
 
     animate() {
         requestAnimationFrame(() => this.animate());
-
         const delta = this.clock.getDelta();
 
-        // Update controls (disabled in superhero mode)
         if (!this.superheroMode) {
             this.controls.update();
         }
 
-        // Update animations (only if not paused)
         if (this.mixer && !this.animationPaused) {
             this.mixer.update(delta);
         }
         
-        // Superhero camera animation (only if not paused)
         if (this.superheroMode && this.currentModel && !this.superheroAnimationPaused) {
             this.updateSuperheroCamera();
         }
 
-        // Update FPS counter
         this.stats.fps = Math.round(1 / delta);
         document.getElementById('fpsCounter').textContent = this.stats.fps;
 
-        // Render
         if (this.composer && this.bloomPass.enabled) {
             this.composer.render();
         } else {
@@ -747,56 +576,38 @@ class ModelViewer {
     activateSuperheroMode() {
         if (!this.currentModel) return;
         
-        // Store original camera position
         this.originalCameraPos = {
             position: this.camera.position.clone(),
             target: this.controls.target.clone()
         };
         
-        // Pitch black fade with silence
         const overlay = document.getElementById('fadeOverlay');
         overlay.classList.remove('hidden');
         overlay.classList.add('pitch-black');
         
-        // Step 1: Silence/Ambience (1s)
         this.playAmbientDrone();
-        
-        setTimeout(() => {
-            // Step 2: THUMP (1.5s) + Echo tail (0.5s)
-            this.playBassThump();
-        }, 1000);
-        
-        setTimeout(() => {
-            // Step 3: Music + Camera starts (after 3s total)
-            this.playSuperheroMusic();
-        }, 3000);
+        setTimeout(() => this.playBassThump(), 1000);
+        setTimeout(() => this.playSuperheroMusic(), 3000);
         
         setTimeout(() => {
             this.superheroMode = true;
             this.controls.enabled = false;
             
-            // Show superhero controls and change icon
             document.getElementById('superheroControls').classList.remove('hidden');
             document.getElementById('superheroBtn').innerHTML = this.icons.close;
 
-            // Collapse sidebar
             const sidebar = document.getElementById('sidebar');
             if (!sidebar.classList.contains('collapsed')) {
                 sidebar.classList.add('collapsed');
-            }
-            if (window.innerWidth <= 768) {
                 document.getElementById('sidebarToggleBtn').classList.remove('active');
             }
 
-            // Store original scene settings
             this.originalBackground = this.scene.background;
             this.originalFog = this.scene.fog;
             
-            // Dark cinematic background with fog
             this.scene.background = new THREE.Color(0x000000);
             this.scene.fog = new THREE.Fog(0x000000, 5, 30);
             
-            // Enable cinematic bloom
             if (this.bloomPass) {
                 this.bloomPass.enabled = true;
                 this.bloomPass.strength = 0.4;
@@ -804,11 +615,9 @@ class ModelViewer {
                 this.bloomPass.threshold = 0.7;
             }
             
-            // Dramatic superhero lighting
             this.lights.ambient.intensity = 0.1;
             this.lights.directional.intensity = 0.5;
             
-            // Add spotlight for dramatic effect
             const box = new THREE.Box3().setFromObject(this.currentModel);
             const center = box.getCenter(new THREE.Vector3());
             const size = box.getSize(new THREE.Vector3());
@@ -821,15 +630,12 @@ class ModelViewer {
             this.scene.add(this.spotlight);
             this.scene.add(this.spotlight.target);
             
-            // Add rim light for silhouette
             this.rimLight = new THREE.DirectionalLight(0x4488ff, 1.2);
             this.rimLight.position.set(center.x - maxSize, center.y, center.z - maxSize);
             this.scene.add(this.rimLight);
             
-            // Start camera animation (synced with music)
-            this.superheroStartTime = Date.now() - 3000; // Account for pre-sequence
+            this.superheroStartTime = Date.now() - 3000;
             
-            // Gradual fade from pitch black
             setTimeout(() => {
                 overlay.classList.remove('pitch-black');
                 overlay.classList.add('active');
@@ -839,7 +645,6 @@ class ModelViewer {
                 }, 1500);
             }, 500);
             
-            // Auto-exit when music ends
             if (this.superheroAudio) {
                 this.superheroAudio.addEventListener('ended', () => this.exitSuperheroMode());
             } else {
@@ -855,11 +660,9 @@ class ModelViewer {
         const size = box.getSize(new THREE.Vector3());
         const maxSize = Math.max(size.x, size.y, size.z);
         
-        // Get music duration and analyze audio for dynamic sync
         const musicDuration = this.superheroAudio ? (this.superheroAudio.duration || 30) : 30;
         const progress = elapsed / musicDuration;
         
-        // Get audio frequency data for dynamic movement
         let audioIntensity = 1;
         if (this.audioAnalyser) {
             const dataArray = new Uint8Array(this.audioAnalyser.frequencyBinCount);
@@ -867,65 +670,35 @@ class ModelViewer {
             audioIntensity = (dataArray.reduce((a, b) => a + b) / dataArray.length) / 128;
         }
         
-        // Sky-to-model cinematic sequence
         if (progress < 0.1) {
-            // Sky descent: Start from high above (0-10%)
             const t = progress / 0.1;
-            const skyHeight = maxSize * (8 - t * 6); // Descend from sky
+            const skyHeight = maxSize * (8 - t * 6);
             const distance = maxSize * (3 - t * 1.5);
-            
-            this.camera.position.set(
-                center.x + distance * 0.3,
-                center.y + skyHeight,
-                center.z + distance * 0.5
-            );
-            
+            this.camera.position.set(center.x + distance * 0.3, center.y + skyHeight, center.z + distance * 0.5);
         } else if (progress < 0.25) {
-            // Dramatic reveal: Focus on model (10-25%)
             const t = (progress - 0.1) / 0.15;
             const distance = maxSize * (1.5 - t * 0.3);
             const angle = t * Math.PI * 0.3;
-            
-            this.camera.position.set(
-                center.x + Math.cos(angle) * distance,
-                center.y + maxSize * (2 - t * 1.2),
-                center.z + Math.sin(angle) * distance
-            );
-            
+            this.camera.position.set(center.x + Math.cos(angle) * distance, center.y + maxSize * (2 - t * 1.2), center.z + Math.sin(angle) * distance);
         } else if (progress < 0.6) {
-            // Dynamic orbit: Music-synced rotation (25-60%)
             const t = (progress - 0.25) / 0.35;
-            const speed = audioIntensity * 2; // Music-driven speed
+            const speed = audioIntensity * 2;
             const angle = t * Math.PI * 4 * speed;
             const distance = maxSize * (1.2 + audioIntensity * 0.5);
             const verticalMove = Math.sin(t * Math.PI * 2) * maxSize * 0.4;
-            
-            this.camera.position.set(
-                center.x + Math.cos(angle) * distance,
-                center.y + maxSize * 0.8 + verticalMove,
-                center.z + Math.sin(angle) * distance
-            );
-            
+            this.camera.position.set(center.x + Math.cos(angle) * distance, center.y + maxSize * 0.8 + verticalMove, center.z + Math.sin(angle) * distance);
         } else {
-            // Epic finale: Pullback reveal (60-100%)
             const t = (progress - 0.6) / 0.4;
             const angle = Math.PI * 8 + t * Math.PI * audioIntensity;
             const distance = maxSize * (1.0 + t * 2.5);
-            const heroicRise = t * t * 1.5; // Quadratic rise
-            
-            this.camera.position.set(
-                center.x + Math.cos(angle) * distance,
-                center.y + maxSize * (0.6 + heroicRise),
-                center.z + Math.sin(angle) * distance
-            );
+            const heroicRise = t * t * 1.5;
+            this.camera.position.set(center.x + Math.cos(angle) * distance, center.y + maxSize * (0.6 + heroicRise), center.z + Math.sin(angle) * distance);
         }
         
-        // Music-reactive look target
         const lookTarget = center.clone();
         lookTarget.y += maxSize * (0.2 + audioIntensity * 0.1);
         this.camera.lookAt(lookTarget);
         
-        // Audio-reactive camera shake
         if (audioIntensity > 1.2) {
             const shakeIntensity = (audioIntensity - 1.2) * 0.02;
             this.camera.position.x += (Math.random() - 0.5) * shakeIntensity;
@@ -934,7 +707,6 @@ class ModelViewer {
     }
     
     exitSuperheroMode() {
-        // Fade out music first
         if (this.superheroAudio) {
             this.fadeOutAudio();
             setTimeout(() => {
@@ -948,31 +720,21 @@ class ModelViewer {
         this.superheroMode = false;
         this.controls.enabled = true;
         
-        // Hide superhero controls and change icon
         document.getElementById('superheroControls').classList.add('hidden');
         document.getElementById('superheroBtn').innerHTML = this.icons.superhero;
 
-        // Restore sidebar
-        if (window.innerWidth > 768) {
-            document.getElementById('sidebar').classList.remove('collapsed');
-        }
-
-        // Restore original settings
         if (this.originalCameraPos) {
             this.camera.position.copy(this.originalCameraPos.position);
             this.controls.target.copy(this.originalCameraPos.target);
         }
         
-        // Restore original scene
         this.scene.background = this.originalBackground;
         this.scene.fog = this.originalFog;
         
-        // Reset lighting
         this.lights.ambient.intensity = 0.4;
         this.lights.directional.intensity = 1.0;
         this.lights.directional.position.set(5, 5, 5);
         
-        // Remove superhero lights
         if (this.spotlight) {
             this.scene.remove(this.spotlight);
             this.scene.remove(this.spotlight.target);
@@ -983,7 +745,6 @@ class ModelViewer {
             this.rimLight = null;
         }
         
-        // Reset bloom
         if (this.bloomPass) {
             this.bloomPass.enabled = false;
             this.bloomPass.strength = 1.5;
@@ -999,18 +760,13 @@ class ModelViewer {
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
             const osc = audioContext.createOscillator();
             const gain = audioContext.createGain();
-            
             osc.connect(gain);
             gain.connect(audioContext.destination);
-            
-            // Low ambient drone
             osc.frequency.setValueAtTime(55, audioContext.currentTime);
             osc.type = 'sine';
-            
             gain.gain.setValueAtTime(0, audioContext.currentTime);
             gain.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.5);
             gain.gain.linearRampToValueAtTime(0.001, audioContext.currentTime + 1.0);
-            
             osc.start();
             osc.stop(audioContext.currentTime + 1.0);
         } catch (e) {
@@ -1021,13 +777,10 @@ class ModelViewer {
     playBassThump() {
         try {
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-            // --- Master output
             const masterGain = audioContext.createGain();
             masterGain.gain.value = 0.9;
             masterGain.connect(audioContext.destination);
 
-            // --- Layer 1: Deep BASS sine
             const osc1 = audioContext.createOscillator();
             const gain1 = audioContext.createGain();
             osc1.type = 'sine';
@@ -1039,7 +792,6 @@ class ModelViewer {
             osc1.start();
             osc1.stop(audioContext.currentTime + 2.5);
 
-            // --- Layer 2: Higher frequency punch (adds realism)
             const osc2 = audioContext.createOscillator();
             const gain2 = audioContext.createGain();
             osc2.type = 'triangle';
@@ -1051,7 +803,6 @@ class ModelViewer {
             osc2.start();
             osc2.stop(audioContext.currentTime + 1.0);
 
-            // --- Layer 3: Low rumble (optional)
             const rumble = audioContext.createOscillator();
             const rumbleGain = audioContext.createGain();
             rumble.type = 'sawtooth';
@@ -1062,7 +813,6 @@ class ModelViewer {
             rumbleGain.connect(masterGain);
             rumble.start();
             rumble.stop(audioContext.currentTime + 3.0);
-
         } catch (err) {
             console.error("Error playing thump:", err);
         }
@@ -1083,7 +833,6 @@ class ModelViewer {
             const blob = new Blob([e.target.result], { type: file.type });
             this.customAudioFile = URL.createObjectURL(blob);
             
-            // Update UI
             const indicator = document.querySelector('.audio-indicator');
             const clearBtn = document.getElementById('clearAudio');
             indicator.textContent = `🎵 ${file.name} loaded`;
@@ -1108,7 +857,6 @@ class ModelViewer {
         try {
             const audioSource = this.customAudioFile || 'superhero-theme.mp3';
             
-            // Use HTML5 Audio for better compatibility
             this.superheroAudio = new Audio(audioSource);
             this.superheroAudio.volume = 0;
             this.superheroAudio.play().then(() => {
@@ -1166,13 +914,11 @@ const sampleModels = [
 
 // Initialize sample model buttons after DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    // Add sample button functionality
     setTimeout(() => {
         document.querySelectorAll('.sample-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const url = btn.dataset.url;
                 document.getElementById('modelUrl').value = url;
-                // Trigger load if viewer is ready
                 if (window.modelViewer) {
                     window.modelViewer.loadModelFromUrl(url);
                 }
