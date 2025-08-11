@@ -659,14 +659,14 @@ body {
 /* Desktop - sidebar always visible */
 @media (min-width: 769px) {
     .sidebar {
-        position: relative;
-        background: rgba(255, 255, 255, 0.95);
+        transition: width 0.3s ease;
     }
 
     .sidebar.collapsed {
-        position: absolute;
-        height: 100%;
-        z-index: 1000;
+        width: 0;
+        padding: 0;
+        border: none;
+        overflow: hidden;
     }
     
     .sidebar-toggle-btn {
