@@ -213,7 +213,11 @@ class ModelViewer {
         
         // Superhero mode
         document.getElementById('superheroBtn').addEventListener('click', () => {
-            this.activateSuperheroMode();
+            if (this.superheroMode) {
+                this.exitSuperheroMode();
+            } else {
+                this.activateSuperheroMode();
+            }
         });
         
         // Audio upload
@@ -360,9 +364,6 @@ class ModelViewer {
             if (this.mixer) {
                 this.mixer.timeScale = 1;
             }
-            if (this.superheroMode && this.superheroAudio) {
-                this.fadeInAudio();
-            }
         });
         
         document.getElementById('pauseBtn').addEventListener('click', () => {
@@ -370,18 +371,12 @@ class ModelViewer {
             if (this.mixer) {
                 this.mixer.timeScale = 0;
             }
-            if (this.superheroMode && this.superheroAudio) {
-                this.fadeOutAudio();
-            }
         });
         
         document.getElementById('resetBtn').addEventListener('click', () => {
             this.animationPaused = false;
             if (this.mixer) {
                 this.mixer.setTime(0);
-            }
-            if (this.superheroMode) {
-                this.exitSuperheroMode();
             }
         });
 
@@ -731,7 +726,7 @@ class ModelViewer {
     }
     
     activateSuperheroMode() {
-        if (!this.currentModel || this.superheroMode) return;
+        if (!this.currentModel) return;
         
         // Store original camera position
         this.originalCameraPos = {
