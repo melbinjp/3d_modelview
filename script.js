@@ -20,11 +20,16 @@ class ModelViewer {
         this.init();
         this.setupEventListeners();
         this.animate();
+
+        // Show a more engaging loading message
+        const loadingText = document.querySelector('#loadingScreen p');
+        loadingText.innerHTML = '🚀 Preparing your 3D experience...';
         
-        // Hide loading screen after initialization
+        // Hide loading screen after initialization and load default model
         setTimeout(() => {
             document.getElementById('loadingScreen').classList.add('hidden');
             document.getElementById('mainContainer').classList.remove('hidden');
+            this.loadDefaultModel();
         }, 1500);
     }
 
@@ -99,6 +104,12 @@ class ModelViewer {
         });
     }
 
+    loadDefaultModel() {
+        const defaultModelUrl = 'https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf';
+        this.loadModelFromUrl(defaultModelUrl);
+        document.getElementById('modelUrl').value = defaultModelUrl;
+    }
+
     setupLighting() {
         // Ambient light
         this.lights.ambient = new THREE.AmbientLight(0xffffff, 0.4);
@@ -170,6 +181,24 @@ class ModelViewer {
                     toggleBtn.classList.remove('active');
                 }
             }
+        });
+
+        // Accordion functionality
+        document.querySelectorAll('.accordion-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const item = header.parentElement;
+                const content = item.querySelector('.accordion-content');
+
+                if (item.classList.contains('is-open')) {
+                    item.classList.remove('is-open');
+                } else {
+                    // Close other items
+                    document.querySelectorAll('.accordion-item.is-open').forEach(openItem => {
+                        openItem.classList.remove('is-open');
+                    });
+                    item.classList.add('is-open');
+                }
+            });
         });
         
         // Initialize mobile sidebar state
