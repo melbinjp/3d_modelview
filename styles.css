@@ -525,11 +525,6 @@ body {
 .hamburger-line:nth-child(2) { width: 16px; }
 .hamburger-line:nth-child(3) { width: 12px; }
 
-@media (min-width: 480px) {
-    .sidebar-toggle-btn.active {
-        left: 340px;
-    }
-}
 
 .sidebar-toggle-btn.active .hamburger-line {
     width: 20px;
