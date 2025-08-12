@@ -21,6 +21,21 @@ class ModelViewer {
         this.animationPaused = false;
         this.superheroAnimationPaused = false;
         this.smoothedAudioIntensity = 0;
+        this.CAMERA_ANIMATION_STATES = {
+            NONE: 'NONE',
+            ANCHOR: 'ANCHOR',
+            DOLLY: 'DOLLY',
+            CRANE: 'CRANE',
+            ORBIT: 'ORBIT',
+            STILL: 'STILL'
+        };
+        this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.NONE;
+        this.stateEnterTime = 0;
+        this.dollyStartPos = new THREE.Vector3();
+        this.dollyEndPos = new THREE.Vector3();
+        this.craneEndPos = new THREE.Vector3();
+        this.beatDetected = false;
+        this.lastBeatTime = 0;
         this.icons = {
             superhero: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3zM12 11l-4 4 1.41 1.41L12 13.83l2.59 2.58L16 15l-4-4z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
             close: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 6L6 18" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 6L18 18" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
@@ -600,6 +615,9 @@ class ModelViewer {
             this.superheroMode = true;
             this.controls.enabled = false;
             
+            this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.ANCHOR;
+            this.stateEnterTime = Date.now();
+
             document.getElementById('superheroControls').classList.remove('hidden');
             document.getElementById('superheroBtn').innerHTML = this.icons.close;
 
@@ -629,6 +647,11 @@ class ModelViewer {
             const center = box.getCenter(new THREE.Vector3());
             const size = box.getSize(new THREE.Vector3());
             const maxSize = Math.max(size.x, size.y, size.z);
+
+            // Define camera positions for the cinematic sequence
+            this.dollyStartPos.set(center.x + maxSize * 1.5, center.y + maxSize * 0.5, center.z + maxSize * 1.5);
+            this.dollyEndPos.set(center.x + maxSize * 0.8, center.y + maxSize * 0.3, center.z + maxSize * 0.8);
+            this.craneEndPos.set(center.x + maxSize * 0.9, center.y + maxSize * 1.2, center.z + maxSize * 0.9);
             
             this.spotlight = new THREE.SpotLight(0xffffff, 2.0, 0, Math.PI / 6, 0.3);
             this.spotlight.position.set(center.x + maxSize, center.y + maxSize * 2, center.z + maxSize);
@@ -661,46 +684,91 @@ class ModelViewer {
     }
     
     updateSuperheroCamera() {
-        const elapsed = (Date.now() - this.superheroStartTime) / 1000;
-        const box = new THREE.Box3().setFromObject(this.currentModel);
-        const center = box.getCenter(new THREE.Vector3());
-        const size = box.getSize(new THREE.Vector3());
-        const maxSize = Math.max(size.x, size.y, size.z);
+        if (!this.superheroMode || !this.currentModel) return;
 
-        let audioIntensity = 0;
+        const now = Date.now();
+        const stateElapsedTime = (now - this.stateEnterTime) / 1000;
+
+        // --- Refined Audio Analysis ---
+        let rawIntensity = 0;
         if (this.audioAnalyser) {
             const dataArray = new Uint8Array(this.audioAnalyser.frequencyBinCount);
             this.audioAnalyser.getByteFrequencyData(dataArray);
 
-            const bassBins = dataArray.slice(0, Math.floor(dataArray.length / 3));
+            const bassBins = dataArray.slice(0, Math.floor(dataArray.length * 0.2));
             const averageBass = bassBins.reduce((a, b) => a + b, 0) / bassBins.length;
+            rawIntensity = averageBass / 128; // Normalize to ~0-2
 
-            const normalizedIntensity = Math.pow(averageBass / 255, 2);
-            audioIntensity = normalizedIntensity * 5;
+            const smoothingFactor = 0.05;
+            this.smoothedAudioIntensity += (rawIntensity - this.smoothedAudioIntensity) * smoothingFactor;
 
-            const smoothingFactor = 0.08;
-            this.smoothedAudioIntensity += (audioIntensity - this.smoothedAudioIntensity) * smoothingFactor;
+            // Beat Detection
+            const beatThreshold = 0.4;
+            const beatCooldown = 1.0; // seconds
+            if (rawIntensity > (this.smoothedAudioIntensity + beatThreshold) && (now - this.lastBeatTime) / 1000 > beatCooldown) {
+                this.beatDetected = true;
+                this.lastBeatTime = now;
+            } else {
+                this.beatDetected = false;
+            }
         }
-        
-        const intensity = this.smoothedAudioIntensity;
 
-        const angle = elapsed * 0.5;
-        const distance = maxSize * (1.5 + intensity * 1.5);
-        const height = center.y + maxSize * 0.5 + Math.sin(elapsed * 2) * (maxSize * 0.2 * intensity);
+        const box = new THREE.Box3().setFromObject(this.currentModel);
+        const center = box.getCenter(new THREE.Vector3());
 
-        this.camera.position.x = center.x + Math.cos(angle) * distance;
-        this.camera.position.z = center.z + Math.sin(angle) * distance;
-        this.camera.position.y = height;
+        switch (this.cameraAnimationState) {
+            case this.CAMERA_ANIMATION_STATES.ANCHOR:
+                this.camera.position.copy(this.dollyStartPos);
+                if (stateElapsedTime > 2.0) {
+                    this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.DOLLY;
+                    this.stateEnterTime = now;
+                }
+                break;
+            case this.CAMERA_ANIMATION_STATES.DOLLY:
+                const dollyDuration = 6.0;
+                const dollyProgress = Math.min(stateElapsedTime / dollyDuration, 1.0);
+                this.camera.position.lerpVectors(this.dollyStartPos, this.dollyEndPos, dollyProgress);
 
-        const lookTarget = center.clone();
-        lookTarget.y += maxSize * (0.2 + intensity * 0.2);
-        this.camera.lookAt(lookTarget);
-        
-        if (intensity > 0.8) {
-            const shake = (intensity - 0.8) * maxSize * 0.05;
-            this.camera.position.x += (Math.random() - 0.5) * shake;
-            this.camera.position.y += (Math.random() - 0.5) * shake;
+                // Transition on a beat or if the time is up
+                if (this.beatDetected || dollyProgress >= 1.0) {
+                    this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.CRANE;
+                    this.stateEnterTime = now;
+                }
+                break;
+            case this.CAMERA_ANIMATION_STATES.CRANE:
+                const craneDuration = 2.5;
+                const craneProgress = Math.min(stateElapsedTime / craneDuration, 1.0);
+                this.camera.position.lerpVectors(this.dollyEndPos, this.craneEndPos, craneProgress);
+                if (craneProgress >= 1.0) {
+                    this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.ORBIT;
+                    this.stateEnterTime = now;
+                }
+                break;
+            case this.CAMERA_ANIMATION_STATES.ORBIT:
+                const orbitDuration = 12.0;
+                const orbitSpeed = 0.4 + this.smoothedAudioIntensity * 0.2;
+                const orbitRadius = THREE.Vector3.prototype.distanceTo.call(this.camera.position, center);
+                const orbitAngle = stateElapsedTime * orbitSpeed;
+
+                this.camera.position.x = center.x + Math.cos(orbitAngle) * orbitRadius;
+                this.camera.position.z = center.z + Math.sin(orbitAngle) * orbitRadius;
+                this.camera.position.y = this.craneEndPos.y + Math.sin(stateElapsedTime * 2) * (orbitRadius * 0.1 * this.smoothedAudioIntensity);
+
+                // Transition if music fades or time is up
+                if (stateElapsedTime > orbitDuration || (this.superheroAudio && this.superheroAudio.volume < 0.1)) {
+                    this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.STILL;
+                    this.stateEnterTime = now;
+                }
+                break;
+            case this.CAMERA_ANIMATION_STATES.STILL:
+                // Hold position
+                break;
+            case this.CAMERA_ANIMATION_STATES.NONE:
+            default:
+                break;
         }
+
+        this.camera.lookAt(center);
     }
     
     exitSuperheroMode() {
@@ -715,6 +783,7 @@ class ModelViewer {
             this.audioContext = null;
         }
         this.smoothedAudioIntensity = 0;
+        this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.NONE;
         
         this.superheroMode = false;
         this.controls.enabled = true;
