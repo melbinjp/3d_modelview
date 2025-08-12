@@ -261,6 +261,21 @@ class ModelViewer {
             this.lights.ambient.intensity = parseFloat(e.target.value);
             this.updateValueDisplay(e.target);
         });
+        document.getElementById('envIntensity').addEventListener('input', (e) => {
+            this.renderer.toneMappingExposure = parseFloat(e.target.value);
+            this.updateValueDisplay(e.target);
+        });
+        document.getElementById('loadHdriBtn').addEventListener('click', () => {
+            const url = document.getElementById('hdriUrl').value.trim();
+            if (url) this.loadEnvironment(url);
+        });
+        document.querySelectorAll('.sample-hdri-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const url = btn.dataset.url;
+                document.getElementById('hdriUrl').value = url;
+                this.loadEnvironment(url);
+            });
+        });
         document.getElementById('directionalIntensity').addEventListener('input', (e) => {
             this.lights.directional.intensity = parseFloat(e.target.value);
             this.updateValueDisplay(e.target);
@@ -424,6 +439,26 @@ class ModelViewer {
         };
 
         reader.readAsArrayBuffer(file);
+    }
+
+    loadEnvironment(url) {
+        if (!url) return;
+        this.showProgress(true, 'Loading Environment...');
+
+        new THREE.RGBELoader().load(url, (texture) => {
+            texture.mapping = THREE.EquirectangularReflectionMapping;
+            this.scene.background = texture;
+            this.scene.environment = texture;
+            this.showProgress(false);
+        }, (progress) => {
+            if (progress.lengthComputable) {
+                this.updateProgress(progress.loaded / progress.total);
+            }
+        }, (error) => {
+            console.error('Error loading environment:', error);
+            this.showError('Failed to load environment from URL.');
+            this.showProgress(false);
+        });
     }
 
     getLoaderForUrl(url) {
@@ -649,9 +684,9 @@ class ModelViewer {
             const maxSize = Math.max(size.x, size.y, size.z);
 
             // Define camera positions for the cinematic sequence
-            this.dollyStartPos.set(center.x + maxSize * 1.5, center.y + maxSize * 0.5, center.z + maxSize * 1.5);
-            this.dollyEndPos.set(center.x + maxSize * 0.8, center.y + maxSize * 0.3, center.z + maxSize * 0.8);
-            this.craneEndPos.set(center.x + maxSize * 0.9, center.y + maxSize * 1.2, center.z + maxSize * 0.9);
+            this.dollyStartPos.set(center.x + maxSize * 1.2, center.y + maxSize * 0.4, center.z + maxSize * 1.2);
+            this.dollyEndPos.set(center.x + maxSize * 0.7, center.y + maxSize * 0.2, center.z + maxSize * 0.7);
+            this.craneEndPos.set(center.x + maxSize * 0.8, center.y + maxSize * 0.8, center.z + maxSize * 0.8);
             
             this.spotlight = new THREE.SpotLight(0xffffff, 2.0, 0, Math.PI / 6, 0.3);
             this.spotlight.position.set(center.x + maxSize, center.y + maxSize * 2, center.z + maxSize);

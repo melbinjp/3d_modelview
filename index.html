@@ -14,6 +14,7 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/ColladaLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/PLYLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/RGBELoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
@@ -78,7 +79,21 @@
                                 <div class="control-group"><label class="checkbox-label"><input type="checkbox" id="showGrid"><span class="checkmark"></span>Show Grid</label></div>
                                 <div class="control-group">
                                     <label>Env Intensity</label>
-                                    <input type="range" id="envIntensity" min="0" max="2" step="0.1" value="1" class="slider"><span class="value-display">1.0</span>
+                                    <input type="range" id="envIntensity" min="0" max="3" step="0.1" value="1" class="slider"><span class="value-display">1.0</span>
+                                </div>
+                                <div class="control-section" style="margin-top: 1rem; border-top: 1px solid #eee; padding-top: 1rem;">
+                                    <h4><svg class="icon" viewBox="0 0 24 24" fill-rule="evenodd" clip-rule="evenodd"><path d="M12 0c-3.315 0-6 2.685-6 6s6 18 6 18 6-15.315 6-18-2.685-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm0-6c-1.105 0-2 .895-2 2s.895 2 2 2 2-.895 2-2-.895-2-2-2z"/></svg> Load HDRI Environment</h4>
+                                    <div class="input-group">
+                                        <input type="text" id="hdriUrl" placeholder="Enter .hdr URL..." class="input-field">
+                                        <button id="loadHdriBtn" class="btn primary">Load</button>
+                                    </div>
+                                    <div class="quick-samples">
+                                        <div class="sample-buttons">
+                                            <button class="sample-hdri-btn" data-url="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/industrial_workshop_01_1k.hdr">Industrial</button>
+                                            <button class="sample-hdri-btn" data-url="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/artist_workshop_1k.hdr">Workshop</button>
+                                            <button class="sample-hdri-btn" data-url="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/phalzer_forest_01_1k.hdr">Forest</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
