@@ -660,6 +660,7 @@ class ModelViewer {
         setTimeout(() => this.playSuperheroMusic(), 3000);
         
         setTimeout(() => {
+            document.body.classList.add('superhero-mode-active');
             this.superheroMode = true;
             this.controls.enabled = false;
             
@@ -833,6 +834,7 @@ class ModelViewer {
         this.smoothedAudioIntensity = 0;
         this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.NONE;
         
+        document.body.classList.remove('superhero-mode-active');
         this.superheroMode = false;
         this.controls.enabled = true;
         

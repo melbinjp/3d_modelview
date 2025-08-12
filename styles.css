@@ -717,3 +717,33 @@ body {
     font-size: 0.85rem;
     font-weight: 500;
 }
+
+@media (max-width: 600px) {
+    body.superhero-mode-active .superhero-btn {
+        bottom: 100px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+    }
+
+    .stats-panel {
+        min-width: 120px;
+        padding: 0;
+    }
+
+    .stats-header {
+        padding: 8px 12px;
+    }
+
+    .stats-title {
+        font-size: 0.7rem;
+    }
+
+    .stat-item {
+        padding: 6px 12px;
+    }
+
+    .stat-label, .stat-value {
+        font-size: 0.7rem;
+    }
+}
