@@ -36,6 +36,8 @@ class ModelViewer {
         this.craneEndPos = new THREE.Vector3();
         this.beatDetected = false;
         this.lastBeatTime = 0;
+        this.originalGroundMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.1 });
+        this.shadowCatcherMaterial = new THREE.ShadowMaterial({ opacity: 0.5 });
         this.icons = {
             superhero: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3zM12 11l-4 4 1.41 1.41L12 13.83l2.59 2.58L16 15l-4-4z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
             close: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 6L6 18" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 6L18 18" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
@@ -84,8 +86,7 @@ class ModelViewer {
         this.setupPostProcessing();
         
         const groundGeometry = new THREE.PlaneGeometry(50, 50);
-        const groundMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.1 });
-        this.groundPlane = new THREE.Mesh(groundGeometry, groundMaterial);
+        this.groundPlane = new THREE.Mesh(groundGeometry, this.originalGroundMaterial);
         this.groundPlane.rotation.x = -Math.PI / 2;
         this.groundPlane.position.y = 0;
         this.groundPlane.receiveShadow = true;
@@ -336,10 +337,12 @@ class ModelViewer {
                 ctx.fillRect(0, 0, 512, 512);
                 const texture = new THREE.CanvasTexture(canvas);
                 this.scene.background = texture;
+                this.groundPlane.material = this.originalGroundMaterial;
                 break;
             case 'solid':
                 const color = document.getElementById('bgColor').value;
                 this.scene.background = new THREE.Color(color);
+                this.groundPlane.material = this.originalGroundMaterial;
                 break;
             case 'hdri':
                 const hdriCanvas = document.createElement('canvas');
@@ -363,6 +366,7 @@ class ModelViewer {
                 hdriTexture.mapping = THREE.EquirectangularReflectionMapping;
                 this.scene.background = hdriTexture;
                 this.scene.environment = hdriTexture;
+                this.groundPlane.material = this.shadowCatcherMaterial;
                 break;
         }
     }
@@ -449,6 +453,7 @@ class ModelViewer {
             texture.mapping = THREE.EquirectangularReflectionMapping;
             this.scene.background = texture;
             this.scene.environment = texture;
+            this.groundPlane.material = this.shadowCatcherMaterial;
             this.showProgress(false);
         }, (progress) => {
             if (progress.lengthComputable) {
