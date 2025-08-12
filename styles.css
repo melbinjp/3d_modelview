@@ -629,6 +629,13 @@ body {
     box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
+.superhero-btn svg path {
+    stroke: white;
+    stroke-width: 2px;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
 /* Superhero Controls */
 .superhero-controls {
     position: absolute;
