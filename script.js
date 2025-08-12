@@ -46,6 +46,7 @@ class ModelViewer {
         this.init();
         this.setupEventListeners();
         document.getElementById('superheroBtn').innerHTML = this.icons.superhero;
+        this.setSidebarHeight();
         this.animate();
 
         const loadingText = document.querySelector('#loadingScreen p');
@@ -596,6 +597,7 @@ class ModelViewer {
     }
 
     onWindowResize() {
+        this.setSidebarHeight();
         const container = document.getElementById('viewerContainer');
         const width = container.clientWidth;
         const height = container.clientHeight;
@@ -608,6 +610,11 @@ class ModelViewer {
         }
         
         this.renderer.render(this.scene, this.camera);
+    }
+
+    setSidebarHeight() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.style.height = window.innerHeight + 'px';
     }
 
     animate() {
