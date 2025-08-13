@@ -558,19 +558,20 @@ class ModelViewer {
         if (!this.currentModel) return;
 
         const box = new THREE.Box3().setFromObject(this.currentModel);
-        const size = box.getSize(new THREE.Vector3());
         const center = box.getCenter(new THREE.Vector3());
-        const maxSize = Math.max(size.x, size.y, size.z);
         
         if (box.min.y < 0) {
             this.currentModel.position.y = -box.min.y;
             box.setFromObject(this.currentModel);
             center.copy(box.getCenter(new THREE.Vector3()));
         }
+
+        const boundingSphere = box.getSphere(new THREE.Sphere());
+        const radius = boundingSphere.radius;
         
-        const distance = maxSize * 2;
+        const distance = radius / Math.sin(THREE.MathUtils.degToRad(this.camera.fov / 2));
         
-        this.camera.position.set(center.x + distance, center.y + distance * 0.5, center.z + distance);
+        this.camera.position.set(center.x, center.y + radius * 0.4, center.z + distance);
         this.camera.lookAt(center);
         this.controls.target.copy(center);
         this.controls.update();
@@ -694,16 +695,20 @@ class ModelViewer {
             
             const box = new THREE.Box3().setFromObject(this.currentModel);
             const center = box.getCenter(new THREE.Vector3());
-            const size = box.getSize(new THREE.Vector3());
-            const maxSize = Math.max(size.x, size.y, size.z);
+            const boundingSphere = box.getSphere(new THREE.Sphere());
+            const radius = boundingSphere.radius;
 
-            // Define camera positions for the cinematic sequence
-            this.dollyStartPos.set(center.x + maxSize * 1.2, center.y + maxSize * 0.4, center.z + maxSize * 1.2);
-            this.dollyEndPos.set(center.x + maxSize * 0.7, center.y + maxSize * 0.2, center.z + maxSize * 0.7);
-            this.craneEndPos.set(center.x + maxSize * 0.8, center.y + maxSize * 0.8, center.z + maxSize * 0.8);
+            // Aspect ratio correction
+            const aspect = this.camera.aspect;
+            const aspectFactor = aspect < 1 ? 1 / aspect : 1;
+
+            // Define camera positions using bounding sphere radius
+            this.dollyStartPos.set(center.x, center.y + radius * 0.5, center.z + radius * 2.5 * aspectFactor);
+            this.dollyEndPos.set(center.x, center.y, center.z + radius * 1.5 * aspectFactor);
+            this.craneEndPos.set(center.x, center.y + radius, center.z + radius * 1.8 * aspectFactor);
             
             this.spotlight = new THREE.SpotLight(0xffffff, 2.0, 0, Math.PI / 6, 0.3);
-            this.spotlight.position.set(center.x + maxSize, center.y + maxSize * 2, center.z + maxSize);
+            this.spotlight.position.set(center.x, center.y + radius * 4, center.z);
             this.spotlight.target.position.copy(center);
             this.spotlight.castShadow = true;
             this.scene.add(this.spotlight);
