@@ -724,11 +724,9 @@ class ModelViewer {
                 }, 1500);
             }, 500);
             
-            if (this.superheroAudio) {
-                this.superheroAudio.addEventListener('ended', () => this.exitSuperheroMode());
-            } else {
-                setTimeout(() => this.exitSuperheroMode(), 30000);
-            }
+            // The animation sequence is now self-contained and timed.
+            // We'll use a fixed timeout to exit the mode, rather than relying on the audio length.
+            setTimeout(() => this.exitSuperheroMode(), 30000);
         }, 1000);
     }
     
@@ -768,13 +766,13 @@ class ModelViewer {
         switch (this.cameraAnimationState) {
             case this.CAMERA_ANIMATION_STATES.ANCHOR:
                 this.camera.position.copy(this.dollyStartPos);
-                if (stateElapsedTime > 2.0) {
+                if (stateElapsedTime > 1.5) { // Shorter anchor
                     this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.DOLLY;
                     this.stateEnterTime = now;
                 }
                 break;
             case this.CAMERA_ANIMATION_STATES.DOLLY:
-                const dollyDuration = 6.0;
+                const dollyDuration = 3.0; // Faster dolly
                 const dollyProgress = Math.min(stateElapsedTime / dollyDuration, 1.0);
                 this.camera.position.lerpVectors(this.dollyStartPos, this.dollyEndPos, dollyProgress);
 
@@ -785,7 +783,7 @@ class ModelViewer {
                 }
                 break;
             case this.CAMERA_ANIMATION_STATES.CRANE:
-                const craneDuration = 2.5;
+                const craneDuration = 2.0; // Faster crane
                 const craneProgress = Math.min(stateElapsedTime / craneDuration, 1.0);
                 this.camera.position.lerpVectors(this.dollyEndPos, this.craneEndPos, craneProgress);
                 if (craneProgress >= 1.0) {
@@ -794,7 +792,7 @@ class ModelViewer {
                 }
                 break;
             case this.CAMERA_ANIMATION_STATES.ORBIT:
-                const orbitDuration = 12.0;
+                const orbitDuration = 4.0; // Shorter orbit
                 const orbitSpeed = 0.4 + this.smoothedAudioIntensity * 0.2;
                 const orbitRadius = THREE.Vector3.prototype.distanceTo.call(this.camera.position, center);
                 const orbitAngle = stateElapsedTime * orbitSpeed;
