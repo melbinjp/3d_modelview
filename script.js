@@ -566,7 +566,8 @@ class ModelViewer {
             center.copy(box.getCenter(new THREE.Vector3()));
         }
 
-        const boundingSphere = box.getSphere(new THREE.Sphere());
+        const boundingSphere = new THREE.Sphere();
+        box.getBoundingSphere(boundingSphere);
         const radius = boundingSphere.radius;
         
         const distance = radius / Math.sin(THREE.MathUtils.degToRad(this.camera.fov / 2));
@@ -695,7 +696,8 @@ class ModelViewer {
             
             const box = new THREE.Box3().setFromObject(this.currentModel);
             const center = box.getCenter(new THREE.Vector3());
-            const boundingSphere = box.getSphere(new THREE.Sphere());
+            const boundingSphere = new THREE.Sphere();
+            box.getBoundingSphere(boundingSphere);
             const radius = boundingSphere.radius;
 
             // Aspect ratio correction
