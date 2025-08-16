@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Model Viewer Pro (Refactored)</title>
+    <meta name="description" content="Professional 3D model viewer with advanced controls, animations, and real-time rendering">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
+    <!-- The single entry point for the bundled application -->
+    <script type="module" src="/src/main.js"></script>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <!-- The body is the same as the original index.html -->
+    <div id="app">
+        <div id="loadingScreen">
+            <div class="loader"></div>
+            <p>Loading 3D Model Viewer...</p>
+        </div>
+
+        <div id="mainContainer" class="hidden">
+            <div id="sidebar" class="sidebar">
+                <div class="sidebar-header">
+                    <h2>Controls</h2>
+                </div>
+
+                <div class="accordion">
+                    <div class="accordion-item is-open">
+                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M12 3v12M8 11l4 4 4-4"/></svg> Load Model</h3>
+                        <div class="accordion-content">
+                            <div class="control-section">
+                                <div class="input-group">
+                                    <input type="text" id="modelUrl" placeholder="Enter model URL..." class="input-field">
+                                    <button id="loadUrlBtn" class="btn primary">Load Model</button>
+                                </div>
+                                <div class="file-drop" id="fileDrop">
+                                    <input type="file" id="fileInput" accept=".glb,.gltf,.fbx,.obj,.dae,.stl,.ply,.mtl" hidden>
+                                    <div class="drop-content">
+                                        <div class="upload-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg></div>
+                                        <p><strong>Drag & Drop</strong> or <span class="link-text">browse</span></p>
+                                        <div class="format-tags"><span class="format-tag">GLB</span><span class="format-tag">GLTF</span><span class="format-tag">FBX</span></div>
+                                    </div>
+                                </div>
+                                <div class="quick-samples">
+                                    <h4><svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg> Quick Samples</h4>
+                                    <div class="sample-buttons">
+                                        <button class="sample-btn" data-url="https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf">Helmet</button>
+                                        <button class="sample-btn" data-url="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF/Duck.gltf">Duck</button>
+                                        <button class="sample-btn" data-url="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Avocado/glTF/Avocado.gltf">Avocado</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="viewport" class="viewport">
+                <div id="viewerContainer"></div>
+                <div id="stats" class="stats-panel">
+                    <div class="stats-header"><span class="stats-title"><svg class="icon" viewBox="0 0 24 24"><path d="M12 20V10M18 20V4M6 20V16"/></svg> Stats</span></div>
+                    <div class="stat-item"><span class="stat-label">Vertices</span><span id="vertexCount" class="stat-value">0</span></div>
+                    <div class="stat-item"><span class="stat-label">Faces</span><span id="faceCount" class="stat-value">0</span></div>
+                    <div class="stat-item"><span class="stat-label">FPS</span><span id="fpsCounter" class="stat-value">60</span></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>
