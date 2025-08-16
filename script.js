@@ -14,16 +14,39 @@ class ModelViewer {
         this.superheroMode = false;
         this.originalCameraPos = null;
         this.superheroAudio = null;
+        this.audioContext = null;
+        this.audioSource = null;
+        this.audioAnalyser = null;
         this.customAudioFile = null;
         this.animationPaused = false;
         this.superheroAnimationPaused = false;
+        this.smoothedAudioIntensity = 0;
+        this.CAMERA_ANIMATION_STATES = {
+            NONE: 'NONE',
+            ANCHOR: 'ANCHOR',
+            DOLLY: 'DOLLY',
+            CRANE: 'CRANE',
+            ORBIT: 'ORBIT',
+            STILL: 'STILL'
+        };
+        this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.NONE;
+        this.stateEnterTime = 0;
+        this.dollyStartPos = new THREE.Vector3();
+        this.dollyEndPos = new THREE.Vector3();
+        this.craneEndPos = new THREE.Vector3();
+        this.beatDetected = false;
+        this.lastBeatTime = 0;
+        this.originalGroundMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.1 });
+        this.shadowCatcherMaterial = new THREE.ShadowMaterial({ opacity: 0.5 });
         this.icons = {
-            superhero: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3zM12 11l-4 4 1.41 1.41L12 13.83l2.59 2.58L16 15l-4-4z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-            close: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 6L6 18" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 6L18 18" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+            superhero: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3zM12 11l-4 4 1.41 1.41L12 13.83l2.59 2.58L16 15l-4-4z"/></svg>`,
+            close: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 6L6 18"/><path d="M6 6L18 18"/></svg>`
         };
         
         this.init();
         this.setupEventListeners();
+        document.getElementById('superheroBtn').innerHTML = this.icons.superhero;
+        this.setSidebarHeight();
         this.animate();
 
         const loadingText = document.querySelector('#loadingScreen p');
@@ -65,8 +88,7 @@ class ModelViewer {
         this.setupPostProcessing();
         
         const groundGeometry = new THREE.PlaneGeometry(50, 50);
-        const groundMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.1 });
-        this.groundPlane = new THREE.Mesh(groundGeometry, groundMaterial);
+        this.groundPlane = new THREE.Mesh(groundGeometry, this.originalGroundMaterial);
         this.groundPlane.rotation.x = -Math.PI / 2;
         this.groundPlane.position.y = 0;
         this.groundPlane.receiveShadow = true;
@@ -242,6 +264,21 @@ class ModelViewer {
             this.lights.ambient.intensity = parseFloat(e.target.value);
             this.updateValueDisplay(e.target);
         });
+        document.getElementById('envIntensity').addEventListener('input', (e) => {
+            this.renderer.toneMappingExposure = parseFloat(e.target.value);
+            this.updateValueDisplay(e.target);
+        });
+        document.getElementById('loadHdriBtn').addEventListener('click', () => {
+            const url = document.getElementById('hdriUrl').value.trim();
+            if (url) this.loadEnvironment(url);
+        });
+        document.querySelectorAll('.sample-hdri-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const url = btn.dataset.url;
+                document.getElementById('hdriUrl').value = url;
+                this.loadEnvironment(url);
+            });
+        });
         document.getElementById('directionalIntensity').addEventListener('input', (e) => {
             this.lights.directional.intensity = parseFloat(e.target.value);
             this.updateValueDisplay(e.target);
@@ -302,10 +339,12 @@ class ModelViewer {
                 ctx.fillRect(0, 0, 512, 512);
                 const texture = new THREE.CanvasTexture(canvas);
                 this.scene.background = texture;
+                this.groundPlane.material = this.originalGroundMaterial;
                 break;
             case 'solid':
                 const color = document.getElementById('bgColor').value;
                 this.scene.background = new THREE.Color(color);
+                this.groundPlane.material = this.originalGroundMaterial;
                 break;
             case 'hdri':
                 const hdriCanvas = document.createElement('canvas');
@@ -329,6 +368,7 @@ class ModelViewer {
                 hdriTexture.mapping = THREE.EquirectangularReflectionMapping;
                 this.scene.background = hdriTexture;
                 this.scene.environment = hdriTexture;
+                this.groundPlane.material = this.shadowCatcherMaterial;
                 break;
         }
     }
@@ -405,6 +445,27 @@ class ModelViewer {
         };
 
         reader.readAsArrayBuffer(file);
+    }
+
+    loadEnvironment(url) {
+        if (!url) return;
+        this.showProgress(true, 'Loading Environment...');
+
+        new THREE.RGBELoader().load(url, (texture) => {
+            texture.mapping = THREE.EquirectangularReflectionMapping;
+            this.scene.background = texture;
+            this.scene.environment = texture;
+            this.groundPlane.material = this.shadowCatcherMaterial;
+            this.showProgress(false);
+        }, (progress) => {
+            if (progress.lengthComputable) {
+                this.updateProgress(progress.loaded / progress.total);
+            }
+        }, (error) => {
+            console.error('Error loading environment:', error);
+            this.showError('Failed to load environment from URL.');
+            this.showProgress(false);
+        });
     }
 
     getLoaderForUrl(url) {
@@ -497,19 +558,21 @@ class ModelViewer {
         if (!this.currentModel) return;
 
         const box = new THREE.Box3().setFromObject(this.currentModel);
-        const size = box.getSize(new THREE.Vector3());
         const center = box.getCenter(new THREE.Vector3());
-        const maxSize = Math.max(size.x, size.y, size.z);
         
         if (box.min.y < 0) {
             this.currentModel.position.y = -box.min.y;
             box.setFromObject(this.currentModel);
             center.copy(box.getCenter(new THREE.Vector3()));
         }
+
+        const boundingSphere = new THREE.Sphere();
+        box.getBoundingSphere(boundingSphere);
+        const radius = boundingSphere.radius;
         
-        const distance = maxSize * 2;
+        const distance = radius / Math.sin(THREE.MathUtils.degToRad(this.camera.fov / 2));
         
-        this.camera.position.set(center.x + distance, center.y + distance * 0.5, center.z + distance);
+        this.camera.position.set(center.x, center.y + radius * 0.4, center.z + distance);
         this.camera.lookAt(center);
         this.controls.target.copy(center);
         this.controls.update();
@@ -536,6 +599,7 @@ class ModelViewer {
     }
 
     onWindowResize() {
+        this.setSidebarHeight();
         const container = document.getElementById('viewerContainer');
         const width = container.clientWidth;
         const height = container.clientHeight;
@@ -548,6 +612,11 @@ class ModelViewer {
         }
         
         this.renderer.render(this.scene, this.camera);
+    }
+
+    setSidebarHeight() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.style.height = window.innerHeight + 'px';
     }
 
     animate() {
@@ -593,9 +662,13 @@ class ModelViewer {
         setTimeout(() => this.playSuperheroMusic(), 3000);
         
         setTimeout(() => {
+            document.body.classList.add('superhero-mode-active');
             this.superheroMode = true;
             this.controls.enabled = false;
             
+            this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.ANCHOR;
+            this.stateEnterTime = Date.now();
+
             document.getElementById('superheroControls').classList.remove('hidden');
             document.getElementById('superheroBtn').innerHTML = this.icons.close;
 
@@ -623,11 +696,21 @@ class ModelViewer {
             
             const box = new THREE.Box3().setFromObject(this.currentModel);
             const center = box.getCenter(new THREE.Vector3());
-            const size = box.getSize(new THREE.Vector3());
-            const maxSize = Math.max(size.x, size.y, size.z);
+            const boundingSphere = new THREE.Sphere();
+            box.getBoundingSphere(boundingSphere);
+            const radius = boundingSphere.radius;
+
+            // Aspect ratio correction
+            const aspect = this.camera.aspect;
+            const aspectFactor = aspect < 1 ? 1 / aspect : 1;
+
+            // Define camera positions using bounding sphere radius
+            this.dollyStartPos.set(center.x, center.y + radius * 0.5, center.z + radius * 2.5 * aspectFactor);
+            this.dollyEndPos.set(center.x, center.y, center.z + radius * 1.5 * aspectFactor);
+            this.craneEndPos.set(center.x, center.y + radius, center.z + radius * 1.8 * aspectFactor);
             
             this.spotlight = new THREE.SpotLight(0xffffff, 2.0, 0, Math.PI / 6, 0.3);
-            this.spotlight.position.set(center.x + maxSize, center.y + maxSize * 2, center.z + maxSize);
+            this.spotlight.position.set(center.x, center.y + radius * 4, center.z);
             this.spotlight.target.position.copy(center);
             this.spotlight.castShadow = true;
             this.scene.add(this.spotlight);
@@ -648,72 +731,115 @@ class ModelViewer {
                 }, 1500);
             }, 500);
             
-            if (this.superheroAudio) {
-                this.superheroAudio.addEventListener('ended', () => this.exitSuperheroMode());
-            } else {
-                setTimeout(() => this.exitSuperheroMode(), 30000);
-            }
+            // The animation sequence is now self-contained and timed.
+            // We'll use a fixed timeout to exit the mode, rather than relying on the audio length.
+            setTimeout(() => this.exitSuperheroMode(), 30000);
         }, 1000);
     }
     
     updateSuperheroCamera() {
-        const elapsed = (Date.now() - this.superheroStartTime) / 1000;
-        const box = new THREE.Box3().setFromObject(this.currentModel);
-        const center = box.getCenter(new THREE.Vector3());
-        const size = box.getSize(new THREE.Vector3());
-        const maxSize = Math.max(size.x, size.y, size.z);
-        
-        const musicDuration = this.superheroAudio ? (this.superheroAudio.duration || 30) : 30;
-        const progress = elapsed / musicDuration;
-        
-        let audioIntensity = 1;
+        if (!this.superheroMode || !this.currentModel) return;
+
+        const now = Date.now();
+        const stateElapsedTime = (now - this.stateEnterTime) / 1000;
+
+        // --- Refined Audio Analysis ---
+        let rawIntensity = 0;
         if (this.audioAnalyser) {
             const dataArray = new Uint8Array(this.audioAnalyser.frequencyBinCount);
             this.audioAnalyser.getByteFrequencyData(dataArray);
-            audioIntensity = (dataArray.reduce((a, b) => a + b) / dataArray.length) / 128;
+
+            const bassBins = dataArray.slice(0, Math.floor(dataArray.length * 0.2));
+            const averageBass = bassBins.reduce((a, b) => a + b, 0) / bassBins.length;
+            rawIntensity = averageBass / 128; // Normalize to ~0-2
+
+            const smoothingFactor = 0.05;
+            this.smoothedAudioIntensity += (rawIntensity - this.smoothedAudioIntensity) * smoothingFactor;
+
+            // Beat Detection
+            const beatThreshold = 0.4;
+            const beatCooldown = 1.0; // seconds
+            if (rawIntensity > (this.smoothedAudioIntensity + beatThreshold) && (now - this.lastBeatTime) / 1000 > beatCooldown) {
+                this.beatDetected = true;
+                this.lastBeatTime = now;
+            } else {
+                this.beatDetected = false;
+            }
         }
-        
-        if (progress < 0.1) {
-            const t = progress / 0.1;
-            const skyHeight = maxSize * (8 - t * 6);
-            const distance = maxSize * (3 - t * 1.5);
-            this.camera.position.set(center.x + distance * 0.3, center.y + skyHeight, center.z + distance * 0.5);
-        } else if (progress < 0.25) {
-            const t = (progress - 0.1) / 0.15;
-            const distance = maxSize * (1.5 - t * 0.3);
-            const angle = t * Math.PI * 0.3;
-            this.camera.position.set(center.x + Math.cos(angle) * distance, center.y + maxSize * (2 - t * 1.2), center.z + Math.sin(angle) * distance);
-        } else if (progress < 0.6) {
-            const t = (progress - 0.25) / 0.35;
-            const speed = audioIntensity * 2;
-            const angle = t * Math.PI * 4 * speed;
-            const distance = maxSize * (1.2 + audioIntensity * 0.5);
-            const verticalMove = Math.sin(t * Math.PI * 2) * maxSize * 0.4;
-            this.camera.position.set(center.x + Math.cos(angle) * distance, center.y + maxSize * 0.8 + verticalMove, center.z + Math.sin(angle) * distance);
-        } else {
-            const t = (progress - 0.6) / 0.4;
-            const angle = Math.PI * 8 + t * Math.PI * audioIntensity;
-            const distance = maxSize * (1.0 + t * 2.5);
-            const heroicRise = t * t * 1.5;
-            this.camera.position.set(center.x + Math.cos(angle) * distance, center.y + maxSize * (0.6 + heroicRise), center.z + Math.sin(angle) * distance);
+
+        const box = new THREE.Box3().setFromObject(this.currentModel);
+        const center = box.getCenter(new THREE.Vector3());
+
+        switch (this.cameraAnimationState) {
+            case this.CAMERA_ANIMATION_STATES.ANCHOR:
+                this.camera.position.copy(this.dollyStartPos);
+                if (stateElapsedTime > 1.5) { // Shorter anchor
+                    this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.DOLLY;
+                    this.stateEnterTime = now;
+                }
+                break;
+            case this.CAMERA_ANIMATION_STATES.DOLLY:
+                const dollyDuration = 3.0; // Faster dolly
+                const dollyProgress = Math.min(stateElapsedTime / dollyDuration, 1.0);
+                this.camera.position.lerpVectors(this.dollyStartPos, this.dollyEndPos, dollyProgress);
+
+                // Transition on a beat or if the time is up
+                if (this.beatDetected || dollyProgress >= 1.0) {
+                    this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.CRANE;
+                    this.stateEnterTime = now;
+                }
+                break;
+            case this.CAMERA_ANIMATION_STATES.CRANE:
+                const craneDuration = 2.0; // Faster crane
+                const craneProgress = Math.min(stateElapsedTime / craneDuration, 1.0);
+                this.camera.position.lerpVectors(this.dollyEndPos, this.craneEndPos, craneProgress);
+                if (craneProgress >= 1.0) {
+                    this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.ORBIT;
+                    this.stateEnterTime = now;
+                }
+                break;
+            case this.CAMERA_ANIMATION_STATES.ORBIT:
+                const orbitDuration = 4.0; // Shorter orbit
+                const orbitSpeed = 0.4 + this.smoothedAudioIntensity * 0.2;
+                const orbitRadius = THREE.Vector3.prototype.distanceTo.call(this.camera.position, center);
+                const orbitAngle = stateElapsedTime * orbitSpeed;
+
+                this.camera.position.x = center.x + Math.cos(orbitAngle) * orbitRadius;
+                this.camera.position.z = center.z + Math.sin(orbitAngle) * orbitRadius;
+                this.camera.position.y = this.craneEndPos.y + Math.sin(stateElapsedTime * 2) * (orbitRadius * 0.1 * this.smoothedAudioIntensity);
+
+                // Transition if music fades or time is up
+                if (stateElapsedTime > orbitDuration || (this.superheroAudio && this.superheroAudio.volume < 0.1)) {
+                    this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.STILL;
+                    this.stateEnterTime = now;
+                }
+                break;
+            case this.CAMERA_ANIMATION_STATES.STILL:
+                // Hold position
+                break;
+            case this.CAMERA_ANIMATION_STATES.NONE:
+            default:
+                break;
         }
-        
-        const lookTarget = center.clone();
-        lookTarget.y += maxSize * (0.2 + audioIntensity * 0.1);
-        this.camera.lookAt(lookTarget);
-        
-        if (audioIntensity > 1.2) {
-            const shakeIntensity = (audioIntensity - 1.2) * 0.02;
-            this.camera.position.x += (Math.random() - 0.5) * shakeIntensity;
-            this.camera.position.y += (Math.random() - 0.5) * shakeIntensity;
-        }
+
+        this.camera.lookAt(center);
     }
     
     exitSuperheroMode() {
         if (this.superheroAudio) {
             this.fadeOutAudio();
         }
+
+        if (this.audioSource) {
+            this.audioSource.disconnect();
+            this.audioSource = null;
+            this.audioAnalyser = null;
+            this.audioContext = null;
+        }
+        this.smoothedAudioIntensity = 0;
+        this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.NONE;
         
+        document.body.classList.remove('superhero-mode-active');
         this.superheroMode = false;
         this.controls.enabled = true;
         
@@ -815,6 +941,22 @@ class ModelViewer {
         }
     }
 
+    setupAudioAnalysis() {
+        if (this.audioContext) return;
+
+        try {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            this.audioSource = this.audioContext.createMediaElementSource(this.superheroAudio);
+            this.audioAnalyser = this.audioContext.createAnalyser();
+
+            this.audioSource.connect(this.audioAnalyser);
+            this.audioAnalyser.connect(this.audioContext.destination);
+
+            this.audioAnalyser.fftSize = 256;
+        } catch (e) {
+            console.error("Web Audio API is not supported in this browser.", e);
+        }
+    }
     
     loadAudioFile(file) {
         const supportedFormats = ['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac', 'wma'];
@@ -856,6 +998,9 @@ class ModelViewer {
             
             this.superheroAudio = new Audio(audioSource);
             this.superheroAudio.volume = 0;
+
+            this.setupAudioAnalysis();
+
             this.superheroAudio.play().then(() => {
                 this.fadeInAudio();
             }).catch(e => {

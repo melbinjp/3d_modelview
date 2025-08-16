@@ -1,0 +1,29 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "<div align=\"center\">   <h3>🎯 Professional 3D Model Viewer with Advanced Controls</h3>   <p>A cutting-edge, production-ready 3D model viewer built with modern web technologies</p>",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/melbinjp/3d_modelview.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/melbinjp/3d_modelview/issues"
+  },
+  "homepage": "https://github.com/melbinjp/3d_modelview#readme",
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "@lhci/cli": "^0.15.1",
+    "@playwright/test": "^1.54.2",
+    "http-server": "^14.1.1",
+    "lighthouse": "^12.8.1",
+    "playwright": "^1.54.2"
+  }
+}
