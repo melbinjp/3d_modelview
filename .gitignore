@@ -61,3 +61,8 @@ temp/
 
 # Yarn Integrity file
 .yarn-integrity
+
+# Test results
+test-results/
+.lighthouseci/
+tests/smoke.spec.js-snapshots/

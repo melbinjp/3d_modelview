@@ -24,24 +24,28 @@
 ## 🌟 Key Features
 
 ### 🎮 Interactive Experience
+
 - **Multi-Format Support**: GLB, GLTF, FBX, OBJ with drag & drop
 - **Advanced Controls**: Orbit, zoom, pan with smooth damping
 - **Auto-Rotation**: Configurable speed and direction
 - **Camera Presets**: Reset and fit-to-view functionality
 
 ### 🎨 Visual Excellence
+
 - **Dynamic Lighting**: Ambient and directional light controls
 - **Post-Processing**: Bloom effects and tone mapping
 - **Environment Options**: Gradient, solid, and HDRI backgrounds
 - **Shadow Mapping**: High-quality real-time shadows
 
 ### 📱 Cross-Platform
+
 - **Responsive Design**: Seamless experience on all devices
 - **Touch Optimized**: Native mobile gestures
 - **PWA Ready**: Install on home screen
 - **Offline Capable**: Service worker caching
 
 ### 🔧 Developer Friendly
+
 - **Modern Architecture**: ES6+ classes and modules
 - **Performance Optimized**: 60fps on desktop, 30fps on mobile
 - **Error Handling**: Comprehensive error boundaries
@@ -50,12 +54,14 @@
 ## 🚀 Quick Start
 
 ### GitHub Pages Deployment
+
 1. Fork or clone this repository
 2. Push to your GitHub repository
 3. Enable GitHub Pages in repository settings
 4. Your 3D viewer is live at `https://yourusername.github.io/repositoryname`
 
 ### Local Development
+
 1. Download or clone the repository
 2. Open `index.html` in a modern web browser
 3. Start loading and viewing 3D models!
@@ -65,17 +71,20 @@
 ## 🎯 Usage Guide
 
 ### Loading Models
+
 1. **URL Method**: Paste a direct link to your 3D model
 2. **File Upload**: Drag & drop or click to browse local files
 3. **Supported Formats**: .glb, .gltf, .fbx, .obj
 
 ### Navigation Controls
+
 - **Rotate**: Left mouse button or single finger drag
 - **Zoom**: Mouse wheel or pinch gesture
 - **Pan**: Right mouse button or two finger drag
 - **Reset**: Use camera reset button in controls
 
 ### Advanced Features
+
 - **Lighting**: Adjust ambient and directional lighting
 - **Effects**: Enable bloom and other post-processing
 - **Animation**: Control model animations if available
@@ -83,13 +92,13 @@
 
 ## 📋 Browser Support
 
-| Browser | Version | Status |
-|---------|---------|--------|
-| Chrome | 51+ | ✅ Fully Supported |
-| Firefox | 51+ | ✅ Fully Supported |
-| Safari | 10+ | ✅ Fully Supported |
-| Edge | 79+ | ✅ Fully Supported |
-| Mobile | WebGL | ✅ Optimized |
+| Browser | Version | Status             |
+| ------- | ------- | ------------------ |
+| Chrome  | 51+     | ✅ Fully Supported |
+| Firefox | 51+     | ✅ Fully Supported |
+| Safari  | 10+     | ✅ Fully Supported |
+| Edge    | 79+     | ✅ Fully Supported |
+| Mobile  | WebGL   | ✅ Optimized       |
 
 ## 🏗️ Architecture
 
@@ -108,16 +117,18 @@
 ## 🔧 Configuration
 
 ### Performance Settings
+
 ```javascript
 // Adjust quality settings in script.js
 const QUALITY_SETTINGS = {
   LOW: { shadows: false, bloom: false, antialias: false },
   MEDIUM: { shadows: true, bloom: false, antialias: true },
-  HIGH: { shadows: true, bloom: true, antialias: true }
+  HIGH: { shadows: true, bloom: true, antialias: true },
 };
 ```
 
 ### Customization
+
 ```css
 /* Modify theme colors in styles.css */
 :root {
@@ -169,6 +180,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 If you encounter any issues or have questions:
+
 - Open an issue on GitHub
 - Check the [documentation](docs/)
 - Review browser console for error messages
@@ -178,4 +190,4 @@ If you encounter any issues or have questions:
 <div align="center">
   <p>Made with ❤️ for the 3D web community</p>
   <p>⭐ Star this repo if you find it useful!</p>
-</div> 
+</div>

@@ -3,11 +3,7 @@
     "name": "minScore",
     "expected": 0.9,
     "actual": 0,
-    "values": [
-      0,
-      0,
-      0
-    ],
+    "values": [0, 0, 0],
     "operator": ">=",
     "passed": false,
     "auditId": "bootup-time",
@@ -20,11 +16,7 @@
     "name": "minScore",
     "expected": 0.9,
     "actual": 0,
-    "values": [
-      0,
-      0,
-      0
-    ],
+    "values": [0, 0, 0],
     "operator": ">=",
     "passed": false,
     "auditId": "button-name",
@@ -37,11 +29,7 @@
     "name": "maxLength",
     "expected": 0,
     "actual": 2,
-    "values": [
-      2,
-      2,
-      2
-    ],
+    "values": [2, 2, 2],
     "operator": "<=",
     "passed": false,
     "auditId": "cache-insight",
@@ -54,11 +42,7 @@
     "name": "minScore",
     "expected": 0.9,
     "actual": 0.5,
-    "values": [
-      0.5,
-      0.5,
-      0.5
-    ],
+    "values": [0.5, 0.5, 0.5],
     "operator": ">=",
     "passed": false,
     "auditId": "document-latency-insight",
@@ -70,11 +54,7 @@
     "name": "minScore",
     "expected": 0.9,
     "actual": 0,
-    "values": [
-      0,
-      0,
-      0
-    ],
+    "values": [0, 0, 0],
     "operator": ">=",
     "passed": false,
     "auditId": "dom-size-insight",
@@ -87,11 +67,7 @@
     "name": "minScore",
     "expected": 0.9,
     "actual": 0.51,
-    "values": [
-      0.33,
-      0.49,
-      0.51
-    ],
+    "values": [0.33, 0.49, 0.51],
     "operator": ">=",
     "passed": false,
     "auditId": "first-contentful-paint",
@@ -104,11 +80,7 @@
     "name": "minScore",
     "expected": 0.9,
     "actual": 0.79,
-    "values": [
-      0.63,
-      0.78,
-      0.79
-    ],
+    "values": [0.63, 0.78, 0.79],
     "operator": ">=",
     "passed": false,
     "auditId": "largest-contentful-paint",
@@ -121,11 +93,7 @@
     "name": "minScore",
     "expected": 0.9,
     "actual": 0,
-    "values": [
-      0,
-      0,
-      0
-    ],
+    "values": [0, 0, 0],
     "operator": ">=",
     "passed": false,
     "auditId": "mainthread-work-breakdown",
@@ -138,11 +106,7 @@
     "name": "minScore",
     "expected": 0.9,
     "actual": 0,
-    "values": [
-      0,
-      0,
-      0
-    ],
+    "values": [0, 0, 0],
     "operator": ">=",
     "passed": false,
     "auditId": "max-potential-fid",
@@ -155,11 +119,7 @@
     "name": "minScore",
     "expected": 0.9,
     "actual": 0,
-    "values": [
-      0,
-      0,
-      0
-    ],
+    "values": [0, 0, 0],
     "operator": ">=",
     "passed": false,
     "auditId": "network-dependency-tree-insight",
@@ -172,11 +132,7 @@
     "name": "maxLength",
     "expected": 0,
     "actual": 19,
-    "values": [
-      19,
-      19,
-      19
-    ],
+    "values": [19, 19, 19],
     "operator": "<=",
     "passed": false,
     "auditId": "render-blocking-insight",
@@ -189,11 +145,7 @@
     "name": "maxLength",
     "expected": 0,
     "actual": 8,
-    "values": [
-      8,
-      8,
-      8
-    ],
+    "values": [8, 8, 8],
     "operator": "<=",
     "passed": false,
     "auditId": "render-blocking-resources",
@@ -206,11 +158,7 @@
     "name": "minScore",
     "expected": 0.9,
     "actual": 0,
-    "values": [
-      0,
-      0,
-      0
-    ],
+    "values": [0, 0, 0],
     "operator": ">=",
     "passed": false,
     "auditId": "select-name",
@@ -223,11 +171,7 @@
     "name": "minScore",
     "expected": 0.9,
     "actual": 0,
-    "values": [
-      0,
-      0,
-      0
-    ],
+    "values": [0, 0, 0],
     "operator": ">=",
     "passed": false,
     "auditId": "speed-index",
@@ -240,11 +184,7 @@
     "name": "minScore",
     "expected": 0.9,
     "actual": 0.5,
-    "values": [
-      0.5,
-      0.5,
-      0.5
-    ],
+    "values": [0.5, 0.5, 0.5],
     "operator": ">=",
     "passed": false,
     "auditId": "total-byte-weight",
@@ -257,11 +197,7 @@
     "name": "maxLength",
     "expected": 0,
     "actual": 1,
-    "values": [
-      1,
-      1,
-      1
-    ],
+    "values": [1, 1, 1],
     "operator": "<=",
     "passed": false,
     "auditId": "unminified-css",
@@ -274,11 +210,7 @@
     "name": "maxLength",
     "expected": 0,
     "actual": 6,
-    "values": [
-      6,
-      6,
-      6
-    ],
+    "values": [6, 6, 6],
     "operator": "<=",
     "passed": false,
     "auditId": "unminified-javascript",
@@ -291,11 +223,7 @@
     "name": "maxLength",
     "expected": 0,
     "actual": 3,
-    "values": [
-      3,
-      3,
-      3
-    ],
+    "values": [3, 3, 3],
     "operator": "<=",
     "passed": false,
     "auditId": "unused-javascript",
@@ -308,11 +236,7 @@
     "name": "maxLength",
     "expected": 0,
     "actual": 2,
-    "values": [
-      2,
-      2,
-      2
-    ],
+    "values": [2, 2, 2],
     "operator": "<=",
     "passed": false,
     "auditId": "uses-long-cache-ttl",
@@ -325,11 +249,7 @@
     "name": "maxLength",
     "expected": 0,
     "actual": 3,
-    "values": [
-      3,
-      3,
-      3
-    ],
+    "values": [3, 3, 3],
     "operator": "<=",
     "passed": false,
     "auditId": "uses-text-compression",
@@ -342,11 +262,7 @@
     "name": "minScore",
     "expected": 0.9,
     "actual": 0,
-    "values": [
-      0,
-      0,
-      0
-    ],
+    "values": [0, 0, 0],
     "operator": ">=",
     "passed": false,
     "auditId": "interactive",
@@ -359,11 +275,7 @@
     "name": "minScore",
     "expected": 0.9,
     "actual": 0,
-    "values": [
-      0,
-      0,
-      0
-    ],
+    "values": [0, 0, 0],
     "operator": ">=",
     "passed": false,
     "auditId": "label",
@@ -376,11 +288,7 @@
     "name": "minScore",
     "expected": 0.85,
     "actual": 0.5,
-    "values": [
-      0.44,
-      0.49,
-      0.5
-    ],
+    "values": [0.44, 0.49, 0.5],
     "operator": ">=",
     "passed": false,
     "auditProperty": "performance",
@@ -392,11 +300,7 @@
     "name": "minScore",
     "expected": 0.9,
     "actual": 0.71,
-    "values": [
-      0.71,
-      0.71,
-      0.71
-    ],
+    "values": [0.71, 0.71, 0.71],
     "operator": ">=",
     "passed": false,
     "auditProperty": "accessibility",

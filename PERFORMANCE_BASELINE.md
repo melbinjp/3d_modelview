@@ -4,12 +4,12 @@ This document contains the initial Lighthouse performance baseline for this proj
 
 ## Mobile
 
-| Category         | Score |
-| ---------------- | ----- |
-| Performance      | 50    |
-| Accessibility    | 71    |
-| Best Practices   | 83    |
-| SEO              | 92    |
+| Category       | Score |
+| -------------- | ----- |
+| Performance    | 50    |
+| Accessibility  | 71    |
+| Best Practices | 83    |
+| SEO            | 92    |
 
 **Report Link:** [Lighthouse Report](https://storage.googleapis.com/lighthouse-infrastructure.appspot.com/reports/1755375476910-59339.report.html)
 

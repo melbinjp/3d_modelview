@@ -4,7 +4,9 @@
   "description": "<div align=\"center\">   <h3>🎯 Professional 3D Model Viewer with Advanced Controls</h3>   <p>A cutting-edge, production-ready 3D model viewer built with modern web technologies</p>",
   "main": "script.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "playwright test",
+    "lint": "prettier --check .",
+    "lint:fix": "prettier --write ."
   },
   "repository": {
     "type": "git",
@@ -24,6 +26,7 @@
     "@playwright/test": "^1.54.2",
     "http-server": "^14.1.1",
     "lighthouse": "^12.8.1",
-    "playwright": "^1.54.2"
+    "playwright": "^1.54.2",
+    "prettier": "^3.3.2"
   }
 }

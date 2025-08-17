@@ -1,226 +1,655 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>3D Model Viewer Pro</title>
-    <meta name="description" content="Professional 3D model viewer with advanced controls, animations, and real-time rendering">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" integrity="sha384-CI3ELBVUz9XQO+97x6nwMDPosPR5XvsxW2ua7N1Xeygeh1IxtgqtCkGfQY9WWdHu" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js" integrity="sha384-fljlqkjWlmSFjkESkQvm77heIZpoWmXEOzlCA7kOpGUH+95Zk0yGfQieWM2q136E" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js" integrity="sha384-2p/UEtsvNhL+wOAYuEC0nPIxmadBIxZnUrgBcwTle8Ur/abmFqGeiNvkFDHGocOM" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js" integrity="sha384-UWFC8mrevmKCZhKbJ/8/dqLrRAvHArRwJCKjwruJuXyhsebGMFsIK5zrn+R9r+fT" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/MTLLoader.js" integrity="sha384-3YljIMKl/XEbvorEW5PsmELaNNzJxReJMpvhbpYScnKrnRDI8kmxmksZx4HNCxu3" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/ColladaLoader.js" integrity="sha384-ElElVDG/OItkfG6FCh/mbHubpjXL/jWdxkSI0pYvE+aTwfV1Uw3Kq3gZf4qux00x" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js" integrity="sha384-QF8EmP6pyNE+i7WmcltzC4ddzFVKDxfn5WD5gXyKTSE4SCw0R25TI+q0LUlnf7tq" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/PLYLoader.js" integrity="sha384-TRjDrMoP2Iw2zIithJ7Pm10f16V6yXxbUwTEYL5urkonr6Zr+xZ2WDOj2ONVpnSd" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/RGBELoader.js" integrity="sha384-brr1wFCScwAi+SbB5QEzZ6kd5yjKCrFmRuUqxbw0XQSElYZz7XPg9+lVO8jdV0yX" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js" integrity="sha384-wagZhIFgY4hD+7awjQjR4e2E294y6J2HSnd8eTNc15ZubTeQeVRZwhQJ+W6hnBsf" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js" integrity="sha384-nhO9toQuMo5osCuA0l+YFpSqscZWxDu251Bnho2gD3kSPv1neEwHg0LyEmrA+mPj" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js" integrity="sha384-mY+ii969jnDCI2HjRHftH2NZVkIO5ZGUkcnGCg3oVJ3kVstWQXwerYWBg+nbUG4R" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/Pass.js" integrity="sha384-HUR8WVDx2FD1OlSm1nohJJ2a3aIfeClGjv/oVFdTHd3skt+4i7/z0dl/ux4nd2ti" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js" integrity="sha384-I3lsvPeDJYFrEAzn/TA0yhc/SCYKwpyfyq8lKzHYKohu43H9f7xc/Q9ZWgSVUDl3" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js" integrity="sha384-GkidzTYmQg24v13sa3xhBBbvOLbVLO1QxfyKLdOWweQqNqS/iWwUst2T1fER2Xrg" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js" integrity="sha384-2EpLreWSFuZsk4hcSplXLhlHd/wzvDNF907bTGIXSXM0SlhJNzy4YK0DhBFvkFEs" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js" integrity="sha384-aVQ2QnWkoxhOefDB0YZB64OPVzujvccydpcC7UqMDJUK0ChwA382zOHmrWHGDRRa" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+    <meta
+      name="description"
+      content="Professional 3D model viewer with advanced controls, animations, and real-time rendering"
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>"
+    />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"
+      integrity="sha384-CI3ELBVUz9XQO+97x6nwMDPosPR5XvsxW2ua7N1Xeygeh1IxtgqtCkGfQY9WWdHu"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"
+      integrity="sha384-fljlqkjWlmSFjkESkQvm77heIZpoWmXEOzlCA7kOpGUH+95Zk0yGfQieWM2q136E"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"
+      integrity="sha384-2p/UEtsvNhL+wOAYuEC0nPIxmadBIxZnUrgBcwTle8Ur/abmFqGeiNvkFDHGocOM"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"
+      integrity="sha384-UWFC8mrevmKCZhKbJ/8/dqLrRAvHArRwJCKjwruJuXyhsebGMFsIK5zrn+R9r+fT"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/MTLLoader.js"
+      integrity="sha384-3YljIMKl/XEbvorEW5PsmELaNNzJxReJMpvhbpYScnKrnRDI8kmxmksZx4HNCxu3"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/ColladaLoader.js"
+      integrity="sha384-ElElVDG/OItkfG6FCh/mbHubpjXL/jWdxkSI0pYvE+aTwfV1Uw3Kq3gZf4qux00x"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"
+      integrity="sha384-QF8EmP6pyNE+i7WmcltzC4ddzFVKDxfn5WD5gXyKTSE4SCw0R25TI+q0LUlnf7tq"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/PLYLoader.js"
+      integrity="sha384-TRjDrMoP2Iw2zIithJ7Pm10f16V6yXxbUwTEYL5urkonr6Zr+xZ2WDOj2ONVpnSd"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/RGBELoader.js"
+      integrity="sha384-brr1wFCScwAi+SbB5QEzZ6kd5yjKCrFmRuUqxbw0XQSElYZz7XPg9+lVO8jdV0yX"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"
+      integrity="sha384-wagZhIFgY4hD+7awjQjR4e2E294y6J2HSnd8eTNc15ZubTeQeVRZwhQJ+W6hnBsf"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"
+      integrity="sha384-nhO9toQuMo5osCuA0l+YFpSqscZWxDu251Bnho2gD3kSPv1neEwHg0LyEmrA+mPj"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"
+      integrity="sha384-mY+ii969jnDCI2HjRHftH2NZVkIO5ZGUkcnGCg3oVJ3kVstWQXwerYWBg+nbUG4R"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/Pass.js"
+      integrity="sha384-HUR8WVDx2FD1OlSm1nohJJ2a3aIfeClGjv/oVFdTHd3skt+4i7/z0dl/ux4nd2ti"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"
+      integrity="sha384-I3lsvPeDJYFrEAzn/TA0yhc/SCYKwpyfyq8lKzHYKohu43H9f7xc/Q9ZWgSVUDl3"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"
+      integrity="sha384-GkidzTYmQg24v13sa3xhBBbvOLbVLO1QxfyKLdOWweQqNqS/iWwUst2T1fER2Xrg"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"
+      integrity="sha384-2EpLreWSFuZsk4hcSplXLhlHd/wzvDNF907bTGIXSXM0SlhJNzy4YK0DhBFvkFEs"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"
+      integrity="sha384-aVQ2QnWkoxhOefDB0YZB64OPVzujvccydpcC7UqMDJUK0ChwA382zOHmrWHGDRRa"
+      crossorigin="anonymous"
+    ></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
     <div id="app">
-        <div id="loadingScreen">
-            <div class="loader"></div>
-            <p>Loading 3D Model Viewer...</p>
+      <div id="loadingScreen">
+        <div class="loader"></div>
+        <p>Loading 3D Model Viewer...</p>
+      </div>
+
+      <div id="mainContainer" class="hidden">
+        <div id="sidebar" class="sidebar">
+          <div class="sidebar-header">
+            <h2>Controls</h2>
+          </div>
+
+          <div class="accordion">
+            <div class="accordion-item is-open">
+              <h3 class="accordion-header">
+                <svg class="icon" viewBox="0 0 24 24">
+                  <path
+                    d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M12 3v12M8 11l4 4 4-4"
+                  />
+                </svg>
+                Load Model
+              </h3>
+              <div class="accordion-content">
+                <div class="control-section">
+                  <div class="input-group">
+                    <input
+                      type="text"
+                      id="modelUrl"
+                      placeholder="Enter model URL..."
+                      class="input-field"
+                    />
+                    <button id="loadUrlBtn" class="btn primary">
+                      Load Model
+                    </button>
+                  </div>
+                  <div class="file-drop" id="fileDrop">
+                    <input
+                      type="file"
+                      id="fileInput"
+                      accept=".glb,.gltf,.fbx,.obj,.dae,.stl,.ply,.mtl"
+                      hidden
+                    />
+                    <div class="drop-content">
+                      <div class="upload-icon">
+                        <svg class="icon" viewBox="0 0 24 24">
+                          <path
+                            d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"
+                          />
+                        </svg>
+                      </div>
+                      <p>
+                        <strong>Drag & Drop</strong> or
+                        <span class="link-text">browse</span>
+                      </p>
+                      <div class="format-tags">
+                        <span class="format-tag">GLB</span
+                        ><span class="format-tag">GLTF</span
+                        ><span class="format-tag">FBX</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="quick-samples">
+                    <h4>
+                      <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                      </svg>
+                      Quick Samples
+                    </h4>
+                    <div class="sample-buttons">
+                      <button
+                        class="sample-btn"
+                        data-url="https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf"
+                      >
+                        Helmet
+                      </button>
+                      <button
+                        class="sample-btn"
+                        data-url="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF/Duck.gltf"
+                      >
+                        Duck
+                      </button>
+                      <button
+                        class="sample-btn"
+                        data-url="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Avocado/glTF/Avocado.gltf"
+                      >
+                        Avocado
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <h3 class="accordion-header">
+                <svg class="icon" viewBox="0 0 24 24">
+                  <path d="M3 12a9 9 0 1 1 18 0M3 20h18" />
+                </svg>
+                Environment
+              </h3>
+              <div class="accordion-content">
+                <div class="control-section">
+                  <div class="control-group">
+                    <label>Background</label>
+                    <select id="backgroundSelect" class="select-field">
+                      <option value="gradient">Gradient</option>
+                      <option value="solid">Solid Color</option>
+                      <option value="hdri">HDRI</option>
+                    </select>
+                    <input
+                      type="color"
+                      id="bgColor"
+                      value="#f0f0f0"
+                      class="color-input"
+                    />
+                  </div>
+                  <div class="control-group">
+                    <label class="checkbox-label"
+                      ><input type="checkbox" id="showGrid" /><span
+                        class="checkmark"
+                      ></span
+                      >Show Grid</label
+                    >
+                  </div>
+                  <div class="control-group">
+                    <label>Env Intensity</label>
+                    <input
+                      type="range"
+                      id="envIntensity"
+                      min="0"
+                      max="3"
+                      step="0.1"
+                      value="1"
+                      class="slider"
+                    /><span class="value-display">1.0</span>
+                  </div>
+                  <div
+                    class="control-section"
+                    style="
+                      margin-top: 1rem;
+                      border-top: 1px solid #eee;
+                      padding-top: 1rem;
+                    "
+                  >
+                    <h4>
+                      <svg
+                        class="icon"
+                        viewBox="0 0 24 24"
+                        fill-rule="evenodd"
+                        clip-rule="evenodd"
+                      >
+                        <path
+                          d="M12 0c-3.315 0-6 2.685-6 6s6 18 6 18 6-15.315 6-18-2.685-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm0-6c-1.105 0-2 .895-2 2s.895 2 2 2 2-.895 2-2-.895-2-2-2z"
+                        />
+                      </svg>
+                      Load HDRI Environment
+                    </h4>
+                    <div class="input-group">
+                      <input
+                        type="text"
+                        id="hdriUrl"
+                        placeholder="Enter .hdr URL..."
+                        class="input-field"
+                      />
+                      <button id="loadHdriBtn" class="btn primary">Load</button>
+                    </div>
+                    <div class="quick-samples">
+                      <div class="sample-buttons">
+                        <button
+                          class="sample-hdri-btn"
+                          data-url="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/photo_studio_01_2k.hdr"
+                        >
+                          Studio
+                        </button>
+                        <button
+                          class="sample-hdri-btn"
+                          data-url="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/piazza_san_marco_2k.hdr"
+                        >
+                          Plaza
+                        </button>
+                        <button
+                          class="sample-hdri-btn"
+                          data-url="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/shanghai_bund_2k.hdr"
+                        >
+                          Shanghai
+                        </button>
+                        <button
+                          class="sample-hdri-btn"
+                          data-url="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/woods_2k.hdr"
+                        >
+                          Woods
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <h3 class="accordion-header">
+                <svg class="icon" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="5" />
+                  <path
+                    d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+                  />
+                </svg>
+                Lighting
+              </h3>
+              <div class="accordion-content">
+                <div class="control-section">
+                  <div class="control-group">
+                    <label>Ambient</label
+                    ><input
+                      type="range"
+                      id="ambientIntensity"
+                      min="0"
+                      max="2"
+                      step="0.1"
+                      value="0.4"
+                      class="slider"
+                    /><span class="value-display">0.4</span>
+                  </div>
+                  <div class="control-group">
+                    <label>Directional</label
+                    ><input
+                      type="range"
+                      id="directionalIntensity"
+                      min="0"
+                      max="3"
+                      step="0.1"
+                      value="1"
+                      class="slider"
+                    /><span class="value-display">1.0</span>
+                  </div>
+                  <div class="control-group">
+                    <label>Light X</label
+                    ><input
+                      type="range"
+                      id="lightPosX"
+                      min="-10"
+                      max="10"
+                      step="0.5"
+                      value="5"
+                      class="slider"
+                    /><span class="value-display">5.0</span>
+                  </div>
+                  <div class="control-group">
+                    <label>Light Y</label
+                    ><input
+                      type="range"
+                      id="lightPosY"
+                      min="-10"
+                      max="10"
+                      step="0.5"
+                      value="5"
+                      class="slider"
+                    /><span class="value-display">5.0</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <h3 class="accordion-header">
+                <svg class="icon" viewBox="0 0 24 24">
+                  <path
+                    d="M12 3L13.5 8.5L19 10L13.5 11.5L12 17L10.5 11.5L5 10L10.5 8.5L12 3zM5 3L6 5L5 7L4 5L5 3zM19 17L20 19L19 21L18 19L19 17z"
+                  />
+                </svg>
+                Effects
+              </h3>
+              <div class="accordion-content">
+                <div class="control-section">
+                  <div class="control-group">
+                    <label class="checkbox-label"
+                      ><input type="checkbox" id="bloomEnabled" /><span
+                        class="checkmark"
+                      ></span
+                      >Bloom</label
+                    >
+                  </div>
+                  <div class="control-group">
+                    <label>Bloom Strength</label
+                    ><input
+                      type="range"
+                      id="bloomStrength"
+                      min="0"
+                      max="3"
+                      step="0.1"
+                      value="1.5"
+                      class="slider"
+                    /><span class="value-display">1.5</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <h3 class="accordion-header">
+                <svg class="icon" viewBox="0 0 24 24">
+                  <rect
+                    x="2"
+                    y="2"
+                    width="20"
+                    height="20"
+                    rx="2.18"
+                    ry="2.18"
+                  />
+                  <path
+                    d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M17 17h5M17 7h5"
+                  />
+                </svg>
+                Animation
+              </h3>
+              <div class="accordion-content">
+                <div class="control-section">
+                  <div class="control-group">
+                    <label class="checkbox-label"
+                      ><input type="checkbox" id="autoRotate" /><span
+                        class="checkmark"
+                      ></span
+                      >Auto Rotate</label
+                    >
+                  </div>
+                  <div class="control-group">
+                    <label>Speed</label
+                    ><input
+                      type="range"
+                      id="rotationSpeed"
+                      min="0"
+                      max="5"
+                      step="0.1"
+                      value="1"
+                      class="slider"
+                    /><span class="value-display">1.0</span>
+                  </div>
+                  <div class="animation-controls">
+                    <button id="playBtn" class="btn secondary">
+                      <svg class="icon" viewBox="0 0 24 24">
+                        <polygon points="5 3 19 12 5 21 5 3" />
+                      </svg>
+                      Play
+                    </button>
+                    <button id="pauseBtn" class="btn secondary">
+                      <svg class="icon" viewBox="0 0 24 24">
+                        <rect x="6" y="4" width="4" height="16" />
+                        <rect x="14" y="4" width="4" height="16" />
+                      </svg>
+                      Pause
+                    </button>
+                    <button id="resetBtn" class="btn secondary">
+                      <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M23 4v6h-6M1 20v-6h6" />
+                        <path
+                          d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"
+                        />
+                      </svg>
+                      Reset
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <h3 class="accordion-header">
+                <svg class="icon" viewBox="0 0 24 24">
+                  <path
+                    d="M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3zM12 11l-4 4 1.41 1.41L12 13.83l2.59 2.58L16 15l-4-4z"
+                  />
+                </svg>
+                Superhero Mode
+              </h3>
+              <div class="accordion-content">
+                <div class="control-section">
+                  <div class="audio-upload">
+                    <input
+                      type="file"
+                      id="audioInput"
+                      accept=".mp3,.wav,.ogg,.m4a,.aac,.flac,.wma"
+                      hidden
+                    />
+                    <div class="audio-drop" id="audioDrop">
+                      <div class="drop-content">
+                        <span class="drop-icon"
+                          ><svg class="icon" viewBox="0 0 24 24">
+                            <path
+                              d="M9 18V5l12-2v13M9 18a3 3 0 1 1-3-3 3 3 0 0 1 3 3zm12-2a3 3 0 1 1-3-3 3 3 0 0 1 3 3z"
+                            /></svg
+                        ></span>
+                        <p><strong>Custom Audio</strong></p>
+                        <small
+                          >or
+                          <span class="link-text">click to browse</span></small
+                        >
+                      </div>
+                    </div>
+                  </div>
+                  <div class="audio-status" id="audioStatus">
+                    <span class="audio-indicator">Default theme</span>
+                    <button
+                      id="clearAudio"
+                      class="btn secondary"
+                      style="display: none"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <h3 class="accordion-header">
+                <svg class="icon" viewBox="0 0 24 24">
+                  <path
+                    d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
+                  />
+                  <circle cx="12" cy="13" r="4" />
+                </svg>
+                Camera
+              </h3>
+              <div class="accordion-content">
+                <div class="control-section">
+                  <div class="control-group">
+                    <button id="resetCamera" class="btn secondary full-width">
+                      Reset Camera</button
+                    ><button id="fitToView" class="btn secondary full-width">
+                      Fit to View
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <h3 class="accordion-header">
+                <svg class="icon" viewBox="0 0 24 24">
+                  <path
+                    d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"
+                  />
+                </svg>
+                Export
+              </h3>
+              <div class="accordion-content">
+                <div class="control-section">
+                  <div class="control-group">
+                    <button id="screenshotBtn" class="btn primary full-width">
+                      <svg class="icon" viewBox="0 0 24 24">
+                        <path
+                          d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
+                        />
+                        <circle cx="12" cy="13" r="4" />
+                      </svg>
+                      Screenshot
+                    </button>
+                    <button id="exportBtn" class="btn primary full-width">
+                      <svg class="icon" viewBox="0 0 24 24">
+                        <path
+                          d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"
+                        />
+                      </svg>
+                      Export Model
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div id="mainContainer" class="hidden">
-            <div id="sidebar" class="sidebar">
-                <div class="sidebar-header">
-                    <h2>Controls</h2>
-                </div>
-
-                <div class="accordion">
-                    <div class="accordion-item is-open">
-                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M12 3v12M8 11l4 4 4-4"/></svg> Load Model</h3>
-                        <div class="accordion-content">
-                            <div class="control-section">
-                                <div class="input-group">
-                                    <input type="text" id="modelUrl" placeholder="Enter model URL..." class="input-field">
-                                    <button id="loadUrlBtn" class="btn primary">Load Model</button>
-                                </div>
-                                <div class="file-drop" id="fileDrop">
-                                    <input type="file" id="fileInput" accept=".glb,.gltf,.fbx,.obj,.dae,.stl,.ply,.mtl" hidden>
-                                    <div class="drop-content">
-                                        <div class="upload-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg></div>
-                                        <p><strong>Drag & Drop</strong> or <span class="link-text">browse</span></p>
-                                        <div class="format-tags"><span class="format-tag">GLB</span><span class="format-tag">GLTF</span><span class="format-tag">FBX</span></div>
-                                    </div>
-                                </div>
-                                <div class="quick-samples">
-                                    <h4><svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg> Quick Samples</h4>
-                                    <div class="sample-buttons">
-                                        <button class="sample-btn" data-url="https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf">Helmet</button>
-                                        <button class="sample-btn" data-url="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF/Duck.gltf">Duck</button>
-                                        <button class="sample-btn" data-url="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Avocado/glTF/Avocado.gltf">Avocado</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item">
-                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 1 18 0M3 20h18"/></svg> Environment</h3>
-                        <div class="accordion-content">
-                            <div class="control-section">
-                                <div class="control-group">
-                                    <label>Background</label>
-                                    <select id="backgroundSelect" class="select-field"><option value="gradient">Gradient</option><option value="solid">Solid Color</option><option value="hdri">HDRI</option></select>
-                                    <input type="color" id="bgColor" value="#f0f0f0" class="color-input">
-                                </div>
-                                <div class="control-group"><label class="checkbox-label"><input type="checkbox" id="showGrid"><span class="checkmark"></span>Show Grid</label></div>
-                                <div class="control-group">
-                                    <label>Env Intensity</label>
-                                    <input type="range" id="envIntensity" min="0" max="3" step="0.1" value="1" class="slider"><span class="value-display">1.0</span>
-                                </div>
-                                <div class="control-section" style="margin-top: 1rem; border-top: 1px solid #eee; padding-top: 1rem;">
-                                    <h4><svg class="icon" viewBox="0 0 24 24" fill-rule="evenodd" clip-rule="evenodd"><path d="M12 0c-3.315 0-6 2.685-6 6s6 18 6 18 6-15.315 6-18-2.685-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm0-6c-1.105 0-2 .895-2 2s.895 2 2 2 2-.895 2-2-.895-2-2-2z"/></svg> Load HDRI Environment</h4>
-                                    <div class="input-group">
-                                        <input type="text" id="hdriUrl" placeholder="Enter .hdr URL..." class="input-field">
-                                        <button id="loadHdriBtn" class="btn primary">Load</button>
-                                    </div>
-                                    <div class="quick-samples">
-                                        <div class="sample-buttons">
-                                            <button class="sample-hdri-btn" data-url="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/photo_studio_01_2k.hdr">Studio</button>
-                                            <button class="sample-hdri-btn" data-url="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/piazza_san_marco_2k.hdr">Plaza</button>
-                                            <button class="sample-hdri-btn" data-url="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/shanghai_bund_2k.hdr">Shanghai</button>
-                                            <button class="sample-hdri-btn" data-url="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/woods_2k.hdr">Woods</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item">
-                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg> Lighting</h3>
-                        <div class="accordion-content">
-                            <div class="control-section">
-                                <div class="control-group"><label>Ambient</label><input type="range" id="ambientIntensity" min="0" max="2" step="0.1" value="0.4" class="slider"><span class="value-display">0.4</span></div>
-                                <div class="control-group"><label>Directional</label><input type="range" id="directionalIntensity" min="0" max="3" step="0.1" value="1" class="slider"><span class="value-display">1.0</span></div>
-                                <div class="control-group"><label>Light X</label><input type="range" id="lightPosX" min="-10" max="10" step="0.5" value="5" class="slider"><span class="value-display">5.0</span></div>
-                                <div class="control-group"><label>Light Y</label><input type="range" id="lightPosY" min="-10" max="10" step="0.5" value="5" class="slider"><span class="value-display">5.0</span></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item">
-                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M12 3L13.5 8.5L19 10L13.5 11.5L12 17L10.5 11.5L5 10L10.5 8.5L12 3zM5 3L6 5L5 7L4 5L5 3zM19 17L20 19L19 21L18 19L19 17z"/></svg> Effects</h3>
-                        <div class="accordion-content">
-                            <div class="control-section">
-                                <div class="control-group"><label class="checkbox-label"><input type="checkbox" id="bloomEnabled"><span class="checkmark"></span>Bloom</label></div>
-                                <div class="control-group"><label>Bloom Strength</label><input type="range" id="bloomStrength" min="0" max="3" step="0.1" value="1.5" class="slider"><span class="value-display">1.5</span></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item">
-                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><path d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M17 17h5M17 7h5"/></svg> Animation</h3>
-                        <div class="accordion-content">
-                             <div class="control-section">
-                                <div class="control-group"><label class="checkbox-label"><input type="checkbox" id="autoRotate"><span class="checkmark"></span>Auto Rotate</label></div>
-                                <div class="control-group"><label>Speed</label><input type="range" id="rotationSpeed" min="0" max="5" step="0.1" value="1" class="slider"><span class="value-display">1.0</span></div>
-                                <div class="animation-controls">
-                                    <button id="playBtn" class="btn secondary"><svg class="icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> Play</button>
-                                    <button id="pauseBtn" class="btn secondary"><svg class="icon" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pause</button>
-                                    <button id="resetBtn" class="btn secondary"><svg class="icon" viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Reset</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item">
-                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3zM12 11l-4 4 1.41 1.41L12 13.83l2.59 2.58L16 15l-4-4z"/></svg> Superhero Mode</h3>
-                        <div class="accordion-content">
-                            <div class="control-section">
-                                <div class="audio-upload">
-                                    <input type="file" id="audioInput" accept=".mp3,.wav,.ogg,.m4a,.aac,.flac,.wma" hidden>
-                                    <div class="audio-drop" id="audioDrop">
-                                        <div class="drop-content">
-                                            <span class="drop-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13M9 18a3 3 0 1 1-3-3 3 3 0 0 1 3 3zm12-2a3 3 0 1 1-3-3 3 3 0 0 1 3 3z"/></svg></span>
-                                            <p><strong>Custom Audio</strong></p>
-                                            <small>or <span class="link-text">click to browse</span></small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="audio-status" id="audioStatus">
-                                    <span class="audio-indicator">Default theme</span>
-                                    <button id="clearAudio" class="btn secondary" style="display:none">Clear</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                     <div class="accordion-item">
-                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Camera</h3>
-                        <div class="accordion-content">
-                            <div class="control-section">
-                                <div class="control-group"><button id="resetCamera" class="btn secondary full-width">Reset Camera</button><button id="fitToView" class="btn secondary full-width">Fit to View</button></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item">
-                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg> Export</h3>
-                        <div class="accordion-content">
-                            <div class="control-section">
-                                <div class="control-group">
-                                    <button id="screenshotBtn" class="btn primary full-width"><svg class="icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Screenshot</button>
-                                    <button id="exportBtn" class="btn primary full-width"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg> Export Model</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="viewport" class="viewport">
-                <div id="viewerContainer"></div>
-                <div id="superheroControls" class="superhero-controls hidden">
-                    <button id="superheroPlay" class="btn secondary"><svg class="icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> Play</button>
-                    <button id="superheroPause" class="btn secondary"><svg class="icon" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pause</button>
-                    <button id="superheroReset" class="btn secondary"><svg class="icon" viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Restart</button>
-                </div>
-                <div id="stats" class="stats-panel">
-                    <div class="stats-header"><span class="stats-title"><svg class="icon" viewBox="0 0 24 24"><path d="M12 20V10M18 20V4M6 20V16"/></svg> Stats</span></div>
-                    <div class="stat-item"><span class="stat-label">Vertices</span><span id="vertexCount" class="stat-value">0</span></div>
-                    <div class="stat-item"><span class="stat-label">Faces</span><span id="faceCount" class="stat-value">0</span></div>
-                    <div class="stat-item"><span class="stat-label">FPS</span><span id="fpsCounter" class="stat-value">60</span></div>
-                </div>
-                <div id="progressBar" class="progress-bar hidden">
-                    <div class="progress-fill"></div>
-                    <span class="progress-text">Loading...</span>
-                </div>
-            </div>
-
-            <button id="sidebarToggleBtn" class="sidebar-toggle-btn">
-                <span class="hamburger-line"></span>
-                <span class="hamburger-line"></span>
-                <span class="hamburger-line"></span>
+        <div id="viewport" class="viewport">
+          <div id="viewerContainer"></div>
+          <div id="superheroControls" class="superhero-controls hidden">
+            <button id="superheroPlay" class="btn secondary">
+              <svg class="icon" viewBox="0 0 24 24">
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
+              Play
             </button>
-            
-            <button id="superheroBtn" class="superhero-btn" title="Cinematic Mode"></button>
-            
-            <div id="fadeOverlay" class="fade-overlay hidden"></div>
+            <button id="superheroPause" class="btn secondary">
+              <svg class="icon" viewBox="0 0 24 24">
+                <rect x="6" y="4" width="4" height="16" />
+                <rect x="14" y="4" width="4" height="16" />
+              </svg>
+              Pause
+            </button>
+            <button id="superheroReset" class="btn secondary">
+              <svg class="icon" viewBox="0 0 24 24">
+                <path d="M23 4v6h-6M1 20v-6h6" />
+                <path
+                  d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"
+                />
+              </svg>
+              Restart
+            </button>
+          </div>
+          <div id="stats" class="stats-panel">
+            <div class="stats-header">
+              <span class="stats-title"
+                ><svg class="icon" viewBox="0 0 24 24">
+                  <path d="M12 20V10M18 20V4M6 20V16" />
+                </svg>
+                Stats</span
+              >
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Vertices</span
+              ><span id="vertexCount" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Faces</span
+              ><span id="faceCount" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">FPS</span
+              ><span id="fpsCounter" class="stat-value">60</span>
+            </div>
+          </div>
+          <div id="progressBar" class="progress-bar hidden">
+            <div class="progress-fill"></div>
+            <span class="progress-text">Loading...</span>
+          </div>
         </div>
 
-        <div id="errorModal" class="modal hidden">
-            <div class="modal-content">
-                <h3>Error</h3>
-                <p id="errorMessage"></p>
-                <button id="closeError" class="btn primary">Close</button>
-            </div>
+        <button id="sidebarToggleBtn" class="sidebar-toggle-btn">
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+        </button>
+
+        <button
+          id="superheroBtn"
+          class="superhero-btn"
+          title="Cinematic Mode"
+        ></button>
+
+        <div id="fadeOverlay" class="fade-overlay hidden"></div>
+      </div>
+
+      <div id="errorModal" class="modal hidden">
+        <div class="modal-content">
+          <h3>Error</h3>
+          <p id="errorMessage"></p>
+          <button id="closeError" class="btn primary">Close</button>
         </div>
+      </div>
     </div>
 
     <script src="script.js"></script>
-</body>
+  </body>
 </html>
