@@ -5,6 +5,7 @@ We welcome contributions to this project. Please follow these guidelines to ensu
 ## Local Development Setup
 
 1.  **Clone the repository:**
+
     ```bash
     git clone https://github.com/melbinjp/3d_modelview.git
     cd 3d_modelview
@@ -12,6 +13,7 @@ We welcome contributions to this project. Please follow these guidelines to ensu
 
 2.  **Install dependencies:**
     This project uses Node.js and npm. Make sure you have them installed.
+
     ```bash
     npm install
     ```
@@ -28,6 +30,7 @@ Before submitting a pull request, please ensure all local verification checks pa
 
 1.  **Run the linter:**
     We use Prettier to maintain a consistent code style.
+
     ```bash
     # Check for formatting issues
     npm run lint
@@ -38,6 +41,7 @@ Before submitting a pull request, please ensure all local verification checks pa
 
 2.  **Run tests:**
     Our test suite uses Playwright for end-to-end and accessibility testing.
+
     ```bash
     # First, start the local server
     npm start
@@ -48,6 +52,7 @@ Before submitting a pull request, please ensure all local verification checks pa
 
 3.  **Run Lighthouse audits:**
     To run the Lighthouse audits locally, you will need Google Chrome or Chromium installed.
+
     ```bash
     # First, ensure the local server is running
     npm start

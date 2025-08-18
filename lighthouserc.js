@@ -2,7 +2,7 @@ module.exports = {
   ci: {
     collect: {
       url: ["http://localhost:8080/index.html"],
-      startServerCommand: "npx http-server -p 8080",
+      startServerCommand: "npx http-server -p 8080 --precompressed",
     },
     assert: {
       preset: "lighthouse:no-pwa",
@@ -13,7 +13,7 @@ module.exports = {
         ],
         "categories:accessibility": [
           "error",
-          { minScore: 0.90, aggregationMethod: "median" },
+          { minScore: 0.9, aggregationMethod: "median" },
         ],
         "categories:best-practices": [
           "error",
@@ -21,7 +21,7 @@ module.exports = {
         ],
         "categories:seo": [
           "error",
-          { minScore: 0.90, aggregationMethod: "median" },
+          { minScore: 0.9, aggregationMethod: "median" },
         ],
       },
     },

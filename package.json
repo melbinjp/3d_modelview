@@ -6,7 +6,12 @@
   "scripts": {
     "test": "playwright test",
     "lint": "prettier --check .",
-    "lint:fix": "prettier --write ."
+    "lint:fix": "prettier --write .",
+    "minify:js": "terser script.js -o script.min.js --source-map \"filename='script.min.js.map',url='script.min.js.map'\" -c -m",
+    "minify:css": "cssnano styles.css > styles.min.css",
+    "build:vendor": "cat vendor/three.min.js vendor/GLTFLoader.js vendor/FBXLoader.js vendor/OBJLoader.js vendor/MTLLoader.js vendor/ColladaLoader.js vendor/STLLoader.js vendor/PLYLoader.js vendor/RGBELoader.js vendor/OrbitControls.js vendor/CopyShader.js vendor/LuminosityHighPassShader.js vendor/Pass.js vendor/ShaderPass.js vendor/EffectComposer.js vendor/RenderPass.js vendor/UnrealBloomPass.js > vendor/vendor.js && terser vendor/vendor.js -o vendor.min.js --source-map \"filename='vendor.min.js.map',url='vendor.min.js.map'\" -c -m",
+    "compress": "gzip -k -f index.html script.min.js styles.min.css vendor.min.js vendor.min.js.map script.min.js.map",
+    "build": "npm run build:vendor && npm run minify:js && npm run minify:css && npm run compress"
   },
   "repository": {
     "type": "git",
@@ -24,9 +29,13 @@
     "@axe-core/playwright": "^4.10.2",
     "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.54.2",
+    "cssnano": "^7.1.0",
+    "cssnano-cli": "^1.0.5",
+    "gzip-cli": "^1.2.0",
     "http-server": "^14.1.1",
     "lighthouse": "^12.8.1",
     "playwright": "^1.54.2",
-    "prettier": "^3.3.2"
+    "prettier": "^3.3.2",
+    "terser": "^5.43.1"
   }
 }

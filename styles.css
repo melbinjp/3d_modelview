@@ -178,6 +178,12 @@ body {
   position: relative;
 }
 
+.control-section-bordered {
+  margin-top: 1rem;
+  border-top: 1px solid #eee;
+  padding-top: 1rem;
+}
+
 .control-group {
   margin-bottom: 15px;
 }
@@ -266,7 +272,7 @@ body {
 
 /* Button Styles */
 .btn {
-  padding: 10px 16px;
+  padding: 12px 18px;
   border: none;
   border-radius: 8px;
   font-size: 0.9rem;
@@ -276,6 +282,8 @@ body {
   text-align: center;
   text-decoration: none;
   display: inline-block;
+  min-height: 48px;
+  min-width: 48px;
 }
 
 .btn.primary {

@@ -10,9 +10,9 @@ This pull request...
 
 ### Plan of What Changed
 
-*   [ ] ...
-*   [ ] ...
-*   [ ] ...
+- [ ] ...
+- [ ] ...
+- [ ] ...
 
 ## Rationale & Alternatives Considered
 
@@ -20,12 +20,12 @@ This pull request...
 
 ## Risk & Rollback Steps
 
-*   **Risk:** Low / Medium / High
-*   **Rollback:**
-    ```bash
-    # Command to revert this change
-    git revert <commit-hash>
-    ```
+- **Risk:** Low / Medium / High
+- **Rollback:**
+  ```bash
+  # Command to revert this change
+  git revert <commit-hash>
+  ```
 
 ## Test & Verification Matrix
 
@@ -35,11 +35,11 @@ Detail the verification steps taken.
 - Links to test artifacts (Lighthouse reports, screenshots, etc.).
 -->
 
-| Test/Audit               | Result | Artifacts |
-|--------------------------|--------|-----------|
-| Linter (`npm run lint`)  | 🟢 Pass | -         |
-| Tests (`npm test`)       | 🟢 Pass | -         |
-| Lighthouse CI            | 🟢 Pass | [Link]()  |
+| Test/Audit              | Result  | Artifacts |
+| ----------------------- | ------- | --------- |
+| Linter (`npm run lint`) | 🟢 Pass | -         |
+| Tests (`npm test`)      | 🟢 Pass | -         |
+| Lighthouse CI           | 🟢 Pass | [Link]()  |
 
 ### Manager’s Note
 
@@ -47,5 +47,6 @@ Detail the verification steps taken.
 
 All CI checks are green. Do not merge automatically.
 Please verify:
-*   [ ] ...
-*   [ ] ...
+
+- [ ] ...
+- [ ] ...
