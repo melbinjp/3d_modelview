@@ -1,3 +1,6 @@
+import { SuperheroMode } from './superhero-mode.js';
+import { GLTFExporter } from 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/exporters/GLTFExporter.js';
+
 class ModelViewer {
     constructor() {
         this.scene = null;
@@ -11,41 +14,19 @@ class ModelViewer {
         this.lights = {};
         this.composer = null;
         this.bloomPass = null;
-        this.superheroMode = false;
-        this.originalCameraPos = null;
-        this.superheroAudio = null;
-        this.audioContext = null;
-        this.audioSource = null;
-        this.audioAnalyser = null;
-        this.customAudioFile = null;
         this.animationPaused = false;
-        this.superheroAnimationPaused = false;
-        this.smoothedAudioIntensity = 0;
-        this.CAMERA_ANIMATION_STATES = {
-            NONE: 'NONE',
-            ANCHOR: 'ANCHOR',
-            DOLLY: 'DOLLY',
-            CRANE: 'CRANE',
-            ORBIT: 'ORBIT',
-            STILL: 'STILL'
-        };
-        this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.NONE;
-        this.stateEnterTime = 0;
-        this.dollyStartPos = new THREE.Vector3();
-        this.dollyEndPos = new THREE.Vector3();
-        this.craneEndPos = new THREE.Vector3();
-        this.beatDetected = false;
-        this.lastBeatTime = 0;
         this.originalGroundMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.1 });
         this.shadowCatcherMaterial = new THREE.ShadowMaterial({ opacity: 0.5 });
-        this.icons = {
-            superhero: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3zM12 11l-4 4 1.41 1.41L12 13.83l2.59 2.58L16 15l-4-4z"/></svg>`,
-            close: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 6L6 18"/><path d="M6 6L18 18"/></svg>`
-        };
         
+        this.isMeasuring = false;
+        this.measurementPoints = [];
+        this.measurementMarkers = [];
+        this.measurementLine = null;
+        this.raycaster = new THREE.Raycaster();
+
         this.init();
         this.setupEventListeners();
-        document.getElementById('superheroBtn').innerHTML = this.icons.superhero;
+        this.superhero = new SuperheroMode(this);
         this.setSidebarHeight();
         this.animate();
 
@@ -183,48 +164,6 @@ class ModelViewer {
         
         setTimeout(() => this.renderer.render(this.scene, this.camera), 500);
         
-        document.getElementById('superheroBtn').addEventListener('click', () => {
-            if (this.superheroMode) {
-                this.exitSuperheroMode();
-            } else {
-                this.activateSuperheroMode();
-            }
-        });
-
-        document.getElementById('superheroPlay').addEventListener('click', () => {
-            this.superheroAnimationPaused = false;
-            if (this.superheroAudio) this.superheroAudio.play();
-        });
-        document.getElementById('superheroPause').addEventListener('click', () => {
-            this.superheroAnimationPaused = true;
-            if (this.superheroAudio) this.superheroAudio.pause();
-        });
-        document.getElementById('superheroReset').addEventListener('click', () => {
-            this.superheroAnimationPaused = false;
-            if (this.superheroMode) {
-                this.superheroStartTime = Date.now();
-                if (this.superheroAudio) {
-                    this.superheroAudio.currentTime = 0;
-                    this.superheroAudio.play();
-                }
-            }
-        });
-        
-        const audioDrop = document.getElementById('audioDrop');
-        const audioInput = document.getElementById('audioInput');
-        audioDrop.addEventListener('click', () => audioInput.click());
-        audioDrop.addEventListener('dragover', (e) => { e.preventDefault(); audioDrop.classList.add('dragover'); });
-        audioDrop.addEventListener('dragleave', () => audioDrop.classList.remove('dragover'));
-        audioDrop.addEventListener('drop', (e) => {
-            e.preventDefault();
-            audioDrop.classList.remove('dragover');
-            if (e.dataTransfer.files.length > 0) this.loadAudioFile(e.dataTransfer.files[0]);
-        });
-        audioInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) this.loadAudioFile(e.target.files[0]);
-        });
-        document.getElementById('clearAudio').addEventListener('click', () => this.clearCustomAudio());
-
         document.getElementById('loadUrlBtn').addEventListener('click', () => {
             const url = document.getElementById('modelUrl').value.trim();
             if (url) this.loadModelFromUrl(url);
@@ -239,6 +178,8 @@ class ModelViewer {
         const fileDrop = document.getElementById('fileDrop');
         const fileInput = document.getElementById('fileInput');
         fileDrop.addEventListener('click', () => fileInput.click());
+        const viewerContainer = document.getElementById('viewerContainer');
+        viewerContainer.addEventListener('click', (e) => this.onViewportClick(e));
         fileDrop.addEventListener('dragover', (e) => { e.preventDefault(); fileDrop.classList.add('dragover'); });
         fileDrop.addEventListener('dragleave', () => fileDrop.classList.remove('dragover'));
         fileDrop.addEventListener('drop', (e) => {
@@ -305,6 +246,7 @@ class ModelViewer {
         document.getElementById('resetCamera').addEventListener('click', () => this.resetCamera());
         document.getElementById('fitToView').addEventListener('click', () => this.fitCameraToModel());
         document.getElementById('screenshotBtn').addEventListener('click', () => this.takeScreenshot());
+        document.getElementById('exportBtn').addEventListener('click', () => this.exportModel());
         document.getElementById('playBtn').addEventListener('click', () => {
             this.animationPaused = false;
             if (this.mixer) this.mixer.timeScale = 1;
@@ -318,6 +260,103 @@ class ModelViewer {
             if (this.mixer) this.mixer.setTime(0);
         });
         document.querySelectorAll('.slider').forEach(slider => this.updateValueDisplay(slider));
+
+        document.getElementById('measureBtn').addEventListener('click', () => this.toggleMeasurement());
+
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('change', () => this.toggleTheme(themeToggle.checked));
+        this.loadTheme();
+    }
+
+    toggleTheme(isDark) {
+        document.body.classList.toggle('dark-mode', isDark);
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+
+        // Update scene background for dark mode
+        if (isDark) {
+            this.scene.background = new THREE.Color(0x121212);
+        } else {
+            this.updateBackground(document.getElementById('backgroundSelect').value);
+        }
+    }
+
+    loadTheme() {
+        const theme = localStorage.getItem('theme');
+        const isDark = theme === 'dark';
+        document.getElementById('themeToggle').checked = isDark;
+        this.toggleTheme(isDark);
+    }
+
+    addMeasurementPoint(point) {
+        if (this.measurementPoints.length >= 2) {
+            this.clearMeasurement();
+        }
+
+        this.measurementPoints.push(point);
+
+        const markerGeometry = new THREE.SphereGeometry(0.05, 16, 16);
+        const markerMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        const marker = new THREE.Mesh(markerGeometry, markerMaterial);
+        marker.position.copy(point);
+        this.scene.add(marker);
+        this.measurementMarkers.push(marker);
+
+        if (this.measurementPoints.length === 2) {
+            const distance = this.measurementPoints[0].distanceTo(this.measurementPoints[1]);
+            document.getElementById('measurementResult').textContent = `Distance: ${distance.toFixed(3)} units`;
+
+            const lineMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
+            const lineGeometry = new THREE.BufferGeometry().setFromPoints(this.measurementPoints);
+            this.measurementLine = new THREE.Line(lineGeometry, lineMaterial);
+            this.scene.add(this.measurementLine);
+
+            this.isMeasuring = false;
+            const measureBtn = document.getElementById('measureBtn');
+            measureBtn.textContent = 'Measure Distance';
+            measureBtn.classList.remove('active');
+        }
+    }
+
+    clearMeasurement() {
+        this.measurementPoints = [];
+        this.measurementMarkers.forEach(marker => this.scene.remove(marker));
+        this.measurementMarkers = [];
+        if (this.measurementLine) {
+            this.scene.remove(this.measurementLine);
+            this.measurementLine = null;
+        }
+        document.getElementById('measurementResult').textContent = '';
+    }
+
+    toggleMeasurement() {
+        this.isMeasuring = !this.isMeasuring;
+        const measureBtn = document.getElementById('measureBtn');
+        measureBtn.textContent = this.isMeasuring ? 'Cancel Measurement' : 'Measure Distance';
+        measureBtn.classList.toggle('active', this.isMeasuring);
+
+        if (!this.isMeasuring) {
+            this.clearMeasurement();
+        } else {
+            document.getElementById('measurementResult').textContent = 'Click on two points on the model.';
+        }
+    }
+
+    onViewportClick(event) {
+        if (!this.isMeasuring || !this.currentModel) return;
+
+        const container = document.getElementById('viewerContainer');
+        const rect = container.getBoundingClientRect();
+        const mouse = new THREE.Vector2();
+        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        this.raycaster.setFromCamera(mouse, this.camera);
+        const intersects = this.raycaster.intersectObject(this.currentModel, true);
+
+        if (intersects.length > 0) {
+            const point = intersects[0].point;
+            this.addMeasurementPoint(point);
+        }
     }
 
     updateValueDisplay(slider) {
@@ -523,10 +562,51 @@ class ModelViewer {
         });
 
         this.updateModelStats(model);
+        this.updateHierarchy(model);
         this.onWindowResize();
         this.fitCameraToModel();
         requestAnimationFrame(() => this.renderer.render(this.scene, this.camera));
         this.showProgress(false);
+    }
+
+    updateHierarchy(model) {
+        const hierarchyContainer = document.getElementById('hierarchyContainer');
+        hierarchyContainer.innerHTML = '';
+        const ul = document.createElement('ul');
+        ul.className = 'hierarchy-list';
+
+        const createHierarchyItem = (object, depth) => {
+            const li = document.createElement('li');
+            li.style.paddingLeft = `${depth * 15}px`;
+
+            const label = document.createElement('label');
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = object.visible;
+            checkbox.addEventListener('change', () => {
+                object.visible = checkbox.checked;
+            });
+
+            const span = document.createElement('span');
+            span.textContent = object.name || `[${object.type}]`;
+
+            label.appendChild(checkbox);
+            label.appendChild(span);
+            li.appendChild(label);
+
+            if (object.children.length > 0) {
+                const childUl = document.createElement('ul');
+                object.children.forEach(child => {
+                    childUl.appendChild(createHierarchyItem(child, depth + 1));
+                });
+                li.appendChild(childUl);
+            }
+
+            return li;
+        };
+
+        ul.appendChild(createHierarchyItem(model, 0));
+        hierarchyContainer.appendChild(ul);
     }
 
     updateModelStats(model) {
@@ -593,6 +673,34 @@ class ModelViewer {
         link.click();
     }
 
+    exportModel() {
+        if (!this.currentModel) {
+            this.showError('No model to export.');
+            return;
+        }
+
+        const exporter = new GLTFExporter();
+        const options = {
+            binary: true, // Export as GLB
+        };
+
+        exporter.parse(
+            this.currentModel,
+            (result) => {
+                const blob = new Blob([result], { type: 'application/octet-stream' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'model.glb';
+                link.click();
+            },
+            (error) => {
+                this.showError('An error occurred during export.');
+                console.error('An error happened during parsing', error);
+            },
+            options
+        );
+    }
+
     showError(message) {
         document.getElementById('errorMessage').textContent = message;
         document.getElementById('errorModal').classList.remove('hidden');
@@ -623,7 +731,7 @@ class ModelViewer {
         requestAnimationFrame(() => this.animate());
         const delta = this.clock.getDelta();
 
-        if (!this.superheroMode) {
+        if (!this.superhero.superheroMode) {
             this.controls.update();
         }
 
@@ -631,9 +739,7 @@ class ModelViewer {
             this.mixer.update(delta);
         }
         
-        if (this.superheroMode && this.currentModel && !this.superheroAnimationPaused) {
-            this.updateSuperheroCamera();
-        }
+        this.superhero.update();
 
         this.stats.fps = Math.round(1 / delta);
         document.getElementById('fpsCounter').textContent = this.stats.fps;
@@ -643,403 +749,6 @@ class ModelViewer {
         } else {
             this.renderer.render(this.scene, this.camera);
         }
-    }
-    
-    activateSuperheroMode() {
-        if (!this.currentModel) return;
-        
-        this.originalCameraPos = {
-            position: this.camera.position.clone(),
-            target: this.controls.target.clone()
-        };
-        
-        const overlay = document.getElementById('fadeOverlay');
-        overlay.classList.remove('hidden');
-        overlay.classList.add('pitch-black');
-        
-        this.playAmbientDrone();
-        setTimeout(() => this.playBassThump(), 1000);
-        setTimeout(() => this.playSuperheroMusic(), 3000);
-        
-        setTimeout(() => {
-            document.body.classList.add('superhero-mode-active');
-            this.superheroMode = true;
-            this.controls.enabled = false;
-            
-            this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.ANCHOR;
-            this.stateEnterTime = Date.now();
-
-            document.getElementById('superheroControls').classList.remove('hidden');
-            document.getElementById('superheroBtn').innerHTML = this.icons.close;
-
-            const sidebar = document.getElementById('sidebar');
-            if (!sidebar.classList.contains('collapsed')) {
-                sidebar.classList.add('collapsed');
-                document.getElementById('sidebarToggleBtn').classList.remove('active');
-            }
-
-            this.originalBackground = this.scene.background;
-            this.originalFog = this.scene.fog;
-            
-            this.scene.background = new THREE.Color(0x000000);
-            this.scene.fog = new THREE.Fog(0x000000, 5, 30);
-            
-            if (this.bloomPass) {
-                this.bloomPass.enabled = true;
-                this.bloomPass.strength = 0.4;
-                this.bloomPass.radius = 0.3;
-                this.bloomPass.threshold = 0.7;
-            }
-            
-            this.lights.ambient.intensity = 0.1;
-            this.lights.directional.intensity = 0.5;
-            
-            const box = new THREE.Box3().setFromObject(this.currentModel);
-            const center = box.getCenter(new THREE.Vector3());
-            const boundingSphere = new THREE.Sphere();
-            box.getBoundingSphere(boundingSphere);
-            const radius = boundingSphere.radius;
-
-            // Aspect ratio correction
-            const aspect = this.camera.aspect;
-            const aspectFactor = aspect < 1 ? 1 / aspect : 1;
-
-            // Define camera positions using bounding sphere radius
-            this.dollyStartPos.set(center.x, center.y + radius * 0.5, center.z + radius * 2.5 * aspectFactor);
-            this.dollyEndPos.set(center.x, center.y, center.z + radius * 1.5 * aspectFactor);
-            this.craneEndPos.set(center.x, center.y + radius, center.z + radius * 1.8 * aspectFactor);
-            
-            this.spotlight = new THREE.SpotLight(0xffffff, 2.0, 0, Math.PI / 6, 0.3);
-            this.spotlight.position.set(center.x, center.y + radius * 4, center.z);
-            this.spotlight.target.position.copy(center);
-            this.spotlight.castShadow = true;
-            this.scene.add(this.spotlight);
-            this.scene.add(this.spotlight.target);
-            
-            this.rimLight = new THREE.DirectionalLight(0x4488ff, 1.2);
-            this.rimLight.position.set(center.x - maxSize, center.y, center.z - maxSize);
-            this.scene.add(this.rimLight);
-            
-            this.superheroStartTime = Date.now() - 3000;
-            
-            setTimeout(() => {
-                overlay.classList.remove('pitch-black');
-                overlay.classList.add('active');
-                setTimeout(() => {
-                    overlay.classList.remove('active');
-                    setTimeout(() => overlay.classList.add('hidden'), 800);
-                }, 1500);
-            }, 500);
-            
-            // The animation sequence is now self-contained and timed.
-            // We'll use a fixed timeout to exit the mode, rather than relying on the audio length.
-            setTimeout(() => this.exitSuperheroMode(), 30000);
-        }, 1000);
-    }
-    
-    updateSuperheroCamera() {
-        if (!this.superheroMode || !this.currentModel) return;
-
-        const now = Date.now();
-        const stateElapsedTime = (now - this.stateEnterTime) / 1000;
-
-        // --- Refined Audio Analysis ---
-        let rawIntensity = 0;
-        if (this.audioAnalyser) {
-            const dataArray = new Uint8Array(this.audioAnalyser.frequencyBinCount);
-            this.audioAnalyser.getByteFrequencyData(dataArray);
-
-            const bassBins = dataArray.slice(0, Math.floor(dataArray.length * 0.2));
-            const averageBass = bassBins.reduce((a, b) => a + b, 0) / bassBins.length;
-            rawIntensity = averageBass / 128; // Normalize to ~0-2
-
-            const smoothingFactor = 0.05;
-            this.smoothedAudioIntensity += (rawIntensity - this.smoothedAudioIntensity) * smoothingFactor;
-
-            // Beat Detection
-            const beatThreshold = 0.4;
-            const beatCooldown = 1.0; // seconds
-            if (rawIntensity > (this.smoothedAudioIntensity + beatThreshold) && (now - this.lastBeatTime) / 1000 > beatCooldown) {
-                this.beatDetected = true;
-                this.lastBeatTime = now;
-            } else {
-                this.beatDetected = false;
-            }
-        }
-
-        const box = new THREE.Box3().setFromObject(this.currentModel);
-        const center = box.getCenter(new THREE.Vector3());
-
-        switch (this.cameraAnimationState) {
-            case this.CAMERA_ANIMATION_STATES.ANCHOR:
-                this.camera.position.copy(this.dollyStartPos);
-                if (stateElapsedTime > 1.5) { // Shorter anchor
-                    this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.DOLLY;
-                    this.stateEnterTime = now;
-                }
-                break;
-            case this.CAMERA_ANIMATION_STATES.DOLLY:
-                const dollyDuration = 3.0; // Faster dolly
-                const dollyProgress = Math.min(stateElapsedTime / dollyDuration, 1.0);
-                this.camera.position.lerpVectors(this.dollyStartPos, this.dollyEndPos, dollyProgress);
-
-                // Transition on a beat or if the time is up
-                if (this.beatDetected || dollyProgress >= 1.0) {
-                    this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.CRANE;
-                    this.stateEnterTime = now;
-                }
-                break;
-            case this.CAMERA_ANIMATION_STATES.CRANE:
-                const craneDuration = 2.0; // Faster crane
-                const craneProgress = Math.min(stateElapsedTime / craneDuration, 1.0);
-                this.camera.position.lerpVectors(this.dollyEndPos, this.craneEndPos, craneProgress);
-                if (craneProgress >= 1.0) {
-                    this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.ORBIT;
-                    this.stateEnterTime = now;
-                }
-                break;
-            case this.CAMERA_ANIMATION_STATES.ORBIT:
-                const orbitDuration = 4.0; // Shorter orbit
-                const orbitSpeed = 0.4 + this.smoothedAudioIntensity * 0.2;
-                const orbitRadius = THREE.Vector3.prototype.distanceTo.call(this.camera.position, center);
-                const orbitAngle = stateElapsedTime * orbitSpeed;
-
-                this.camera.position.x = center.x + Math.cos(orbitAngle) * orbitRadius;
-                this.camera.position.z = center.z + Math.sin(orbitAngle) * orbitRadius;
-                this.camera.position.y = this.craneEndPos.y + Math.sin(stateElapsedTime * 2) * (orbitRadius * 0.1 * this.smoothedAudioIntensity);
-
-                // Transition if music fades or time is up
-                if (stateElapsedTime > orbitDuration || (this.superheroAudio && this.superheroAudio.volume < 0.1)) {
-                    this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.STILL;
-                    this.stateEnterTime = now;
-                }
-                break;
-            case this.CAMERA_ANIMATION_STATES.STILL:
-                // Hold position
-                break;
-            case this.CAMERA_ANIMATION_STATES.NONE:
-            default:
-                break;
-        }
-
-        this.camera.lookAt(center);
-    }
-    
-    exitSuperheroMode() {
-        if (this.superheroAudio) {
-            this.fadeOutAudio();
-        }
-
-        if (this.audioSource) {
-            this.audioSource.disconnect();
-            this.audioSource = null;
-            this.audioAnalyser = null;
-            this.audioContext = null;
-        }
-        this.smoothedAudioIntensity = 0;
-        this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.NONE;
-        
-        document.body.classList.remove('superhero-mode-active');
-        this.superheroMode = false;
-        this.controls.enabled = true;
-        
-        document.getElementById('superheroControls').classList.add('hidden');
-        document.getElementById('superheroBtn').innerHTML = this.icons.superhero;
-
-        if (this.originalCameraPos) {
-            this.camera.position.copy(this.originalCameraPos.position);
-            this.controls.target.copy(this.originalCameraPos.target);
-        }
-        
-        this.scene.background = this.originalBackground;
-        this.scene.fog = this.originalFog;
-        
-        this.lights.ambient.intensity = 0.4;
-        this.lights.directional.intensity = 1.0;
-        this.lights.directional.position.set(5, 5, 5);
-        
-        if (this.spotlight) {
-            this.scene.remove(this.spotlight);
-            this.scene.remove(this.spotlight.target);
-            this.spotlight = null;
-        }
-        if (this.rimLight) {
-            this.scene.remove(this.rimLight);
-            this.rimLight = null;
-        }
-        
-        if (this.bloomPass) {
-            this.bloomPass.enabled = false;
-            this.bloomPass.strength = 1.5;
-            this.bloomPass.radius = 0.4;
-            this.bloomPass.threshold = 0.85;
-        }
-        
-        this.controls.update();
-    }
-    
-    playAmbientDrone() {
-        try {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = audioContext.createOscillator();
-            const gain = audioContext.createGain();
-            osc.connect(gain);
-            gain.connect(audioContext.destination);
-            osc.frequency.setValueAtTime(55, audioContext.currentTime);
-            osc.type = 'sine';
-            gain.gain.setValueAtTime(0, audioContext.currentTime);
-            gain.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.5);
-            gain.gain.linearRampToValueAtTime(0.001, audioContext.currentTime + 1.0);
-            osc.start();
-            osc.stop(audioContext.currentTime + 1.0);
-        } catch (e) {
-            console.log('Audio context not supported');
-        }
-    }
-    
-    playBassThump() {
-        try {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const masterGain = audioContext.createGain();
-            masterGain.gain.value = 0.9;
-            masterGain.connect(audioContext.destination);
-
-            const osc1 = audioContext.createOscillator();
-            const gain1 = audioContext.createGain();
-            osc1.type = 'sine';
-            osc1.frequency.setValueAtTime(40, audioContext.currentTime);
-            gain1.gain.setValueAtTime(1.0, audioContext.currentTime);
-            gain1.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 2.5);
-            osc1.connect(gain1);
-            gain1.connect(masterGain);
-            osc1.start();
-            osc1.stop(audioContext.currentTime + 2.5);
-
-            const osc2 = audioContext.createOscillator();
-            const gain2 = audioContext.createGain();
-            osc2.type = 'triangle';
-            osc2.frequency.setValueAtTime(120, audioContext.currentTime);
-            gain2.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gain2.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 1.0);
-            osc2.connect(gain2);
-            gain2.connect(masterGain);
-            osc2.start();
-            osc2.stop(audioContext.currentTime + 1.0);
-
-            const rumble = audioContext.createOscillator();
-            const rumbleGain = audioContext.createGain();
-            rumble.type = 'sawtooth';
-            rumble.frequency.setValueAtTime(10, audioContext.currentTime);
-            rumbleGain.gain.setValueAtTime(0.2, audioContext.currentTime);
-            rumbleGain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 3.0);
-            rumble.connect(rumbleGain);
-            rumbleGain.connect(masterGain);
-            rumble.start();
-            rumble.stop(audioContext.currentTime + 3.0);
-        } catch (err) {
-            console.error("Error playing thump:", err);
-        }
-    }
-
-    setupAudioAnalysis() {
-        if (this.audioContext) return;
-
-        try {
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            this.audioSource = this.audioContext.createMediaElementSource(this.superheroAudio);
-            this.audioAnalyser = this.audioContext.createAnalyser();
-
-            this.audioSource.connect(this.audioAnalyser);
-            this.audioAnalyser.connect(this.audioContext.destination);
-
-            this.audioAnalyser.fftSize = 256;
-        } catch (e) {
-            console.error("Web Audio API is not supported in this browser.", e);
-        }
-    }
-    
-    loadAudioFile(file) {
-        const supportedFormats = ['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac', 'wma'];
-        const extension = file.name.split('.').pop().toLowerCase();
-        
-        if (!supportedFormats.includes(extension)) {
-            this.showError('Unsupported audio format. Please use MP3, WAV, OGG, M4A, AAC, FLAC, or WMA.');
-            return;
-        }
-        
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const blob = new Blob([e.target.result], { type: file.type });
-            this.customAudioFile = URL.createObjectURL(blob);
-            
-            const indicator = document.querySelector('.audio-indicator');
-            const clearBtn = document.getElementById('clearAudio');
-            indicator.textContent = `🎵 ${file.name} loaded`;
-            clearBtn.style.display = 'block';
-        };
-        reader.readAsArrayBuffer(file);
-    }
-    
-    clearCustomAudio() {
-        if (this.customAudioFile) {
-            URL.revokeObjectURL(this.customAudioFile);
-            this.customAudioFile = null;
-        }
-        
-        const indicator = document.querySelector('.audio-indicator');
-        const clearBtn = document.getElementById('clearAudio');
-        indicator.textContent = '🎵 Default theme loaded';
-        clearBtn.style.display = 'none';
-    }
-    
-    playSuperheroMusic() {
-        try {
-            const audioSource = this.customAudioFile || 'superhero-theme.mp3';
-            
-            this.superheroAudio = new Audio(audioSource);
-            this.superheroAudio.volume = 0;
-
-            this.setupAudioAnalysis();
-
-            this.superheroAudio.play().then(() => {
-                this.fadeInAudio();
-            }).catch(e => {
-                console.log('Audio play failed:', e);
-            });
-        } catch (e) {
-            console.log('Audio not supported');
-        }
-    }
-    
-    fadeInAudio() {
-        if (!this.superheroAudio) return;
-        
-        if (this.superheroAudio.paused) {
-            this.superheroAudio.play();
-        }
-        
-        const fadeIn = () => {
-            if (this.superheroAudio && this.superheroAudio.volume < 0.7) {
-                this.superheroAudio.volume = Math.min(0.7, this.superheroAudio.volume + 0.02);
-                setTimeout(fadeIn, 50);
-            }
-        };
-        fadeIn();
-    }
-    
-    fadeOutAudio() {
-        const fadeOut = () => {
-            if (!this.superheroAudio || this.superheroAudio.volume <= 0) {
-                if (this.superheroAudio) {
-                    this.superheroAudio.pause();
-                    this.superheroAudio = null;
-                }
-                return;
-            }
-            this.superheroAudio.volume = Math.max(0, this.superheroAudio.volume - 0.02);
-            setTimeout(fadeOut, 50);
-        };
-        fadeOut();
     }
 }
 

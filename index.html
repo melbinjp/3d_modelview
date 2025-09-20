@@ -36,6 +36,13 @@
             <div id="sidebar" class="sidebar">
                 <div class="sidebar-header">
                     <h2>Controls</h2>
+                    <div class="theme-switcher">
+                        <input type="checkbox" id="themeToggle" class="theme-toggle-checkbox">
+                        <label for="themeToggle" class="theme-toggle-label">
+                            <span class="theme-toggle-inner"></span>
+                            <span class="theme-toggle-switch"></span>
+                        </label>
+                    </div>
                 </div>
 
                 <div class="accordion">
@@ -179,6 +186,25 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="accordion-item">
+                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M3 6l9 4-9 4V6zm11 0v12l9-6-9-6z"/></svg> Hierarchy</h3>
+                        <div class="accordion-content">
+                            <div id="hierarchyContainer" class="control-section">
+                                <!-- Hierarchy will be generated here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M21.7 14.3l-1.4-1.4L16 17.2V4h-2v13.2l-4.3-4.3-1.4 1.4L15 21.5l6.7-7.2z"/></svg> Tools</h3>
+                        <div class="accordion-content">
+                            <div class="control-section">
+                                <button id="measureBtn" class="btn secondary full-width">Measure Distance</button>
+                                <div id="measurementResult" class="measurement-result"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -221,6 +247,6 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
