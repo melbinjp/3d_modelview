@@ -1,5 +1,17 @@
-import { SuperheroMode } from './superhero-mode.js';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
+import { ColladaLoader } from 'three/examples/jsm/loaders/ColladaLoader.js';
+import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
+import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
+import { SuperheroMode } from './superhero-mode.js';
 
 class ModelViewer {
     constructor() {
@@ -33,11 +45,9 @@ class ModelViewer {
         const loadingText = document.querySelector('#loadingScreen p');
         loadingText.innerHTML = '🚀 Preparing your 3D experience...';
         
-        setTimeout(() => {
-            document.getElementById('loadingScreen').classList.add('hidden');
-            document.getElementById('mainContainer').classList.remove('hidden');
-            this.loadDefaultModel();
-        }, 1500);
+        document.getElementById('loadingScreen').classList.add('hidden');
+        document.getElementById('mainContainer').classList.remove('hidden');
+        // this.loadDefaultModel();
     }
 
     init() {
@@ -58,7 +68,7 @@ class ModelViewer {
         this.renderer.toneMappingExposure = 1;
         container.appendChild(this.renderer.domElement);
         
-        this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.05;
         this.controls.screenSpacePanning = false;
@@ -112,23 +122,14 @@ class ModelViewer {
     }
 
     setupPostProcessing() {
-        if (typeof THREE.EffectComposer !== 'undefined' && 
-            typeof THREE.RenderPass !== 'undefined' && 
-            typeof THREE.UnrealBloomPass !== 'undefined') {
-            
-            this.composer = new THREE.EffectComposer(this.renderer);
-            
-            const renderPass = new THREE.RenderPass(this.scene, this.camera);
-            this.composer.addPass(renderPass);
-            
-            this.bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
-            this.bloomPass.enabled = false;
-            this.composer.addPass(this.bloomPass);
-        } else {
-            console.warn('Post-processing dependencies not loaded, using basic rendering');
-            this.composer = null;
-            this.bloomPass = { enabled: false };
-        }
+        this.composer = new EffectComposer(this.renderer);
+
+        const renderPass = new RenderPass(this.scene, this.camera);
+        this.composer.addPass(renderPass);
+
+        this.bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+        this.bloomPass.enabled = false;
+        this.composer.addPass(this.bloomPass);
     }
 
     setupEventListeners() {
@@ -490,7 +491,7 @@ class ModelViewer {
         if (!url) return;
         this.showProgress(true, 'Loading Environment...');
 
-        new THREE.RGBELoader().load(url, (texture) => {
+        new RGBELoader().load(url, (texture) => {
             texture.mapping = THREE.EquirectangularReflectionMapping;
             this.scene.background = texture;
             this.scene.environment = texture;
@@ -519,12 +520,12 @@ class ModelViewer {
 
     getLoaderForExtension(extension) {
         switch (extension) {
-            case 'glb': case 'gltf': return new THREE.GLTFLoader();
-            case 'fbx': return new THREE.FBXLoader();
-            case 'obj': return new THREE.OBJLoader();
-            case 'dae': return new THREE.ColladaLoader();
-            case 'stl': return new THREE.STLLoader();
-            case 'ply': return new THREE.PLYLoader();
+            case 'glb': case 'gltf': return new GLTFLoader();
+            case 'fbx': return new FBXLoader();
+            case 'obj': return new OBJLoader();
+            case 'dae': return new ColladaLoader();
+            case 'stl': return new STLLoader();
+            case 'ply': return new PLYLoader();
             default: return null;
         }
     }
@@ -752,33 +753,5 @@ class ModelViewer {
     }
 }
 
-// Initialize the viewer when the page loads
-document.addEventListener('DOMContentLoaded', () => {
-    window.modelViewer = new ModelViewer();
-});
-
-// Sample models for testing
-const sampleModels = [
-    'https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf',
-    'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF/Duck.gltf',
-    'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Avocado/glTF/Avocado.gltf'
-];
-
-// Initialize sample model buttons after DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-        document.querySelectorAll('.sample-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const url = btn.dataset.url;
-                document.getElementById('modelUrl').value = url;
-                if (window.modelViewer) {
-                    window.modelViewer.loadModelFromUrl(url);
-                }
-            });
-        });
-    }, 100);
-    
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        console.log('Sample models available:', sampleModels);
-    }
-});
+// Initialize the viewer
+window.modelViewer = new ModelViewer();

@@ -1,12 +1,13 @@
 const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   entry: './script.js',
   output: {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist'),
-    library: 'ModelViewer',
-    libraryTarget: 'window',
+    clean: true,
   },
   module: {
     rules: [
@@ -22,8 +23,16 @@ module.exports = {
       }
     ]
   },
-  externals: {
-    three: 'THREE',
-  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: './index.html',
+      inject: 'body',
+    }),
+    new CopyPlugin({
+      patterns: [
+        { from: 'styles.css', to: 'styles.css' },
+      ],
+    }),
+  ],
   devtool: 'source-map'
 };
