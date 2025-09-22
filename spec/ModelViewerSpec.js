@@ -170,4 +170,89 @@ describe("ModelViewer", function() {
       expect(modelViewer.controls.enabled).toBe(true);
     });
   });
+
+  describe("Measurement Tool", function() {
+    beforeEach(function() {
+      // Mock a currentModel, as it's required for measurement
+      modelViewer.currentModel = new THREE.Object3D();
+
+      // Mock DOM elements for measurement tool
+      var measureBtn = document.createElement('button');
+      measureBtn.id = 'measureBtn';
+      document.body.appendChild(measureBtn);
+
+      var measurementResult = document.createElement('div');
+      measurementResult.id = 'measurementResult';
+      document.body.appendChild(measurementResult);
+    });
+
+    it("should toggle measurement mode", function() {
+      modelViewer.toggleMeasurement();
+      expect(modelViewer.isMeasuring).toBe(true);
+      expect(document.getElementById('measureBtn').textContent).toBe('Cancel Measurement');
+
+      modelViewer.toggleMeasurement();
+      expect(modelViewer.isMeasuring).toBe(false);
+      expect(document.getElementById('measureBtn').textContent).toBe('Measure Distance');
+    });
+
+    it("should add a measurement point", function() {
+      modelViewer.addMeasurementPoint(new THREE.Vector3(1, 0, 0));
+      expect(modelViewer.measurementPoints.length).toBe(1);
+      expect(modelViewer.measurementMarkers.length).toBe(1);
+    });
+
+    it("should calculate the distance between two points", function() {
+      modelViewer.addMeasurementPoint(new THREE.Vector3(0, 0, 0));
+      modelViewer.addMeasurementPoint(new THREE.Vector3(10, 0, 0));
+      expect(modelViewer.measurementPoints.length).toBe(2);
+      expect(modelViewer.measurementMarkers.length).toBe(2);
+      expect(document.getElementById('measurementResult').textContent).toBe('Distance: 10.000 units');
+    });
+
+    it("should clear the measurement", function() {
+      modelViewer.addMeasurementPoint(new THREE.Vector3(0, 0, 0));
+      modelViewer.addMeasurementPoint(new THREE.Vector3(10, 0, 0));
+      modelViewer.clearMeasurement();
+      expect(modelViewer.measurementPoints.length).toBe(0);
+      expect(modelViewer.measurementMarkers.length).toBe(0);
+      expect(modelViewer.measurementLine).toBe(null);
+      expect(document.getElementById('measurementResult').textContent).toBe('');
+    });
+  });
+
+  describe("Theme Toggle", function() {
+    it("should toggle the theme to dark mode", function() {
+      modelViewer.toggleTheme(true);
+      expect(document.body.classList.contains('dark-mode')).toBe(true);
+      expect(localStorage.getItem('theme')).toBe('dark');
+    });
+
+    it("should toggle the theme to light mode", function() {
+      // First, set the theme to dark mode
+      modelViewer.toggleTheme(true);
+
+      // Then, toggle it back to light mode
+      modelViewer.toggleTheme(false);
+      expect(document.body.classList.contains('dark-mode')).toBe(false);
+      expect(localStorage.getItem('theme')).toBe('light');
+    });
+
+    it("should load the theme from local storage", function() {
+      // First, set the theme to dark mode and save it to local storage
+      localStorage.setItem('theme', 'dark');
+
+      // Then, create a new ModelViewer instance and check if it loads the theme
+      var newModelViewer = new ModelViewer();
+      expect(document.body.classList.contains('dark-mode')).toBe(true);
+    });
+  });
+
+  describe("showError", function() {
+    it("should display an error message", function() {
+      modelViewer.showError("Test error message");
+      expect(document.getElementById('errorMessage').textContent).toBe("Test error message");
+      expect(document.getElementById('errorModal').classList.contains('hidden')).toBe(false);
+    });
+  });
 });

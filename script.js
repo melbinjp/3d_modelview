@@ -1,5 +1,5 @@
 import { SuperheroMode } from './superhero-mode.js';
-import { GLTFExporter } from 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/exporters/GLTFExporter.js';
+import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
 
 class ModelViewer {
     constructor() {
