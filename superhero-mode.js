@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+
 export class SuperheroMode {
     constructor(viewer) {
         this.viewer = viewer;
