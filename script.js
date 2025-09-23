@@ -197,6 +197,28 @@ class ModelViewer {
         document.getElementById('closeError').addEventListener('click', () => {
             document.getElementById('errorModal').classList.add('hidden');
         });
+
+        // Initialize sample model buttons
+        setTimeout(() => {
+            document.querySelectorAll('.sample-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const url = btn.dataset.url;
+                    document.getElementById('modelUrl').value = url;
+                    if (window.modelViewer) {
+                        window.modelViewer.loadModelFromUrl(url);
+                    }
+                });
+            });
+        }, 100);
+
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            const sampleModels = [
+                'https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf',
+                'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF/Duck.gltf',
+                'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Avocado/glTF/Avocado.gltf'
+            ];
+            console.log('Sample models available:', sampleModels);
+        }
     }
 
     setupControlListeners() {

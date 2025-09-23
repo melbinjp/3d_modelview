@@ -31,6 +31,7 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         { from: 'styles.css', to: 'styles.css' },
+        { from: 'superhero-theme.mp3', to: 'superhero-theme.mp3' },
       ],
     }),
   ],
