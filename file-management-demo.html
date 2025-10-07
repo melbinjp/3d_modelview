@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Management System Demo - 3D Model Viewer Pro</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Demo-specific styles */
+        .demo-container {
+            display: flex;
+            height: 100vh;
+            background: var(--background-color);
+        }
+
+        .demo-sidebar {
+            width: 400px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+        }
+
+        .demo-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .demo-header {
+            padding: 1rem 2rem;
+            background: var(--primary-gradient);
+            color: white;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .demo-header h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.5rem;
+        }
+
+        .demo-header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .demo-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .demo-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .demo-section h3 {
+            margin: 0 0 1rem 0;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+
+        .demo-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .demo-btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .demo-btn:hover {
+            background: var(--primary-color-dark);
+            transform: translateY(-1px);
+        }
+
+        .demo-btn.secondary {
+            background: var(--button-secondary-bg);
+            color: var(--text-color);
+        }
+
+        .demo-btn.secondary:hover {
+            background: var(--button-secondary-hover-bg);
+        }
+
+        .demo-status {
+            padding: 1rem;
+            background: #f8f9fa;
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 6px 6px 0;
+            margin: 1rem 0;
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .demo-card {
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .demo-card h4 {
+            margin: 0 0 0.5rem 0;
+            color: var(--text-color);
+        }
+
+        .demo-card p {
+            margin: 0;
+            color: var(--text-color-light);
+            font-size: 0.85rem;
+        }
+
+        .file-drop-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            background: #fafafa;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .file-drop-zone:hover,
+        .file-drop-zone.dragover {
+            border-color: var(--primary-color);
+            background: var(--primary-color);
+            background-opacity: 0.1;
+        }
+
+        .file-drop-zone svg {
+            width: 3rem;
+            height: 3rem;
+            color: var(--text-color-light);
+            margin-bottom: 1rem;
+        }
+
+        /* Dark mode adjustments */
+        body.dark-mode .demo-section {
+            background: var(--sidebar-bg);
+        }
+
+        body.dark-mode .demo-card {
+            background: var(--input-bg);
+        }
+
+        body.dark-mode .file-drop-zone {
+            background: var(--input-bg);
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <!-- Sidebar with File Manager -->
+        <div class="demo-sidebar">
+            <div id="sidebar">
+                <!-- File Manager Panel will be inserted here -->
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="demo-main">
+            <div class="demo-header">
+                <h1>File Management System Demo</h1>
+                <p>Comprehensive file organization, search, and metadata management for 3D models</p>
+            </div>
+
+            <div class="demo-content">
+                <!-- File Loading Section -->
+                <div class="demo-section">
+                    <h3>📁 Load 3D Models</h3>
+                    <p>Load models to see the file management system in action. Files will automatically appear in the Recent Files list with thumbnails and metadata.</p>
+                    
+                    <div class="file-drop-zone" id="demoFileDropZone">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14,2 14,8 20,8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10,9 9,9 8,9"/>
+                        </svg>
+                        <p><strong>Drop 3D model files here</strong></p>
+                        <p>Supports GLB, GLTF, FBX, OBJ, STL formats</p>
+                    </div>
+
+                    <div class="demo-actions">
+                        <button class="demo-btn" onclick="loadSampleModel('car')">Load Sample Car</button>
+                        <button class="demo-btn" onclick="loadSampleModel('house')">Load Sample House</button>
+                        <button class="demo-btn" onclick="loadSampleModel('tree')">Load Sample Tree</button>
+                    </div>
+                </div>
+
+                <!-- Project Management Section -->
+                <div class="demo-section">
+                    <h3>📂 Project Management</h3>
+                    <p>Create projects to organize related models. Projects can contain multiple files and have descriptions and tags.</p>
+                    
+                    <div class="demo-actions">
+                        <button class="demo-btn" onclick="createSampleProject('Architecture')">Create Architecture Project</button>
+                        <button class="demo-btn" onclick="createSampleProject('Vehicles')">Create Vehicles Project</button>
+                        <button class="demo-btn" onclick="createSampleProject('Nature')">Create Nature Project</button>
+                    </div>
+
+                    <div id="projectsStatus" class="demo-status">
+                        Projects created: 0
+                    </div>
+                </div>
+
+                <!-- Collection Management Section -->
+                <div class="demo-section">
+                    <h3>📚 Collection Management</h3>
+                    <p>Collections are thematic groups of models that can span across multiple projects. Perfect for organizing by style, purpose, or category.</p>
+                    
+                    <div class="demo-actions">
+                        <button class="demo-btn" onclick="createSampleCollection('Low Poly')">Create Low Poly Collection</button>
+                        <button class="demo-btn" onclick="createSampleCollection('Textured')">Create Textured Collection</button>
+                        <button class="demo-btn" onclick="createSampleCollection('Animated')">Create Animated Collection</button>
+                    </div>
+
+                    <div id="collectionsStatus" class="demo-status">
+                        Collections created: 0
+                    </div>
+                </div>
+
+                <!-- Search and Filter Section -->
+                <div class="demo-section">
+                    <h3>🔍 Search and Filter</h3>
+                    <p>Powerful search capabilities with filtering by type, project, tags, and metadata. Search works across file names, tags, and extracted metadata.</p>
+                    
+                    <div class="demo-actions">
+                        <button class="demo-btn secondary" onclick="demonstrateSearch('car')">Search for "car"</button>
+                        <button class="demo-btn secondary" onclick="demonstrateSearch('low-poly')">Search for "low-poly"</button>
+                        <button class="demo-btn secondary" onclick="demonstrateFilter('glb')">Filter GLB files</button>
+                        <button class="demo-btn secondary" onclick="demonstrateTagSearch('vehicle')">Search by tag "vehicle"</button>
+                    </div>
+
+                    <div id="searchStatus" class="demo-status">
+                        Ready to search - load some models first
+                    </div>
+                </div>
+
+                <!-- Metadata and Tags Section -->
+                <div class="demo-section">
+                    <h3>🏷️ Metadata and Tags</h3>
+                    <p>Automatic metadata extraction from 3D models including vertex count, face count, materials, and textures. Add custom tags for better organization.</p>
+                    
+                    <div class="demo-actions">
+                        <button class="demo-btn secondary" onclick="addSampleTags()">Add Sample Tags</button>
+                        <button class="demo-btn secondary" onclick="showMetadataExample()">Show Metadata Example</button>
+                        <button class="demo-btn secondary" onclick="demonstrateBatchTagging()">Batch Tag Files</button>
+                    </div>
+
+                    <div id="metadataStatus" class="demo-status">
+                        Metadata will be extracted automatically when models are loaded
+                    </div>
+                </div>
+
+                <!-- Batch Operations Section -->
+                <div class="demo-section">
+                    <h3>⚡ Batch Operations</h3>
+                    <p>Perform operations on multiple files at once. Add files to projects, collections, apply tags, or delete multiple files efficiently.</p>
+                    
+                    <div class="demo-actions">
+                        <button class="demo-btn secondary" onclick="demonstrateBatchAddToProject()">Batch Add to Project</button>
+                        <button class="demo-btn secondary" onclick="demonstrateBatchAddToCollection()">Batch Add to Collection</button>
+                        <button class="demo-btn secondary" onclick="demonstrateBatchTagging()">Batch Apply Tags</button>
+                    </div>
+
+                    <div id="batchStatus" class="demo-status">
+                        Load multiple files to try batch operations
+                    </div>
+                </div>
+
+                <!-- Statistics Section -->
+                <div class="demo-section">
+                    <h3>📊 Statistics</h3>
+                    <div class="demo-grid" id="statisticsGrid">
+                        <div class="demo-card">
+                            <h4 id="totalFiles">0</h4>
+                            <p>Total Files</p>
+                        </div>
+                        <div class="demo-card">
+                            <h4 id="totalProjects">0</h4>
+                            <p>Projects</p>
+                        </div>
+                        <div class="demo-card">
+                            <h4 id="totalCollections">0</h4>
+                            <p>Collections</p>
+                        </div>
+                        <div class="demo-card">
+                            <h4 id="totalThumbnails">0</h4>
+                            <p>Thumbnails</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3D Viewer (hidden, used for loading models) -->
+    <div id="viewer" style="display: none;"></div>
+
+    <!-- Scripts -->
+    <script type="module">
+        import { ModelViewer } from './src/ModelViewer.js';
+
+        let modelViewer;
+        let fileManager;
+        let projectCount = 0;
+        let collectionCount = 0;
+
+        // Initialize the demo
+        async function initDemo() {
+            try {
+                // Initialize model viewer
+                modelViewer = new ModelViewer();
+                await modelViewer.init();
+                
+                // Get file manager reference
+                fileManager = modelViewer.core.getModule('fileManager');
+                
+                if (!fileManager) {
+                    console.error('FileManager not available');
+                    return;
+                }
+
+                // Setup event listeners
+                setupEventListeners();
+                
+                // Update statistics
+                updateStatistics();
+                
+                console.log('File Management Demo initialized successfully');
+                
+            } catch (error) {
+                console.error('Failed to initialize demo:', error);
+            }
+        }
+
+        function setupEventListeners() {
+            // File drop zone
+            const dropZone = document.getElementById('demoFileDropZone');
+            
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+            
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('dragover');
+            });
+            
+            dropZone.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                
+                const files = Array.from(e.dataTransfer.files);
+                for (const file of files) {
+                    if (file.name.match(/\.(glb|gltf|fbx|obj|stl)$/i)) {
+                        await loadFile(file);
+                    }
+                }
+            });
+
+            dropZone.addEventListener('click', () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.glb,.gltf,.fbx,.obj,.stl';
+                input.multiple = true;
+                input.onchange = async (e) => {
+                    const files = Array.from(e.target.files);
+                    for (const file of files) {
+                        await loadFile(file);
+                    }
+                };
+                input.click();
+            });
+
+            // Listen for file manager events
+            modelViewer.core.on('filemanager:recent:updated', updateStatistics);
+            modelViewer.core.on('filemanager:project:created', () => {
+                projectCount++;
+                updateProjectsStatus();
+                updateStatistics();
+            });
+            modelViewer.core.on('filemanager:collection:created', () => {
+                collectionCount++;
+                updateCollectionsStatus();
+                updateStatistics();
+            });
+        }
+
+        async function loadFile(file) {
+            try {
+                await modelViewer.assetManager.loadModelFromFile(file);
+                updateStatistics();
+            } catch (error) {
+                console.error('Failed to load file:', error);
+            }
+        }
+
+        // Global functions for demo buttons
+        window.loadSampleModel = async function(type) {
+            const sampleUrls = {
+                car: 'https://threejs.org/examples/models/gltf/ferrari.glb',
+                house: 'https://threejs.org/examples/models/gltf/littlest_tokyo.glb',
+                tree: 'https://threejs.org/examples/models/gltf/tree.glb'
+            };
+
+            try {
+                const url = sampleUrls[type];
+                if (url) {
+                    await modelViewer.assetManager.loadModelFromUrl(url);
+                    updateStatistics();
+                }
+            } catch (error) {
+                console.error('Failed to load sample model:', error);
+                // Simulate loading for demo purposes
+                simulateModelLoad(type);
+            }
+        };
+
+        function simulateModelLoad(type) {
+            const mockModelData = {
+                file: `sample-${type}.glb`,
+                model: {
+                    traverse: () => {} // Mock traverse function
+                },
+                animations: []
+            };
+            
+            fileManager.addToRecentFiles(mockModelData);
+            updateStatistics();
+        }
+
+        window.createSampleProject = function(name) {
+            const descriptions = {
+                'Architecture': 'Buildings, structures, and architectural models',
+                'Vehicles': 'Cars, trucks, planes, and transportation models',
+                'Nature': 'Trees, plants, rocks, and natural environment models'
+            };
+
+            fileManager.createProject(name, descriptions[name] || '');
+        };
+
+        window.createSampleCollection = function(name) {
+            const descriptions = {
+                'Low Poly': 'Models optimized for performance with low polygon count',
+                'Textured': 'Models with detailed textures and materials',
+                'Animated': 'Models with built-in animations and rigging'
+            };
+
+            fileManager.createCollection(name, descriptions[name] || '');
+        };
+
+        window.demonstrateSearch = function(query) {
+            const results = fileManager.searchFiles(query);
+            document.getElementById('searchStatus').textContent = 
+                `Search for "${query}": Found ${results.length} result(s)`;
+        };
+
+        window.demonstrateFilter = function(type) {
+            const results = fileManager.searchFiles('', { type });
+            document.getElementById('searchStatus').textContent = 
+                `Filter by ${type.toUpperCase()}: Found ${results.length} result(s)`;
+        };
+
+        window.demonstrateTagSearch = function(tag) {
+            const results = fileManager.searchFiles('', { tags: [tag] });
+            document.getElementById('searchStatus').textContent = 
+                `Search by tag "${tag}": Found ${results.length} result(s)`;
+        };
+
+        window.addSampleTags = function() {
+            const files = fileManager.getRecentFiles();
+            if (files.length === 0) {
+                document.getElementById('metadataStatus').textContent = 
+                    'No files available - load some models first';
+                return;
+            }
+
+            const sampleTags = ['3d-model', 'asset', 'demo'];
+            files.forEach(file => {
+                fileManager.addTags(file.id, sampleTags);
+            });
+
+            document.getElementById('metadataStatus').textContent = 
+                `Added tags to ${files.length} file(s): ${sampleTags.join(', ')}`;
+        };
+
+        window.showMetadataExample = function() {
+            const files = fileManager.getRecentFiles();
+            if (files.length === 0) {
+                document.getElementById('metadataStatus').textContent = 
+                    'No files available - load some models first';
+                return;
+            }
+
+            const file = files[0];
+            const metadata = file.metadata || {};
+            document.getElementById('metadataStatus').textContent = 
+                `Example metadata for "${file.name}": ` +
+                `Vertices: ${metadata.vertices || 'N/A'}, ` +
+                `Faces: ${metadata.faces || 'N/A'}, ` +
+                `Materials: ${metadata.materials || 'N/A'}`;
+        };
+
+        window.demonstrateBatchTagging = function() {
+            const files = fileManager.getRecentFiles();
+            if (files.length < 2) {
+                document.getElementById('batchStatus').textContent = 
+                    'Need at least 2 files for batch operations';
+                return;
+            }
+
+            const fileIds = files.slice(0, 2).map(f => f.id);
+            const results = fileManager.batchOperation('addTags', fileIds, {
+                tags: ['batch-tagged', 'demo-tag']
+            });
+
+            document.getElementById('batchStatus').textContent = 
+                `Batch tagged ${results.length} files successfully`;
+        };
+
+        window.demonstrateBatchAddToProject = function() {
+            const files = fileManager.getRecentFiles();
+            const projects = fileManager.getProjects();
+            
+            if (files.length < 2) {
+                document.getElementById('batchStatus').textContent = 
+                    'Need at least 2 files for batch operations';
+                return;
+            }
+
+            if (projects.length === 0) {
+                document.getElementById('batchStatus').textContent = 
+                    'Create a project first';
+                return;
+            }
+
+            const fileIds = files.slice(0, 2).map(f => f.id);
+            const results = fileManager.batchOperation('addToProject', fileIds, {
+                projectId: projects[0].id
+            });
+
+            document.getElementById('batchStatus').textContent = 
+                `Added ${results.length} files to project "${projects[0].name}"`;
+        };
+
+        window.demonstrateBatchAddToCollection = function() {
+            const files = fileManager.getRecentFiles();
+            const collections = fileManager.getCollections();
+            
+            if (files.length < 2) {
+                document.getElementById('batchStatus').textContent = 
+                    'Need at least 2 files for batch operations';
+                return;
+            }
+
+            if (collections.length === 0) {
+                document.getElementById('batchStatus').textContent = 
+                    'Create a collection first';
+                return;
+            }
+
+            const fileIds = files.slice(0, 2).map(f => f.id);
+            const results = fileManager.batchOperation('addToCollection', fileIds, {
+                collectionId: collections[0].id
+            });
+
+            document.getElementById('batchStatus').textContent = 
+                `Added ${results.length} files to collection "${collections[0].name}"`;
+        };
+
+        function updateStatistics() {
+            if (!fileManager) return;
+
+            const stats = fileManager.getStatistics();
+            document.getElementById('totalFiles').textContent = stats.totalFiles;
+            document.getElementById('totalProjects').textContent = stats.totalProjects;
+            document.getElementById('totalCollections').textContent = stats.totalCollections;
+            document.getElementById('totalThumbnails').textContent = stats.totalThumbnails;
+        }
+
+        function updateProjectsStatus() {
+            document.getElementById('projectsStatus').textContent = 
+                `Projects created: ${projectCount}`;
+        }
+
+        function updateCollectionsStatus() {
+            document.getElementById('collectionsStatus').textContent = 
+                `Collections created: ${collectionCount}`;
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initDemo);
+    </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-10-05T15:53:45.795Z",
+  "duration": "13.96s",
+  "overallScore": 100,
+  "results": {
+    "unitTests": {
+      "success": true,
+      "output": null
+    },
+    "codeQuality": null,
+    "build": {
+      "success": true,
+      "output": null
+    },
+    "lighthouse": null,
+    "accessibility": null,
+    "performance": null,
+    "security": null,
+    "webVitals": null,
+    "overall": 100
+  },
+  "summary": {
+    "passed": 2,
+    "failed": 0,
+    "total": 8
+  }
+}

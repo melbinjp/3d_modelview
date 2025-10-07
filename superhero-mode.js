@@ -1,9 +1,14 @@
 import * as THREE from 'three';
+import { CinematicEngine } from './src/cinematic/CinematicEngine.js';
 
 export class SuperheroMode {
     constructor(viewer) {
         this.viewer = viewer;
         this.superheroMode = false;
+        
+        // Enhanced cinematic engine
+        this.cinematicEngine = new CinematicEngine(this.viewer.renderingEngine || this.viewer);
+        this.useCinematicMode = true; // Flag to use new cinematic system
         this.originalCameraPos = null;
         this.superheroAudio = null;
         this.audioContext = null;
@@ -81,11 +86,31 @@ export class SuperheroMode {
     }
 
     activateSuperheroMode() {
-        if (!this.viewer.currentModel) return;
+        // Check if there's a current model in the new architecture
+        const currentModel = this.viewer.core?.getState()?.currentModel || this.viewer.currentModel;
+        if (!currentModel) {
+            console.warn('No model loaded - cannot activate superhero mode');
+            return;
+        }
 
+        // Use enhanced cinematic mode if available
+        if (this.useCinematicMode && this.cinematicEngine) {
+            this.activateCinematicSuperheroMode();
+            return;
+        }
+
+        // Fallback to original mode - access camera through rendering engine
+        const camera = this.viewer.renderingEngine?.camera || this.viewer.camera;
+        const controls = this.viewer.renderingEngine?.controls || this.viewer.controls;
+        
+        if (!camera || !controls) {
+            console.error('Camera or controls not available for superhero mode');
+            return;
+        }
+        
         this.originalCameraPos = {
-            position: this.viewer.camera.position.clone(),
-            target: this.viewer.controls.target.clone()
+            position: camera.position.clone(),
+            target: controls.target.clone()
         };
 
         const overlay = document.getElementById('fadeOverlay');
@@ -99,7 +124,7 @@ export class SuperheroMode {
         setTimeout(() => {
             document.body.classList.add('superhero-mode-active');
             this.superheroMode = true;
-            this.viewer.controls.enabled = false;
+            controls.enabled = false;
 
             this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.ANCHOR;
             this.stateEnterTime = Date.now();
@@ -113,30 +138,37 @@ export class SuperheroMode {
                 document.getElementById('sidebarToggleBtn').classList.remove('active');
             }
 
-            this.originalBackground = this.viewer.scene.background;
-            this.originalFog = this.viewer.scene.fog;
+            const scene = this.viewer.renderingEngine?.scene || this.viewer.scene;
+            if (scene) {
+                this.originalBackground = scene.background;
+                this.originalFog = scene.fog;
 
-            this.viewer.scene.background = new THREE.Color(0x000000);
-            this.viewer.scene.fog = new THREE.Fog(0x000000, 5, 30);
-
-            if (this.viewer.bloomPass) {
-                this.viewer.bloomPass.enabled = true;
-                this.viewer.bloomPass.strength = 0.4;
-                this.viewer.bloomPass.radius = 0.3;
-                this.viewer.bloomPass.threshold = 0.7;
+                scene.background = new THREE.Color(0x000000);
+                scene.fog = new THREE.Fog(0x000000, 5, 30);
             }
 
-            this.viewer.lights.ambient.intensity = 0.1;
-            this.viewer.lights.directional.intensity = 0.5;
+            const bloomPass = this.viewer.renderingEngine?.bloomPass || this.viewer.bloomPass;
+            if (bloomPass) {
+                bloomPass.enabled = true;
+                bloomPass.strength = 0.4;
+                bloomPass.radius = 0.3;
+                bloomPass.threshold = 0.7;
+            }
 
-            const box = new THREE.Box3().setFromObject(this.viewer.currentModel);
+            const lights = this.viewer.renderingEngine?.lights || this.viewer.lights;
+            if (lights) {
+                lights.ambient.intensity = 0.1;
+                lights.directional.intensity = 0.5;
+            }
+
+            const box = new THREE.Box3().setFromObject(currentModel);
             const center = box.getCenter(new THREE.Vector3());
             const boundingSphere = new THREE.Sphere();
             box.getBoundingSphere(boundingSphere);
             const radius = boundingSphere.radius;
 
             // Aspect ratio correction
-            const aspect = this.viewer.camera.aspect;
+            const aspect = camera.aspect;
             const aspectFactor = aspect < 1 ? 1 / aspect : 1;
 
             // Define camera positions using bounding sphere radius
@@ -148,15 +180,19 @@ export class SuperheroMode {
             this.spotlight.position.set(center.x, center.y + radius * 4, center.z);
             this.spotlight.target.position.copy(center);
             this.spotlight.castShadow = true;
-            this.viewer.scene.add(this.spotlight);
-            this.viewer.scene.add(this.spotlight.target);
+            if (scene) {
+                scene.add(this.spotlight);
+                scene.add(this.spotlight.target);
+            }
 
             const size = new THREE.Vector3();
             box.getSize(size);
             const maxSize = Math.max(size.x, size.y, size.z);
             this.rimLight = new THREE.DirectionalLight(0x4488ff, 1.2);
             this.rimLight.position.set(center.x - maxSize, center.y, center.z - maxSize);
-            this.viewer.scene.add(this.rimLight);
+            if (scene) {
+                scene.add(this.rimLight);
+            }
 
             this.superheroStartTime = Date.now() - 3000;
 
@@ -173,8 +209,131 @@ export class SuperheroMode {
         }, 1000);
     }
 
+    /**
+     * Activate enhanced cinematic superhero mode
+     */
+    async activateCinematicSuperheroMode() {
+        // Check if there's a current model in the new architecture
+        const currentModel = this.viewer.core?.getState()?.currentModel || this.viewer.currentModel;
+        if (!currentModel) {
+            console.warn('No model loaded - cannot activate cinematic superhero mode');
+            return;
+        }
+
+        // Access camera and controls through rendering engine
+        const camera = this.viewer.renderingEngine?.camera || this.viewer.camera;
+        const controls = this.viewer.renderingEngine?.controls || this.viewer.controls;
+        
+        if (!camera || !controls) {
+            console.error('Camera or controls not available for cinematic superhero mode');
+            return;
+        }
+
+        // Store original state
+        this.originalCameraPos = {
+            position: camera.position.clone(),
+            target: controls.target.clone()
+        };
+
+        // Setup UI
+        const overlay = document.getElementById('fadeOverlay');
+        overlay.classList.remove('hidden');
+        overlay.classList.add('pitch-black');
+
+        document.body.classList.add('superhero-mode-active');
+        this.superheroMode = true;
+        controls.enabled = false;
+
+        document.getElementById('superheroControls').classList.remove('hidden');
+        document.getElementById('superheroBtn').innerHTML = this.icons.close;
+
+        // Collapse sidebar
+        const sidebar = document.getElementById('sidebar');
+        if (!sidebar.classList.contains('collapsed')) {
+            sidebar.classList.add('collapsed');
+            document.getElementById('sidebarToggleBtn').classList.remove('active');
+        }
+
+        // Play audio and setup analysis
+        this.playAmbientDrone();
+        setTimeout(() => this.playBassThump(), 1000);
+        
+        // Start cinematic sequence after audio setup
+        setTimeout(async () => {
+            // Setup audio for cinematic engine
+            let audioElement = null;
+            if (this.customAudioFile || true) { // Always try to play music
+                audioElement = new Audio(this.customAudioFile || 'superhero-theme.mp3');
+                audioElement.volume = 0;
+                
+                try {
+                    await audioElement.play();
+                    this.superheroAudio = audioElement;
+                    this.setupAudioAnalysis();
+                    this.fadeInAudio();
+                } catch (e) {
+                    console.log('Audio play failed:', e);
+                }
+            }
+
+            // Start cinematic reveal
+            try {
+                const cinematicOptions = {
+                    audio: audioElement,
+                    model: currentModel,
+                    environmentType: this.selectEnvironmentType(),
+                    onComplete: () => {
+                        console.log('Cinematic sequence completed');
+                        // Auto-exit after sequence or keep in hero pose
+                        setTimeout(() => this.exitSuperheroMode(), 5000);
+                    }
+                };
+
+                const result = await this.cinematicEngine.startReveal(cinematicOptions);
+                console.log(`Started cinematic sequence: ${result.sequenceName}, duration: ${result.duration}s`);
+
+                // Remove overlay after cinematic starts
+                setTimeout(() => {
+                    overlay.classList.remove('pitch-black');
+                    overlay.classList.add('active');
+                    setTimeout(() => {
+                        overlay.classList.remove('active');
+                        setTimeout(() => overlay.classList.add('hidden'), 800);
+                    }, 1500);
+                }, 500);
+
+            } catch (error) {
+                console.error('Failed to start cinematic sequence:', error);
+                // Fallback to original mode
+                this.useCinematicMode = false;
+                this.activateSuperheroMode();
+            }
+        }, 3000);
+    }
+
+    /**
+     * Select environment type based on model characteristics or user preference
+     */
+    selectEnvironmentType() {
+        // Could be enhanced to analyze model type or allow user selection
+        const environments = ['cosmic_scene', 'stormy_skies', 'urban_landscape', 'heroic_dawn', 'studio_setup'];
+        
+        // For now, select based on time of day or random
+        const hour = new Date().getHours();
+        if (hour >= 6 && hour < 12) {
+            return 'heroic_dawn';
+        } else if (hour >= 18 || hour < 6) {
+            return 'cosmic_scene';
+        } else {
+            return environments[Math.floor(Math.random() * environments.length)];
+        }
+    }
+
     updateSuperheroCamera() {
-        if (!this.superheroMode || !this.viewer.currentModel) return;
+        const currentModel = this.viewer.core?.getState()?.currentModel || this.viewer.currentModel;
+        if (!this.superheroMode || !currentModel) return;
+        
+        const camera = this.viewer.renderingEngine?.camera || this.viewer.camera;
 
         const now = Date.now();
         const stateElapsedTime = (now - this.stateEnterTime) / 1000;
@@ -201,12 +360,12 @@ export class SuperheroMode {
             }
         }
 
-        const box = new THREE.Box3().setFromObject(this.viewer.currentModel);
+        const box = new THREE.Box3().setFromObject(currentModel);
         const center = box.getCenter(new THREE.Vector3());
 
         switch (this.cameraAnimationState) {
             case this.CAMERA_ANIMATION_STATES.ANCHOR:
-                this.viewer.camera.position.copy(this.dollyStartPos);
+                camera.position.copy(this.dollyStartPos);
                 if (stateElapsedTime > 1.5) {
                     this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.DOLLY;
                     this.stateEnterTime = now;
@@ -215,7 +374,7 @@ export class SuperheroMode {
             case this.CAMERA_ANIMATION_STATES.DOLLY:
                 const dollyDuration = 3.0;
                 const dollyProgress = Math.min(stateElapsedTime / dollyDuration, 1.0);
-                this.viewer.camera.position.lerpVectors(this.dollyStartPos, this.dollyEndPos, dollyProgress);
+                camera.position.lerpVectors(this.dollyStartPos, this.dollyEndPos, dollyProgress);
 
                 if (this.beatDetected || dollyProgress >= 1.0) {
                     this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.CRANE;
@@ -225,7 +384,7 @@ export class SuperheroMode {
             case this.CAMERA_ANIMATION_STATES.CRANE:
                 const craneDuration = 2.0;
                 const craneProgress = Math.min(stateElapsedTime / craneDuration, 1.0);
-                this.viewer.camera.position.lerpVectors(this.dollyEndPos, this.craneEndPos, craneProgress);
+                camera.position.lerpVectors(this.dollyEndPos, this.craneEndPos, craneProgress);
                 if (craneProgress >= 1.0) {
                     this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.ORBIT;
                     this.stateEnterTime = now;
@@ -234,12 +393,12 @@ export class SuperheroMode {
             case this.CAMERA_ANIMATION_STATES.ORBIT:
                 const orbitDuration = 4.0;
                 const orbitSpeed = 0.4 + this.smoothedAudioIntensity * 0.2;
-                const orbitRadius = this.viewer.camera.position.distanceTo(center);
+                const orbitRadius = camera.position.distanceTo(center);
                 const orbitAngle = stateElapsedTime * orbitSpeed;
 
-                this.viewer.camera.position.x = center.x + Math.cos(orbitAngle) * orbitRadius;
-                this.viewer.camera.position.z = center.z + Math.sin(orbitAngle) * orbitRadius;
-                this.viewer.camera.position.y = this.craneEndPos.y + Math.sin(stateElapsedTime * 2) * (orbitRadius * 0.1 * this.smoothedAudioIntensity);
+                camera.position.x = center.x + Math.cos(orbitAngle) * orbitRadius;
+                camera.position.z = center.z + Math.sin(orbitAngle) * orbitRadius;
+                camera.position.y = this.craneEndPos.y + Math.sin(stateElapsedTime * 2) * (orbitRadius * 0.1 * this.smoothedAudioIntensity);
 
                 if (stateElapsedTime > orbitDuration || (this.superheroAudio && this.superheroAudio.volume < 0.1)) {
                     this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.STILL;
@@ -253,10 +412,15 @@ export class SuperheroMode {
                 break;
         }
 
-        this.viewer.camera.lookAt(center);
+        camera.lookAt(center);
     }
 
     exitSuperheroMode() {
+        // Stop cinematic engine if active
+        if (this.useCinematicMode && this.cinematicEngine) {
+            this.cinematicEngine.stopReveal();
+        }
+
         if (this.superheroAudio) {
             this.fadeOutAudio();
         }
@@ -272,41 +436,56 @@ export class SuperheroMode {
 
         document.body.classList.remove('superhero-mode-active');
         this.superheroMode = false;
-        this.viewer.controls.enabled = true;
+        
+        const camera = this.viewer.renderingEngine?.camera || this.viewer.camera;
+        const controls = this.viewer.renderingEngine?.controls || this.viewer.controls;
+        
+        if (controls) {
+            controls.enabled = true;
+        }
 
         document.getElementById('superheroControls').classList.add('hidden');
         document.getElementById('superheroBtn').innerHTML = this.icons.superhero;
 
-        if (this.originalCameraPos) {
-            this.viewer.camera.position.copy(this.originalCameraPos.position);
-            this.viewer.controls.target.copy(this.originalCameraPos.target);
+        if (this.originalCameraPos && camera && controls) {
+            camera.position.copy(this.originalCameraPos.position);
+            controls.target.copy(this.originalCameraPos.target);
         }
 
-        this.viewer.scene.background = this.originalBackground;
-        this.viewer.scene.fog = this.originalFog;
+        const scene = this.viewer.renderingEngine?.scene || this.viewer.scene;
+        if (scene) {
+            scene.background = this.originalBackground;
+            scene.fog = this.originalFog;
+        }
 
-        this.viewer.lights.ambient.intensity = 0.4;
-        this.viewer.lights.directional.intensity = 1.0;
-        this.viewer.lights.directional.position.set(5, 5, 5);
+        const lights = this.viewer.renderingEngine?.lights || this.viewer.lights;
+        if (lights) {
+            lights.ambient.intensity = 0.4;
+            lights.directional.intensity = 1.0;
+            lights.directional.position.set(5, 5, 5);
+        }
 
-        if (this.spotlight) {
-            this.viewer.scene.remove(this.spotlight);
-            this.viewer.scene.remove(this.spotlight.target);
+        if (this.spotlight && scene) {
+            scene.remove(this.spotlight);
+            scene.remove(this.spotlight.target);
             this.spotlight = null;
         }
-        if (this.rimLight) {
-            this.viewer.scene.remove(this.rimLight);
+        if (this.rimLight && scene) {
+            scene.remove(this.rimLight);
             this.rimLight = null;
         }
 
-        if (this.viewer.bloomPass) {
-            this.viewer.bloomPass.enabled = false;
-            this.viewer.bloomPass.strength = 1.5;
-            this.viewer.bloomPass.radius = 0.4;
-            this.viewer.bloomPass.threshold = 0.85;
+        const bloomPass = this.viewer.renderingEngine?.bloomPass || this.viewer.bloomPass;
+        if (bloomPass) {
+            bloomPass.enabled = false;
+            bloomPass.strength = 1.5;
+            bloomPass.radius = 0.4;
+            bloomPass.threshold = 0.85;
         }
 
-        this.viewer.controls.update();
+        if (controls) {
+            controls.update();
+        }
     }
 
     playAmbientDrone() {
@@ -474,8 +653,33 @@ export class SuperheroMode {
     }
 
     update() {
-        if (this.superheroMode && this.viewer.currentModel && !this.superheroAnimationPaused) {
-            this.updateSuperheroCamera();
+        const currentModel = this.viewer.core?.getState()?.currentModel || this.viewer.currentModel;
+        if (this.superheroMode && currentModel && !this.superheroAnimationPaused) {
+            // Use cinematic engine if active, otherwise use original camera system
+            if (this.useCinematicMode && this.cinematicEngine && this.cinematicEngine.isActive) {
+                // Cinematic engine handles its own updates
+                return;
+            } else {
+                this.updateSuperheroCamera();
+            }
         }
+    }
+
+    /**
+     * Get current cinematic state for debugging/UI
+     */
+    getCinematicState() {
+        if (this.cinematicEngine) {
+            return this.cinematicEngine.getState();
+        }
+        return null;
+    }
+
+    /**
+     * Toggle between cinematic and original superhero mode
+     */
+    toggleCinematicMode() {
+        this.useCinematicMode = !this.useCinematicMode;
+        console.log(`Cinematic mode ${this.useCinematicMode ? 'enabled' : 'disabled'}`);
     }
 }

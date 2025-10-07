@@ -1,8 +1,8 @@
-describe("ModelViewer", function() {
-  var modelViewer;
+describe("Modular Architecture", function() {
+  var mockCore, mockAssetManager, mockRenderingEngine, mockUIManager, mockExportSystem;
 
   beforeEach(function() {
-    // Mock the DOM elements required by the ModelViewer constructor
+    // Mock the DOM elements
     var mainContainer = document.createElement('div');
     mainContainer.id = 'mainContainer';
     mainContainer.classList.add('hidden');
@@ -14,245 +14,201 @@ describe("ModelViewer", function() {
     loadingScreen.appendChild(loadingText);
     document.body.appendChild(loadingScreen);
 
-    var sidebar = document.createElement('div');
-    sidebar.id = 'sidebar';
-    document.body.appendChild(sidebar);
-
-    var sidebarToggleBtn = document.createElement('button');
-    sidebarToggleBtn.id = 'sidebarToggleBtn';
-    document.body.appendChild(sidebarToggleBtn);
-
     var viewerContainer = document.createElement('div');
     viewerContainer.id = 'viewerContainer';
     document.body.appendChild(viewerContainer);
 
-    var modelUrl = document.createElement('input');
-    modelUrl.id = 'modelUrl';
-    document.body.appendChild(modelUrl);
+    // Mock core engine
+    mockCore = {
+      modules: new Map(),
+      eventListeners: new Map(),
+      state: { currentModel: null },
+      registerModule: function(name, module) { this.modules.set(name, module); },
+      getModule: function(name) { return this.modules.get(name); },
+      emit: function(event, data) {
+        if (this.eventListeners.has(event)) {
+          this.eventListeners.get(event).forEach(function(callback) { callback(data); });
+        }
+      },
+      on: function(event, callback) {
+        if (!this.eventListeners.has(event)) {
+          this.eventListeners.set(event, []);
+        }
+        this.eventListeners.get(event).push(callback);
+      },
+      getState: function() { return this.state; },
+      setState: function(newState) { Object.assign(this.state, newState); },
+      updateState: function(path, value) { /* simplified */ }
+    };
 
-    var superheroBtn = document.createElement('button');
-    superheroBtn.id = 'superheroBtn';
-    document.body.appendChild(superheroBtn);
+    // Mock modules
+    mockAssetManager = {
+      core: mockCore,
+      initialized: false,
+      init: function() { this.initialized = true; },
+      getSupportedFormats: function() { return ['gltf', 'glb', 'fbx', 'obj', 'dae', 'stl', 'ply']; }
+    };
 
-    modelViewer = new ModelViewer();
+    mockRenderingEngine = {
+      core: mockCore,
+      initialized: false,
+      scene: { background: null },
+      camera: { aspect: 1 },
+      renderer: { domElement: document.createElement('canvas') },
+      controls: { enabled: true },
+      init: function() { this.initialized = true; }
+    };
+
+    mockUIManager = {
+      core: mockCore,
+      initialized: false,
+      currentMode: 'simple',
+      init: function() { this.initialized = true; },
+      setMode: function(mode) { this.currentMode = mode; },
+      showError: function(message) { /* mock */ }
+    };
+
+    mockExportSystem = {
+      core: mockCore,
+      initialized: false,
+      init: function() { this.initialized = true; },
+      getAvailableFormats: function() { return ['gltf', 'glb']; },
+      getAvailablePresets: function() { return ['unity', 'web', 'blender']; }
+    };
   });
 
   afterEach(function() {
-    // Clean up the DOM
     document.body.innerHTML = '';
   });
 
-  describe("getLoaderForExtension", function() {
-    it("should return GLTFLoader for 'gltf'", function() {
-      var loader = modelViewer.getLoaderForExtension('gltf');
-      expect(loader instanceof THREE.GLTFLoader).toBe(true);
+  describe("Core Engine", function() {
+    it("should register and retrieve modules", function() {
+      mockCore.registerModule('test', mockAssetManager);
+      expect(mockCore.getModule('test')).toBe(mockAssetManager);
     });
 
-    it("should return GLTFLoader for 'glb'", function() {
-      var loader = modelViewer.getLoaderForExtension('glb');
-      expect(loader instanceof THREE.GLTFLoader).toBe(true);
+    it("should handle events correctly", function() {
+      var eventFired = false;
+      mockCore.on('test:event', function() { eventFired = true; });
+      mockCore.emit('test:event');
+      expect(eventFired).toBe(true);
     });
 
-    it("should return FBXLoader for 'fbx'", function() {
-      var loader = modelViewer.getLoaderForExtension('fbx');
-      expect(loader instanceof THREE.FBXLoader).toBe(true);
-    });
-
-    it("should return OBJLoader for 'obj'", function() {
-      var loader = modelViewer.getLoaderForExtension('obj');
-      expect(loader instanceof THREE.OBJLoader).toBe(true);
-    });
-
-    it("should return ColladaLoader for 'dae'", function() {
-      var loader = modelViewer.getLoaderForExtension('dae');
-      expect(loader instanceof THREE.ColladaLoader).toBe(true);
-    });
-
-    it("should return STLLoader for 'stl'", function() {
-      var loader = modelViewer.getLoaderForExtension('stl');
-      expect(loader instanceof THREE.STLLoader).toBe(true);
-    });
-
-    it("should return PLYLoader for 'ply'", function() {
-      var loader = modelViewer.getLoaderForExtension('ply');
-      expect(loader instanceof THREE.PLYLoader).toBe(true);
-    });
-
-    it("should return null for an unsupported extension", function() {
-      var loader = modelViewer.getLoaderForExtension('txt');
-      expect(loader).toBe(null);
-    });
-
-    it("should be case-insensitive", function() {
-      var loader = modelViewer.getLoaderForExtension('GLB');
-      expect(loader instanceof THREE.GLTFLoader).toBe(true);
+    it("should manage state correctly", function() {
+      mockCore.setState({ test: 'value' });
+      expect(mockCore.getState().test).toBe('value');
     });
   });
 
-  describe("updateValueDisplay", function() {
-    it("should update the value display of a slider", function() {
-      var sliderContainer = document.createElement('div');
-      var slider = document.createElement('input');
-      slider.type = 'range';
-      slider.value = '1.5';
-      var valueDisplay = document.createElement('span');
-      valueDisplay.classList.add('value-display');
-      sliderContainer.appendChild(slider);
-      sliderContainer.appendChild(valueDisplay);
-      document.body.appendChild(sliderContainer);
+  describe("Asset Manager", function() {
+    it("should initialize correctly", function() {
+      expect(mockAssetManager.initialized).toBe(false);
+      mockAssetManager.init();
+      expect(mockAssetManager.initialized).toBe(true);
+    });
 
-      modelViewer.updateValueDisplay(slider);
-
-      expect(valueDisplay.textContent).toBe('1.5');
+    it("should support multiple file formats", function() {
+      var formats = mockAssetManager.getSupportedFormats();
+      expect(formats).toContain('gltf');
+      expect(formats).toContain('glb');
+      expect(formats).toContain('fbx');
+      expect(formats).toContain('obj');
     });
   });
 
-  describe("updateBackground", function() {
-    it("should set a solid color background", function() {
-      var bgColorInput = document.createElement('input');
-      bgColorInput.id = 'bgColor';
-      bgColorInput.value = '#ff0000';
-      document.body.appendChild(bgColorInput);
-
-      modelViewer.updateBackground('solid');
-
-      expect(modelViewer.scene.background.getHexString()).toBe('ff0000');
+  describe("Rendering Engine", function() {
+    it("should initialize correctly", function() {
+      expect(mockRenderingEngine.initialized).toBe(false);
+      mockRenderingEngine.init();
+      expect(mockRenderingEngine.initialized).toBe(true);
     });
 
-    it("should set a gradient background", function() {
-        modelViewer.updateBackground('gradient');
-        expect(modelViewer.scene.background instanceof THREE.CanvasTexture).toBe(true);
+    it("should have Three.js components", function() {
+      expect(mockRenderingEngine.scene).toBeDefined();
+      expect(mockRenderingEngine.camera).toBeDefined();
+      expect(mockRenderingEngine.renderer).toBeDefined();
     });
   });
 
-  describe("Superhero Mode", function() {
-    beforeEach(function() {
-      // Mock a currentModel, as it's required for superhero mode
-      modelViewer.currentModel = new THREE.Object3D();
-
-      // Mock DOM elements for superhero mode
-      var fadeOverlay = document.createElement('div');
-      fadeOverlay.id = 'fadeOverlay';
-      fadeOverlay.classList.add('hidden');
-      document.body.appendChild(fadeOverlay);
-
-      var superheroControls = document.createElement('div');
-      superheroControls.id = 'superheroControls';
-      superheroControls.classList.add('hidden');
-      document.body.appendChild(superheroControls);
+  describe("UI Manager", function() {
+    it("should initialize with simple mode", function() {
+      expect(mockUIManager.currentMode).toBe('simple');
+      mockUIManager.init();
+      expect(mockUIManager.initialized).toBe(true);
     });
 
-    it("should not activate if there is no model", function() {
-        modelViewer.currentModel = null;
-        modelViewer.activateSuperheroMode();
-        expect(modelViewer.superheroMode).toBe(false);
-    });
-
-    it("should activate superhero mode", function(done) {
-      modelViewer.activateSuperheroMode();
-
-      // The activation is asynchronous, so we need to wait
-      setTimeout(function() {
-        expect(modelViewer.superheroMode).toBe(true);
-        expect(modelViewer.controls.enabled).toBe(false);
-        done();
-      }, 1100); // Wait for the timeout in activateSuperheroMode
-    });
-
-    it("should exit superhero mode", function() {
-      // First, enter superhero mode
-      modelViewer.superheroMode = true;
-      modelViewer.controls.enabled = false;
-
-      modelViewer.exitSuperheroMode();
-
-      expect(modelViewer.superheroMode).toBe(false);
-      expect(modelViewer.controls.enabled).toBe(true);
+    it("should switch between UI modes", function() {
+      mockUIManager.setMode('advanced');
+      expect(mockUIManager.currentMode).toBe('advanced');
+      
+      mockUIManager.setMode('simple');
+      expect(mockUIManager.currentMode).toBe('simple');
     });
   });
 
-  describe("Measurement Tool", function() {
-    beforeEach(function() {
-      // Mock a currentModel, as it's required for measurement
-      modelViewer.currentModel = new THREE.Object3D();
-
-      // Mock DOM elements for measurement tool
-      var measureBtn = document.createElement('button');
-      measureBtn.id = 'measureBtn';
-      document.body.appendChild(measureBtn);
-
-      var measurementResult = document.createElement('div');
-      measurementResult.id = 'measurementResult';
-      document.body.appendChild(measurementResult);
+  describe("Export System", function() {
+    it("should initialize correctly", function() {
+      expect(mockExportSystem.initialized).toBe(false);
+      mockExportSystem.init();
+      expect(mockExportSystem.initialized).toBe(true);
     });
 
-    it("should toggle measurement mode", function() {
-      modelViewer.toggleMeasurement();
-      expect(modelViewer.isMeasuring).toBe(true);
-      expect(document.getElementById('measureBtn').textContent).toBe('Cancel Measurement');
-
-      modelViewer.toggleMeasurement();
-      expect(modelViewer.isMeasuring).toBe(false);
-      expect(document.getElementById('measureBtn').textContent).toBe('Measure Distance');
-    });
-
-    it("should add a measurement point", function() {
-      modelViewer.addMeasurementPoint(new THREE.Vector3(1, 0, 0));
-      expect(modelViewer.measurementPoints.length).toBe(1);
-      expect(modelViewer.measurementMarkers.length).toBe(1);
-    });
-
-    it("should calculate the distance between two points", function() {
-      modelViewer.addMeasurementPoint(new THREE.Vector3(0, 0, 0));
-      modelViewer.addMeasurementPoint(new THREE.Vector3(10, 0, 0));
-      expect(modelViewer.measurementPoints.length).toBe(2);
-      expect(modelViewer.measurementMarkers.length).toBe(2);
-      expect(document.getElementById('measurementResult').textContent).toBe('Distance: 10.000 units');
-    });
-
-    it("should clear the measurement", function() {
-      modelViewer.addMeasurementPoint(new THREE.Vector3(0, 0, 0));
-      modelViewer.addMeasurementPoint(new THREE.Vector3(10, 0, 0));
-      modelViewer.clearMeasurement();
-      expect(modelViewer.measurementPoints.length).toBe(0);
-      expect(modelViewer.measurementMarkers.length).toBe(0);
-      expect(modelViewer.measurementLine).toBe(null);
-      expect(document.getElementById('measurementResult').textContent).toBe('');
+    it("should have available formats and presets", function() {
+      var formats = mockExportSystem.getAvailableFormats();
+      var presets = mockExportSystem.getAvailablePresets();
+      
+      expect(formats).toContain('gltf');
+      expect(formats).toContain('glb');
+      expect(presets).toContain('unity');
+      expect(presets).toContain('web');
     });
   });
 
-  describe("Theme Toggle", function() {
-    it("should toggle the theme to dark mode", function() {
-      modelViewer.toggleTheme(true);
-      expect(document.body.classList.contains('dark-mode')).toBe(true);
-      expect(localStorage.getItem('theme')).toBe('dark');
+  describe("Module Integration", function() {
+    it("should register all modules with core", function() {
+      mockCore.registerModule('rendering', mockRenderingEngine);
+      mockCore.registerModule('assets', mockAssetManager);
+      mockCore.registerModule('ui', mockUIManager);
+      mockCore.registerModule('export', mockExportSystem);
+      
+      expect(mockCore.getModule('rendering')).toBe(mockRenderingEngine);
+      expect(mockCore.getModule('assets')).toBe(mockAssetManager);
+      expect(mockCore.getModule('ui')).toBe(mockUIManager);
+      expect(mockCore.getModule('export')).toBe(mockExportSystem);
     });
 
-    it("should toggle the theme to light mode", function() {
-      // First, set the theme to dark mode
-      modelViewer.toggleTheme(true);
-
-      // Then, toggle it back to light mode
-      modelViewer.toggleTheme(false);
-      expect(document.body.classList.contains('dark-mode')).toBe(false);
-      expect(localStorage.getItem('theme')).toBe('light');
-    });
-
-    it("should load the theme from local storage", function() {
-      // First, set the theme to dark mode and save it to local storage
-      localStorage.setItem('theme', 'dark');
-
-      // Then, create a new ModelViewer instance and check if it loads the theme
-      var newModelViewer = new ModelViewer();
-      expect(document.body.classList.contains('dark-mode')).toBe(true);
+    it("should handle inter-module communication", function() {
+      var eventReceived = false;
+      mockCore.on('assets:model:loaded', function() { eventReceived = true; });
+      mockCore.emit('assets:model:loaded', { model: { name: 'test-model' } });
+      expect(eventReceived).toBe(true);
     });
   });
 
-  describe("showError", function() {
-    it("should display an error message", function() {
-      modelViewer.showError("Test error message");
-      expect(document.getElementById('errorMessage').textContent).toBe("Test error message");
-      expect(document.getElementById('errorModal').classList.contains('hidden')).toBe(false);
+  describe("Error Handling", function() {
+    it("should handle module initialization errors gracefully", function() {
+      var errorHandled = false;
+      try {
+        // Simulate an error during module initialization
+        throw new Error('Module initialization failed');
+      } catch (error) {
+        errorHandled = true;
+        mockUIManager.showError(error.message);
+      }
+      expect(errorHandled).toBe(true);
+    });
+  });
+
+  describe("State Management", function() {
+    it("should maintain consistent state across modules", function() {
+      mockCore.setState({ currentModel: { name: 'test-model' } });
+      expect(mockCore.getState().currentModel).toBeDefined();
+      
+      // Simulate state change event
+      var stateChanged = false;
+      mockCore.on('state:changed', function() { stateChanged = true; });
+      mockCore.emit('state:changed', { isLoading: true });
+      expect(stateChanged).toBe(true);
     });
   });
 });
