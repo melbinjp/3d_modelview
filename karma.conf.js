@@ -1,4 +1,7 @@
-const webpackConfig = require('./webpack.config.js');
+const webpackConfig = require('./webpack.config.js')({}, { mode: 'development' });
+delete webpackConfig.entry;
+delete webpackConfig.output;
+process.env.CHROME_BIN = require('puppeteer').executablePath();
 
 module.exports = function(config) {
   const files = config.files || [
@@ -22,7 +25,7 @@ module.exports = function(config) {
 
   config.set({
     basePath: '',
-    frameworks: ['jasmine'],
+    frameworks: ['jasmine', 'webpack'],
     files: files,
     preprocessors: {
       'spec/ModelViewerSpec.js': ['webpack'],

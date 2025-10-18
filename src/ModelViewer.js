@@ -10,7 +10,23 @@ import { ModelEditingManager } from './editing/ModelEditingManager.js';
 import { SuperheroMode } from '../superhero-mode.js';
 
 /**
- * ModelViewer - Main application class that orchestrates all modules
+ * @class ModelViewer
+ * @description Main application class that orchestrates all modules.
+ * This class is responsible for initializing the core engine and all associated managers,
+ * handling user interactions, and managing the main animation loop.
+ * It serves as the central hub of the 3D model viewer application.
+ *
+ * @property {CoreEngine} core - The core engine instance.
+ * @property {RenderingEngine} renderingEngine - Manages all Three.js rendering.
+ * @property {AssetManager} assetManager - Handles loading and managing assets.
+ * @property {UIManager} uiManager - Manages the user interface.
+ * @property {ExportSystem} exportSystem - Handles exporting models and screenshots.
+ * @property {AnalysisManager} analysisManager - Provides analysis and measurement tools.
+ * @property {ModelEditingManager} modelEditingManager - Manages model editing features.
+ * @property {PerformanceManager} performanceManager - Manages performance monitoring and optimization.
+ * @property {SuperheroMode} superhero - Legacy superhero mode instance.
+ * @property {object} stats - Tracks basic model and performance statistics.
+ * @property {boolean} initialized - Flag indicating if the viewer has been initialized.
  */
 export class ModelViewer {
     constructor() {
@@ -40,18 +56,17 @@ export class ModelViewer {
         // Stats tracking
         this.stats = { vertices: 0, faces: 0, fps: 60 };
         
-        // Legacy measurement system (now handled by AnalysisManager)
-        this.isMeasuring = false;
-        this.measurementPoints = [];
-        this.measurementMarkers = [];
-        this.measurementLine = null;
-        this.raycaster = null;
-        
         this.initialized = false;
     }
 
     /**
-     * Initialize the model viewer
+     * @method init
+     * @description Initializes the ModelViewer application.
+     * This method sets up the core engine, all managers, event listeners, and starts the animation loop.
+     * It also handles the creation of a fallback container if the default is not found.
+     * @async
+     * @returns {Promise<void>} A promise that resolves when initialization is complete.
+     * @throws {Error} If a critical error occurs during initialization.
      */
     async init() {
         if (this.initialized) {
@@ -60,87 +75,65 @@ export class ModelViewer {
         }
 
         try {
-            // Initialize core engine
             await this.core.init();
-            
-            // Get container with fallback options
-            let container = document.getElementById('viewerContainer');
-            if (!container) {
-                // Try alternative container IDs
-                container = document.getElementById('viewer') || 
-                           document.getElementById('canvas-container') ||
-                           document.querySelector('.viewer-container') ||
-                           document.querySelector('#app');
-                
-                if (!container) {
-                    // Create container if none exists
-                    container = document.createElement('div');
-                    container.id = 'viewerContainer';
-                    container.style.cssText = 'width: 100%; height: 100vh; position: relative;';
-                    document.body.appendChild(container);
-                    console.warn('Created fallback viewer container');
-                }
-            }
-
-            // Initialize modules
-            this.renderingEngine.init(container);
-            
-            // Initialize performance manager after rendering engine with error handling
-            try {
-                this.performanceManager = new PerformanceManager(
-                    this.core,
-                    this.renderingEngine.renderer,
-                    this.renderingEngine.scene,
-                    this.renderingEngine.camera
-                );
-                this.core.registerModule('performance', this.performanceManager);
-                
-                // Initialize performance manager (sync operation, await not needed)
-                this.performanceManager.init();
-                console.log('PerformanceManager initialized successfully');
-            } catch (perfError) {
-                console.warn('PerformanceManager initialization failed:', perfError);
-                // Continue without performance manager
-                this.performanceManager = null;
-            }
-            
-            await this.assetManager.init(); // AssetManager now requires async initialization
-            await this.uiManager.init(); // UIManager now requires async initialization for accessibility features
-            this.exportSystem.init();
-            this.analysisManager.init();
-            await this.modelEditingManager.initialize(); // Initialize model editing features
-            
-            // Initialize legacy components
-            this.initLegacyComponents();
-            
-            // Setup event listeners
-            this.setupEventListeners();
-            
-            // Start animation loop
-            this.animate();
-            
-            // Hide loading screen
-            this.hideLoadingScreen();
-            
-            this.initialized = true;
-            // Silent initialization complete
-            
+            const container = this._getViewerContainer();
+            await this._initializeModules(container);
+            this._setupEventListeners();
+            this._finalizeInitialization();
         } catch (error) {
-            console.error('Failed to initialize ModelViewer:', error);
-            // Silent error - no user message, just console logging
-            throw error;
+            this._handleInitializationError(error);
         }
     }
 
-    /**
-     * Initialize legacy components that haven't been refactored yet
-     */
-    initLegacyComponents() {
+    _getViewerContainer() {
+        let container = document.getElementById('viewerContainer');
+        if (!container) {
+            container = document.getElementById('viewer') ||
+                document.getElementById('canvas-container') ||
+                document.querySelector('.viewer-container') ||
+                document.querySelector('#app');
+
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'viewerContainer';
+                container.style.cssText = 'width: 100%; height: 100vh; position: relative;';
+                document.body.appendChild(container);
+                console.warn('Created fallback viewer container');
+            }
+        }
+        return container;
+    }
+
+    async _initializeModules(container) {
+        this.renderingEngine.init(container);
+        this._initializePerformanceManager();
+        await this.assetManager.init();
+        await this.uiManager.init();
+        this.exportSystem.init();
+        this.analysisManager.init();
+        await this.modelEditingManager.initialize();
+    }
+
+    _initializePerformanceManager() {
+        try {
+            this.performanceManager = new PerformanceManager(
+                this.core,
+                this.renderingEngine.renderer,
+                this.renderingEngine.scene,
+                this.renderingEngine.camera
+            );
+            this.core.registerModule('performance', this.performanceManager);
+            this.performanceManager.init();
+            console.log('PerformanceManager initialized successfully');
+        } catch (perfError) {
+            console.warn('PerformanceManager initialization failed:', perfError);
+            this.performanceManager = null;
+        }
+    }
+
+    _setupEventListeners() {
         // Initialize superhero mode with legacy interface
         this.superhero = new SuperheroMode(this);
-        
-        // Initialize legacy measurement system (now handled by AnalysisManager)
-        this.raycaster = new THREE.Raycaster();
         
         // Set initial sidebar state
         const sidebar = document.getElementById('sidebar');
@@ -149,7 +142,29 @@ export class ModelViewer {
             sidebar.classList.add('collapsed');
             toggleBtn.classList.remove('active');
         }
+        this.setupEventListeners();
     }
+
+    _finalizeInitialization() {
+        this.animate();
+        this.hideLoadingScreen();
+        this.initialized = true;
+    }
+
+    _handleInitializationError(error) {
+        if (this.uiManager && this.uiManager.notificationSystem) {
+            this.uiManager.notificationSystem.showNotification({
+                id: `init-error-${Date.now()}`,
+                type: 'error',
+                message: `Failed to initialize ModelViewer: ${error.message}`,
+                duration: 0
+            });
+        } else {
+            console.error('Failed to initialize ModelViewer:', error);
+        }
+        throw error;
+    }
+
 
     /**
      * Setup event listeners
@@ -163,7 +178,6 @@ export class ModelViewer {
         // UI event listeners
         this.setupFileHandling();
         this.setupControls();
-        this.setupMeasurement();
         this.setupSampleModels();
     }
 
@@ -469,18 +483,6 @@ export class ModelViewer {
     /**
      * Setup measurement system
      */
-    setupMeasurement() {
-        const measureBtn = document.getElementById('measureBtn');
-        const viewerContainer = document.getElementById('viewerContainer');
-        
-        if (measureBtn) {
-            measureBtn.addEventListener('click', () => this.toggleMeasurement());
-        }
-        
-        if (viewerContainer) {
-            viewerContainer.addEventListener('click', (e) => this.onViewportClick(e));
-        }
-    }
 
     /**
      * Setup sample model buttons - now uses unified loading system
@@ -552,7 +554,12 @@ export class ModelViewer {
     }
 
     /**
-     * Unified model loading method - handles all sources (URL, file, sample)
+     * @method loadModel
+     * @description Unified model loading method that handles all sources (URL, file, sample).
+     * @param {string|File} source - The model source, either a URL string or a File object.
+     * @param {string} [type='auto'] - The type of the source ('url', 'file', 'auto').
+     * @returns {Promise<object>} A promise that resolves with the loaded model data.
+     * @throws {Error} If the model source is invalid or loading fails.
      */
     async loadModel(source, type = 'auto') {
         try {
@@ -591,7 +598,10 @@ export class ModelViewer {
     }
 
     /**
-     * Validate if URL is a valid model URL
+     * @method isValidModelUrl
+     * @description Validates if a given URL is a valid model URL based on its extension.
+     * @param {string} url - The URL to validate.
+     * @returns {boolean} True if the URL is valid, false otherwise.
      */
     isValidModelUrl(url) {
         try {
@@ -605,37 +615,56 @@ export class ModelViewer {
     }
 
     /**
-     * Load model from URL (legacy wrapper)
+     * @method loadModelFromUrl
+     * @description Legacy wrapper for the unified model loading method.
+     * @param {string} url - The URL of the model to load.
+     * @returns {Promise<object>} A promise that resolves with the loaded model data.
      */
     async loadModelFromUrl(url) {
         return this.loadModel(url, 'url');
     }
 
     /**
-     * Load model from file (legacy wrapper)
+     * @method loadModelFromFile
+     * @description Legacy wrapper for the unified model loading method.
+     * @param {File} file - The model file to load.
+     * @returns {Promise<object>} A promise that resolves with the loaded model data.
      */
     async loadModelFromFile(file) {
         return this.loadModel(file, 'file');
     }
 
     /**
-     * Show user-friendly loading error
+     * @method showLoadingError
+     * @description Displays a user-friendly error message when model loading fails.
+     * @param {Error} error - The error object.
+     * @param {string|File} source - The source of the model that failed to load.
      */
     showLoadingError(error, source) {
-        const sourceName = typeof source === 'string' ? 
-            source.split('/').pop() : 
+        const sourceName = typeof source === 'string' ?
+            source.split('/').pop() :
             source.name || 'Unknown';
-            
+
         const errorMessage = `Failed to load "${sourceName}": ${error.message}`;
-        
-        // You can integrate this with the notification system
-        console.error(errorMessage);
-        
-        // Silent error - no user notifications
+
+        if (this.uiManager && this.uiManager.notificationSystem) {
+            this.uiManager.notificationSystem.showNotification({
+                id: `loading-error-${Date.now()}`,
+                type: 'error',
+                message: errorMessage,
+                duration: 10000 // 10 seconds
+            });
+        } else {
+            console.error(errorMessage);
+        }
     }
 
     /**
-     * Load environment from URL
+     * @method loadEnvironment
+     * @description Loads an environment map (HDRI) from a URL and applies it to the scene.
+     * @param {string} url - The URL of the HDRI file.
+     * @async
+     * @returns {Promise<void>} A promise that resolves when the environment is loaded and applied.
      */
     async loadEnvironment(url) {
         try {
@@ -650,8 +679,16 @@ export class ModelViewer {
             
             console.log('Environment loaded successfully');
         } catch (error) {
-            console.error('Error loading environment:', error);
-            // Silent error - no user message, just console logging
+            if (this.uiManager && this.uiManager.notificationSystem) {
+                this.uiManager.notificationSystem.showNotification({
+                    id: `env-error-${Date.now()}`,
+                    type: 'error',
+                    message: `Failed to load environment: ${error.message}`,
+                    duration: 10000
+                });
+            } else {
+                console.error('Error loading environment:', error);
+            }
             
             // Fallback to default environment
             try {
@@ -721,7 +758,16 @@ export class ModelViewer {
             });
             
         } catch (error) {
-            console.error('ModelViewer: Error in onModelAddedToScene:', error);
+            if (this.uiManager && this.uiManager.notificationSystem) {
+                this.uiManager.notificationSystem.showNotification({
+                    id: `model-add-error-${Date.now()}`,
+                    type: 'error',
+                    message: `Error processing model: ${error.message}`,
+                    duration: 10000
+                });
+            } else {
+                console.error('ModelViewer: Error in onModelAddedToScene:', error);
+            }
             
             // Use error manager if available
             if (this.core?.getErrorManager) {
@@ -738,25 +784,9 @@ export class ModelViewer {
      * Update model statistics
      */
     updateModelStats(model) {
-        let vertices = 0;
-        let faces = 0;
-
-        model.traverse((child) => {
-            if (child.isMesh && child.geometry) {
-                const geometry = child.geometry;
-                if (geometry.attributes.position) {
-                    vertices += geometry.attributes.position.count;
-                }
-                if (geometry.index) {
-                    faces += geometry.index.count / 3;
-                } else {
-                    faces += geometry.attributes.position.count / 3;
-                }
-            }
-        });
-
-        this.stats.vertices = vertices;
-        this.stats.faces = Math.floor(faces);
+        const stats = this.analysisManager.calculateModelStatistics(model);
+        this.stats.vertices = stats.vertices;
+        this.stats.faces = stats.faces;
     }
 
     /**
@@ -822,105 +852,6 @@ export class ModelViewer {
     /**
      * Toggle measurement mode
      */
-    toggleMeasurement() {
-        this.isMeasuring = !this.isMeasuring;
-        const measureBtn = document.getElementById('measureBtn');
-        
-        if (measureBtn) {
-            measureBtn.textContent = this.isMeasuring ? 'Cancel Measurement' : 'Measure Distance';
-            measureBtn.classList.toggle('active', this.isMeasuring);
-        }
-
-        if (!this.isMeasuring) {
-            this.clearMeasurement();
-        } else {
-            const measurementResult = document.getElementById('measurementResult');
-            if (measurementResult) {
-                measurementResult.textContent = 'Click on two points on the model.';
-            }
-        }
-    }
-
-    /**
-     * Handle viewport click for measurement
-     */
-    onViewportClick(event) {
-        if (!this.isMeasuring || !this.core.getState().currentModel) return;
-
-        const container = document.getElementById('viewerContainer');
-        const rect = container.getBoundingClientRect();
-        const mouse = new THREE.Vector2();
-        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-        this.raycaster.setFromCamera(mouse, this.renderingEngine.camera);
-        const intersects = this.raycaster.intersectObject(this.core.getState().currentModel, true);
-
-        if (intersects.length > 0) {
-            const point = intersects[0].point;
-            this.addMeasurementPoint(point);
-        }
-    }
-
-    /**
-     * Add measurement point
-     */
-    addMeasurementPoint(point) {
-        if (this.measurementPoints.length >= 2) {
-            this.clearMeasurement();
-        }
-
-        this.measurementPoints.push(point);
-
-        // Create marker
-        const markerGeometry = new THREE.SphereGeometry(0.05, 16, 16);
-        const markerMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-        const marker = new THREE.Mesh(markerGeometry, markerMaterial);
-        marker.position.copy(point);
-        this.renderingEngine.scene.add(marker);
-        this.measurementMarkers.push(marker);
-
-        if (this.measurementPoints.length === 2) {
-            const distance = this.measurementPoints[0].distanceTo(this.measurementPoints[1]);
-            const measurementResult = document.getElementById('measurementResult');
-            if (measurementResult) {
-                measurementResult.textContent = `Distance: ${distance.toFixed(3)} units`;
-            }
-
-            // Create line
-            const lineMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
-            const lineGeometry = new THREE.BufferGeometry().setFromPoints(this.measurementPoints);
-            this.measurementLine = new THREE.Line(lineGeometry, lineMaterial);
-            this.renderingEngine.scene.add(this.measurementLine);
-
-            // Exit measurement mode
-            this.isMeasuring = false;
-            const measureBtn = document.getElementById('measureBtn');
-            if (measureBtn) {
-                measureBtn.textContent = 'Measure Distance';
-                measureBtn.classList.remove('active');
-            }
-        }
-    }
-
-    /**
-     * Clear measurement
-     */
-    clearMeasurement() {
-        this.measurementPoints = [];
-        this.measurementMarkers.forEach(marker => this.renderingEngine.scene.remove(marker));
-        this.measurementMarkers = [];
-        
-        if (this.measurementLine) {
-            this.renderingEngine.scene.remove(this.measurementLine);
-            this.measurementLine = null;
-        }
-        
-        const measurementResult = document.getElementById('measurementResult');
-        if (measurementResult) {
-            measurementResult.textContent = '';
-        }
-    }
 
     /**
      * Hide loading screen
@@ -971,9 +902,6 @@ export class ModelViewer {
      */
     destroy() {
         try {
-            // Clear measurement system
-            this.clearMeasurement();
-            
             // Cleanup modules in reverse order of initialization
             if (this.superhero) {
                 if (typeof this.superhero.destroy === 'function') {
@@ -1007,9 +935,6 @@ export class ModelViewer {
             
             // Clear references
             this.stats = null;
-            this.measurementPoints = [];
-            this.measurementMarkers = [];
-            this.measurementLine = null;
             this.raycaster = null;
             
             this.initialized = false;

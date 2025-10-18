@@ -24,16 +24,28 @@
 ## 🌟 Key Features
 
 ### 🎮 Interactive Experience
-- **Multi-Format Support**: GLB, GLTF, FBX, OBJ with drag & drop
+- **Multi-Format Support**: GLB, GLTF, FBX, OBJ, DAE, STL, PLY with drag & drop
 - **Advanced Controls**: Orbit, zoom, pan with smooth damping
 - **Auto-Rotation**: Configurable speed and direction
 - **Camera Presets**: Reset and fit-to-view functionality
 
 ### 🎨 Visual Excellence
 - **Dynamic Lighting**: Ambient and directional light controls
-- **Post-Processing**: Bloom effects and tone mapping
+- **Post-Processing**: Bloom, FXAA, and tone mapping
 - **Environment Options**: Gradient, solid, and HDRI backgrounds
 - **Shadow Mapping**: High-quality real-time shadows
+
+### 🔬 Analysis & Measurement
+- **Model Statistics**: Vertices, faces, materials, textures, and more
+- **Measurement Tools**: Distance, angle, and area measurement
+- **Material Inspector**: View and inspect material properties
+- **Model Comparison**: Side-by-side comparison of two models
+
+### 🎬 Presentation Mode
+- **Camera Presets**: Front, back, left, right, top, bottom, and isometric views
+- **Lighting Presets**: Studio, outdoor, dramatic, and soft lighting
+- **Auto-Transition**: Automatically transition between camera views
+- **Smooth Transitions**: Smoothly animate between camera views
 
 ### 📱 Cross-Platform
 - **Responsive Design**: Seamless experience on all devices
@@ -49,18 +61,16 @@
 
 ## 🚀 Quick Start
 
-### GitHub Pages Deployment
-1. Fork or clone this repository
-2. Push to your GitHub repository
-3. Enable GitHub Pages in repository settings
-4. Your 3D viewer is live at `https://yourusername.github.io/repositoryname`
-
 ### Local Development
-1. Download or clone the repository
-2. Open `index.html` in a modern web browser
-3. Start loading and viewing 3D models!
+1. Clone the repository: `git clone https://github.com/your-username/3d-model-viewer-pro.git`
+2. Install dependencies: `npm install`
+3. Start the development server: `npm start`
+4. Open `http://localhost:8080` in your browser.
 
-**No build process required!** Everything works directly in the browser.
+### Production Build
+1. Install dependencies: `npm install`
+2. Run the build script: `npm run build`
+3. Deploy the contents of the `dist` directory to your web server.
 
 ## 🎯 Usage Guide
 
@@ -91,19 +101,34 @@
 | Edge | 79+ | ✅ Fully Supported |
 | Mobile | WebGL | ✅ Optimized |
 
-## 🏗️ Architecture
+## 🏗️ Project Structure
 
-```
-3d-model-viewer-pro/
-├── index.html          # Main HTML file
-├── styles.css          # Comprehensive styling
-├── script.js           # Core application logic
-├── manifest.json       # PWA configuration
-├── service-worker.js   # Offline functionality
-├── FEATURES.md         # Detailed feature list
-├── DEPLOYMENT.md       # Deployment guide
-└── README.md           # This file
-```
+The project is organized into the following directories:
+
+- **`dist/`**: The production-ready build of the application.
+- **`src/`**: The source code of the application.
+  - **`core/`**: The core engine and error handling.
+  - **`rendering/`**: The Three.js rendering and post-processing.
+  - **`assets/`**: The asset loading and management.
+  - **`ui/`**: The user interface components.
+  - **`analysis/`**: The measurement and analysis tools.
+  - **`export/`**: The exporting functionality.
+  - **`performance/`**: The performance monitoring and optimization.
+  - **`editing/`**: The model editing features.
+  - **`cinematic/`**: The cinematic camera sequences.
+  - **`physics/`**: The physics engine integration.
+  - **`xr/`**: The WebXR (VR/AR) integration.
+- **`test/`**: The test suite.
+  - **`mocks/`**: The mock files for the test suite.
+- **`public/`**: The static assets, such as the `index.html` file.
+
+## 📦 Build Process
+
+The project uses Webpack to build the application. The following scripts are available in the `package.json` file:
+
+- **`npm start`**: Starts the development server.
+- **`npm run build`**: Creates a production-ready build of the application in the `dist` directory.
+- **`npm test`**: Runs the test suite.
 
 ## 🔧 Configuration
 
