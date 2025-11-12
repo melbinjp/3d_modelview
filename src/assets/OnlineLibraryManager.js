@@ -43,7 +43,7 @@ export class OnlineLibraryManager {
         // Three.js examples (free sample models)
         this.libraries.set('threejs-examples', {
             name: 'Three.js Examples',
-            baseUrl: 'https://threejs.org/examples/models',
+            baseUrl: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/models',
             searchEndpoint: '',
             downloadEndpoint: '',
             requiresAuth: false,
@@ -257,6 +257,20 @@ export class OnlineLibraryManager {
                 description: 'Animated parrot model',
                 format: 'gltf',
                 path: 'gltf/Parrot.glb'
+            },
+            {
+                id: 'soldier',
+                name: 'Soldier',
+                description: 'Animated soldier model',
+                format: 'gltf',
+                path: 'gltf/Soldier.glb'
+            },
+            {
+                id: 'car',
+                name: 'Car',
+                description: 'A detailed car model',
+                format: 'gltf',
+                path: 'gltf/ferrari.glb'
             }
         ];
 

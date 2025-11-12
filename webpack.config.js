@@ -165,6 +165,18 @@ module.exports = (env, argv) => {
       hints: isProduction ? 'warning' : false,
       maxEntrypointSize: 512000,
       maxAssetSize: 512000
-    }
+    },
+    devServer: {
+      static: {
+        directory: path.join(__dirname, 'dist'),
+      },
+      compress: true,
+      port: 8080,
+      hot: true,
+      historyApiFallback: true,
+      headers: {
+        "Content-Security-Policy": "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://*.githubusercontent.com https://*.polyhaven.com https://*.sketchfab.com https://*.google-analytics.com https://*.googletagmanager.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.google-analytics.com https://*.googletagmanager.com; connect-src 'self' ws: https://*.githubusercontent.com https://*.polyhaven.com https://*.sketchfab.com https://*.google-analytics.com https://*.googletagmanager.com;",
+      },
+    },
   };
 };
