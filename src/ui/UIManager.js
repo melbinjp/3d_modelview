@@ -5,6 +5,10 @@ import { I18nManager } from './I18nManager.js';
 import { AccessibilityManager } from './AccessibilityManager.js';
 import { ThemeManager } from './ThemeManager.js';
 import { KeyboardShortcutManager } from './KeyboardShortcutManager.js';
+import { OnboardingManager } from './OnboardingManager.js';
+import { MobileGestureManager } from './MobileGestureManager.js';
+import { FeatureDiscoveryEngine } from './FeatureDiscoveryEngine.js';
+import { UXEnhancementsIntegration } from './UXEnhancementsIntegration.js';
 
 /**
  * UIManager - Manages adaptive UI that switches between simple and advanced modes
@@ -42,6 +46,12 @@ export class UIManager {
         this.themeManager = new ThemeManager(core);
         this.keyboardShortcutManager = new KeyboardShortcutManager(core);
         
+        // UX Enhancement managers
+        this.onboardingManager = new OnboardingManager(core);
+        this.mobileGestureManager = new MobileGestureManager(core);
+        this.featureDiscoveryEngine = new FeatureDiscoveryEngine(core);
+        this.uxEnhancementsIntegration = null; // Will be initialized after other managers
+        
         // UI components
         this.layoutManager = new LayoutManager();
         this.helpSystem = new HelpSystem();
@@ -65,6 +75,10 @@ export class UIManager {
         await this.accessibilityManager.initialize();
         await this.themeManager.initialize();
         await this.keyboardShortcutManager.initialize();
+        
+        // Initialize UX enhancement managers through integration layer
+        this.uxEnhancementsIntegration = new UXEnhancementsIntegration(this.core, this);
+        await this.uxEnhancementsIntegration.initialize();
         
         // Initialize other sub-managers
         this.layoutManager.init(this);
