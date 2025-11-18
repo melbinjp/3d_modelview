@@ -12,6 +12,8 @@
     "serve": "serve dist",
     "test": "jest",
     "test:unit": "jest",
+    "test:ux": "node test/run-ux-tests.js",
+    "test:ux:watch": "karma start karma.conf.js --auto-watch --no-single-run",
     "test:enhanced": "node test/enhanced-test-runner.js",
     "test:performance": "npm run start:test-server && npm run test:performance:run && npm run stop:test-server",
     "test:all-comprehensive": "node test/comprehensive-test-runner.js",

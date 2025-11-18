@@ -1,0 +1,118 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Test Results</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 20px; }
+        .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .summary-card { background: white; padding: 20px; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .summary-card h3 { margin: 0 0 10px 0; color: #666; font-size: 0.9em; }
+        .summary-card .value { font-size: 2em; font-weight: bold; margin: 0; }
+        .success { color: #27ae60; }
+        .error { color: #e74c3c; }
+        .warning { color: #f39c12; }
+        .results { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .result-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .result-item:last-child { border-bottom: none; }
+        .result-name { font-weight: 500; }
+        .result-status { padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; }
+        .passed { background: #d4edda; color: #155724; }
+        .failed { background: #f8d7da; color: #721c24; }
+        .critical { border-left: 4px solid #e74c3c; padding-left: 10px; }
+        .duration { color: #666; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 Comprehensive Test Results</h1>
+            <p>Generated on 18/11/2025, 11:40:02 am</p>
+        </div>
+        
+        <div class="summary">
+            <div class="summary-card">
+                <h3>Total Suites</h3>
+                <p class="value">4</p>
+            </div>
+            <div class="summary-card">
+                <h3>Passed</h3>
+                <p class="value success">1</p>
+            </div>
+            <div class="summary-card">
+                <h3>Failed</h3>
+                <p class="value error">3</p>
+            </div>
+            <div class="summary-card">
+                <h3>Critical Failures</h3>
+                <p class="value error">3</p>
+            </div>
+            <div class="summary-card">
+                <h3>Duration</h3>
+                <p class="value">3.9s</p>
+            </div>
+        </div>
+        
+        <div class="results">
+            <h2>Test Suite Results</h2>
+            
+                <div class="result-item critical">
+                    <div>
+                        <div class="result-name">Unit Tests</div>
+                        <small style="color: #e74c3c;">CRITICAL</small>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="duration">3.10s</span>
+                        <span class="result-status failed">
+                            FAILED
+                        </span>
+                    </div>
+                </div>
+            
+                <div class="result-item critical">
+                    <div>
+                        <div class="result-name">Comprehensive Unit Tests</div>
+                        <small style="color: #e74c3c;">CRITICAL</small>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="duration">0.26s</span>
+                        <span class="result-status failed">
+                            FAILED
+                        </span>
+                    </div>
+                </div>
+            
+                <div class="result-item critical">
+                    <div>
+                        <div class="result-name">Integration Tests</div>
+                        <small style="color: #e74c3c;">CRITICAL</small>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="duration">0.24s</span>
+                        <span class="result-status failed">
+                            FAILED
+                        </span>
+                    </div>
+                </div>
+            
+                <div class="result-item critical">
+                    <div>
+                        <div class="result-name">Code Quality Tests</div>
+                        <small style="color: #e74c3c;">CRITICAL</small>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="duration">0.32s</span>
+                        <span class="result-status passed">
+                            PASSED
+                        </span>
+                    </div>
+                </div>
+            
+        </div>
+    </div>
+</body>
+</html>

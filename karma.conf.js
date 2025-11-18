@@ -7,9 +7,11 @@ module.exports = function(config) {
   const files = config.files || [
     'https://unpkg.com/three@0.164.1/build/three.min.js',
     'spec/ModelViewerSpec.js',
-    'test/asset-loading-enhancement.test.js',
-    'test/enhanced-unit-tests.test.js',
-    'test/model-editing.test.js'
+    'test/error-handling.test.js',
+    'test/onboarding-manager.test.js',
+    'test/mobile-gesture-manager.test.js',
+    'test/feature-discovery-engine.test.js',
+    'test/ux-enhancements-integration.test.js'
   ];
 
   // Add comprehensive test files if not specified
@@ -18,8 +20,7 @@ module.exports = function(config) {
       'test/comprehensive-unit-tests.test.js',
       'test/integration-tests.test.js',
       'test/performance-tests.test.js',
-      'test/browser-compatibility-tests.test.js',
-      'test/model-editing.test.js'
+      'test/browser-compatibility-tests.test.js'
     );
   }
 
@@ -29,13 +30,15 @@ module.exports = function(config) {
     files: files,
     preprocessors: {
       'spec/ModelViewerSpec.js': ['webpack'],
-      'test/asset-loading-enhancement.test.js': ['webpack'],
-      'test/enhanced-unit-tests.test.js': ['webpack'],
+      'test/error-handling.test.js': ['webpack'],
+      'test/onboarding-manager.test.js': ['webpack'],
+      'test/mobile-gesture-manager.test.js': ['webpack'],
+      'test/feature-discovery-engine.test.js': ['webpack'],
+      'test/ux-enhancements-integration.test.js': ['webpack'],
       'test/comprehensive-unit-tests.test.js': ['webpack'],
       'test/integration-tests.test.js': ['webpack'],
       'test/performance-tests.test.js': ['webpack'],
-      'test/browser-compatibility-tests.test.js': ['webpack'],
-      'test/model-editing.test.js': ['webpack']
+      'test/browser-compatibility-tests.test.js': ['webpack']
     },
     webpack: webpackConfig,
     reporters: ['progress'],
