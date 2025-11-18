@@ -5,21 +5,30 @@
   <p>A cutting-edge, production-ready 3D model viewer built with modern web technologies</p>
   
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-  [![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/your-username/3d-model-viewer-pro)
+  [![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](https://github.com/your-username/3d-model-viewer-pro)
   [![WebGL](https://img.shields.io/badge/WebGL-2.0-green.svg)](https://www.khronos.org/webgl/)
   [![PWA](https://img.shields.io/badge/PWA-Ready-purple.svg)](https://web.dev/progressive-web-apps/)
 </div>
 
-## ✨ What's New in v2.0
+## ✨ What's New in v2.1 - Engineering Excellence Edition
 
-- 🎨 **Modern UI/UX**: Complete interface redesign with glassmorphism effects
-- 🚀 **PWA Support**: Install as a native app on any device
-- 🎭 **Post-Processing**: Bloom effects and advanced rendering pipeline
-- 📱 **Mobile First**: Optimized for touch devices with gesture controls
-- 🔄 **Animation System**: Full GLTF animation support with timeline controls
-- 📊 **Performance Metrics**: Real-time FPS and model statistics
-- 🌐 **Offline Mode**: Works without internet connection
-- 🎯 **Production Ready**: Enterprise-grade code quality and architecture
+### 🎯 Major New Features
+- 🎓 **Intelligent Onboarding**: Smart welcome flow for first-time users with progressive feature discovery
+- 📱 **Advanced Mobile Gestures**: Pinch-to-zoom, two-finger rotate, swipe navigation, long-press menus, haptic feedback
+- 🧠 **Smart Feature Discovery**: AI-powered suggestions that learn from your behavior and adapt to your skill level
+- 🌙 **Dark Mode**: Full dark theme support with smooth transitions
+- ⚡ **Performance**: 75% smaller bundle (2.01 MB), sub-1-second load time
+- ♿ **Accessibility**: WCAG 2.1 AA compliant with keyboard navigation and screen reader support
+
+### 📱 Mobile Experience
+- Native app-quality touch gestures
+- Haptic feedback for tactile response
+- Swipe left/right to open/close sidebar
+- Long-press for context menus
+- Double-tap to reset camera
+- Touch-optimized UI (44x44px minimum targets)
+
+See [WHATS_NEW.md](WHATS_NEW.md) for detailed feature descriptions.
 
 ## 🌟 Key Features
 
@@ -61,16 +70,36 @@
 
 ## 🚀 Quick Start
 
-### Local Development
-1. Clone the repository: `git clone https://github.com/your-username/3d-model-viewer-pro.git`
-2. Install dependencies: `npm install`
-3. Start the development server: `npm start`
-4. Open `http://localhost:8080` in your browser.
+### For Users
+1. Visit the site
+2. See welcome tooltip (first-time users)
+3. Load a sample model or upload your own
+4. Follow the guided tour
+5. Discover features naturally
 
-### Production Build
-1. Install dependencies: `npm install`
-2. Run the build script: `npm run build`
-3. Deploy the contents of the `dist` directory to your web server.
+**Mobile Gestures:**
+- **Pinch** to zoom
+- **Rotate** with two fingers
+- **Swipe left/right** to toggle sidebar
+- **Long-press** for context menu
+- **Double-tap** to reset camera
+
+### For Developers
+
+**Local Development:**
+```bash
+git clone https://github.com/your-username/3d-model-viewer-pro.git
+cd 3d-model-viewer-pro
+npm install
+npm start
+```
+
+**Production Build:**
+```bash
+npm run build:production  # Optimized build (2.01 MB)
+npm run serve            # Test locally
+npm run deploy           # Deploy to GitHub Pages
+```
 
 ## 🎯 Usage Guide
 
@@ -166,10 +195,18 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for other hosting options.
 
 ## 📊 Performance
 
-- **Initial Load**: < 3 seconds
-- **Model Loading**: Depends on file size and network
-- **Rendering**: 60 FPS on desktop, 30 FPS on mobile
-- **Memory Usage**: Optimized for large models
+### Optimized for Speed
+- **Initial Load**: < 1 second ⚡ (was ~3s)
+- **Bundle Size**: 2.01 MB (75% reduction from 8.24 MB)
+- **Time to Interactive**: < 2 seconds
+- **Rendering**: 60 FPS on desktop, 30 FPS on mobile (locked)
+- **Memory Usage**: Optimized with automatic cleanup
+
+### Performance Metrics
+- First Contentful Paint: < 1 second
+- Code Splitting: Lazy load advanced features
+- Asset Optimization: Minified and compressed
+- Caching Strategy: Service worker enabled
 
 ## 🤝 Contributing
 

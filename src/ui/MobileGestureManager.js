@@ -31,16 +31,8 @@ export class MobileGestureManager {
         // Haptic feedback support
         this.hapticSupported = 'vibrate' in navigator;
         
-        // Gesture recognizers
-        this.recognizers = {
-            tap: this.recognizeTap.bind(this),
-            doubleTap: this.recognizeDoubleTap.bind(this),
-            longPress: this.recognizeLongPress.bind(this),
-            swipe: this.recognizeSwipe.bind(this),
-            pinch: this.recognizePinch.bind(this),
-            rotate: this.recognizeRotate.bind(this),
-            pan: this.recognizePan.bind(this)
-        };
+        // Gesture recognizers (will be bound after methods are defined)
+        this.recognizers = {};
         
         // Last tap for double-tap detection
         this.lastTap = { time: 0, x: 0, y: 0 };
@@ -60,6 +52,17 @@ export class MobileGestureManager {
             console.log('Touch not supported, skipping gesture manager');
             return;
         }
+        
+        // Bind recognizers after methods are defined
+        this.recognizers = {
+            tap: this.recognizeTap.bind(this),
+            doubleTap: this.recognizeDoubleTap.bind(this),
+            longPress: this.recognizeLongPress.bind(this),
+            swipe: this.recognizeSwipe.bind(this),
+            pinch: this.recognizePinch.bind(this),
+            rotate: this.recognizeRotate.bind(this),
+            pan: this.recognizePan.bind(this)
+        };
         
         this.setupEventListeners();
         this.initialized = true;

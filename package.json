@@ -11,6 +11,7 @@
     "start:dev": "webpack serve --mode development --open",
     "serve": "serve dist",
     "test": "jest",
+    "test:unit": "jest",
     "test:enhanced": "node test/enhanced-test-runner.js",
     "test:performance": "npm run start:test-server && npm run test:performance:run && npm run stop:test-server",
     "test:all-comprehensive": "node test/comprehensive-test-runner.js",
