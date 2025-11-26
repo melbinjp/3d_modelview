@@ -50,18 +50,19 @@ export class MobileGestureManager {
         // Only initialize on touch devices
         if (!('ontouchstart' in window)) {
             console.log('Touch not supported, skipping gesture manager');
+            this.initialized = true; // Mark as initialized even if not supported
             return;
         }
         
         // Bind recognizers after methods are defined
         this.recognizers = {
-            tap: this.recognizeTap.bind(this),
-            doubleTap: this.recognizeDoubleTap.bind(this),
-            longPress: this.recognizeLongPress.bind(this),
-            swipe: this.recognizeSwipe.bind(this),
-            pinch: this.recognizePinch.bind(this),
-            rotate: this.recognizeRotate.bind(this),
-            pan: this.recognizePan.bind(this)
+            tap: this.recognizeTap ? this.recognizeTap.bind(this) : null,
+            doubleTap: this.recognizeDoubleTap ? this.recognizeDoubleTap.bind(this) : null,
+            longPress: this.recognizeLongPress ? this.recognizeLongPress.bind(this) : null,
+            swipe: this.recognizeSwipe ? this.recognizeSwipe.bind(this) : null,
+            pinch: this.recognizePinch ? this.recognizePinch.bind(this) : null,
+            rotate: this.recognizeRotate ? this.recognizeRotate.bind(this) : null,
+            pan: this.recognizePan ? this.recognizePan.bind(this) : null
         };
         
         this.setupEventListeners();
@@ -472,3 +473,109 @@ export class MobileGestureManager {
         this.initialized = false;
     }
 }
+
+    /**
+     * Check if device is mobile
+     */
+    isMobileDevice() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
+
+    /**
+     * Check if touch is supported
+     */
+    hasTouchSupport() {
+        return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    }
+
+    /**
+     * Set gesture threshold
+     */
+    setGestureThreshold(gesture, value) {
+        if (value < 0) throw new Error('Threshold must be positive');
+        this.config[`${gesture}Threshold`] = value;
+    }
+
+    /**
+     * Set gesture timeout
+     */
+    setGestureTimeout(gesture, value) {
+        if (value < 0) throw new Error('Timeout must be positive');
+        this.config[`${gesture}Timeout`] = value;
+    }
+
+    /**
+     * Enable/disable specific gesture
+     */
+    setGestureEnabled(gesture, enabled) {
+        this.enabledGestures[gesture] = enabled;
+    }
+
+    /**
+     * Calculate distance between two touches
+     */
+    calculateDistance(touch1, touch2) {
+        const dx = touch2.clientX - touch1.clientX;
+        const dy = touch2.clientY - touch1.clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    /**
+     * Calculate angle between two touches
+     */
+    calculateAngle(touch1, touch2) {
+        const dx = touch2.clientX - touch1.clientX;
+        const dy = touch2.clientY - touch1.clientY;
+        return Math.atan2(dy, dx) * (180 / Math.PI);
+    }
+
+    /**
+     * Cleanup old touches
+     */
+    cleanupOldTouches() {
+        const now = Date.now();
+        const maxAge = 5000; // 5 seconds
+        
+        if (this.touchHistory) {
+            this.touchHistory = this.touchHistory.filter(t => now - t.timestamp < maxAge);
+            if (this.touchHistory.length > 5) {
+                this.touchHistory = this.touchHistory.slice(-5);
+            }
+        }
+    }
+
+    /**
+     * Get gesture description
+     */
+    getGestureDescription(gesture) {
+        const descriptions = {
+            tap: 'Tap to select',
+            doubleTap: 'Double tap to zoom',
+            swipe: 'Swipe to navigate',
+            pinch: 'Pinch to zoom in/out',
+            rotate: 'Rotate with two fingers',
+            pan: 'Drag to move',
+            longPress: 'Long press for options'
+        };
+        return descriptions[gesture] || 'Unknown gesture';
+    }
+
+    /**
+     * Get gesture alternatives
+     */
+    getGestureAlternatives(gesture) {
+        const alternatives = {
+            pinch: ['Use zoom buttons', 'Mouse scroll wheel'],
+            rotate: ['Use rotation buttons', 'Keyboard arrows'],
+            swipe: ['Use navigation buttons', 'Keyboard arrows'],
+            pan: ['Use mouse drag', 'Keyboard arrows']
+        };
+        return alternatives[gesture] || [];
+    }
+
+    /**
+     * Set haptic enabled
+     */
+    setHapticEnabled(enabled) {
+        this.hapticEnabled = enabled;
+    }

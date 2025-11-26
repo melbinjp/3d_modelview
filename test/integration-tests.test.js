@@ -338,7 +338,7 @@ describe('Integration Tests Suite', () => {
                 // Mock model for export
                 const mockModel = {
                     name: 'test-model',
-                    traverse: jasmine.createSpy('traverse')
+                    traverse: jest.fn()
                 };
                 
                 modelViewer.core.setState({ currentModel: mockModel });
@@ -476,11 +476,11 @@ describe('Integration Tests Suite', () => {
         it('should cleanup resources when models are removed', async () => {
             // Mock model with disposable resources
             const mockGeometry = {
-                dispose: jasmine.createSpy('dispose')
+                dispose: jest.fn()
             };
             
             const mockMaterial = {
-                dispose: jasmine.createSpy('dispose')
+                dispose: jest.fn()
             };
             
             const mockModel = {
@@ -549,7 +549,7 @@ describe('Integration Tests Suite', () => {
         });
 
         it('should handle event listener cleanup', async () => {
-            const handler = jasmine.createSpy('handler');
+            const handler = jest.fn();
             
             modelViewer.core.on('test:event', handler);
             modelViewer.core.emit('test:event');

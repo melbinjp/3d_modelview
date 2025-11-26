@@ -452,6 +452,157 @@ export class OnboardingManager {
     }
 
     /**
+     * Check if user is first time
+     */
+    isFirstTimeUser() {
+        return this.isFirstTime;
+    }
+
+    /**
+     * Show tooltip for element
+     */
+    showTooltip(elementId, message, position = 'top') {
+        const element = document.getElementById(elementId) || document.querySelector(elementId);
+        if (!element) {
+            console.warn(`Element not found: ${elementId}`);
+            return;
+        }
+
+        const tooltip = document.createElement('div');
+        tooltip.className = 'onboarding-tooltip';
+        tooltip.textContent = message;
+        tooltip.style.position = 'absolute';
+        
+        const rect = element.getBoundingClientRect();
+        tooltip.style.left = `${rect.left}px`;
+        tooltip.style.top = position === 'top' ? `${rect.top - 40}px` : `${rect.bottom + 10}px`;
+        
+        element.classList.add('onboarding-highlight');
+        document.body.appendChild(tooltip);
+        
+        this.currentTooltip = { tooltip, element };
+    }
+
+    /**
+     * Hide current tooltip
+     */
+    hideTooltip() {
+        if (this.currentTooltip) {
+            this.currentTooltip.tooltip.remove();
+            this.currentTooltip.element.classList.remove('onboarding-highlight');
+            this.currentTooltip = null;
+        }
+    }
+
+    /**
+     * Track feature usage
+     */
+    trackFeatureUsage(featureId) {
+        this.userProgress.featuresUsed.add(featureId);
+        this.saveProgress();
+        this.coreEngine.emit('onboarding:featureUsed', { feature: featureId });
+    }
+
+    /**
+     * Suggest next feature
+     */
+    suggestNextFeature() {
+        // Find features not yet used
+        const allFeatures = ['camera-controls', 'lighting', 'export', 'analysis', 'cinematic'];
+        const unused = allFeatures.filter(f => !this.userProgress.featuresUsed.has(f));
+        
+        if (unused.length > 0) {
+            return {
+                id: unused[0],
+                name: unused[0].replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                description: `Try the ${unused[0]} feature`
+            };
+        }
+        return null;
+    }
+
+    /**
+     * Show feature hint
+     */
+    showFeatureHint(feature) {
+        if (!feature || !feature.trigger) return;
+        
+        const element = document.getElementById(feature.trigger) || document.querySelector(feature.trigger);
+        if (element) {
+            this.showTooltip(feature.trigger, feature.description || feature.name);
+        }
+    }
+
+    /**
+     * Mark step as completed
+     */
+    markStepCompleted(stepId) {
+        this.completedSteps.add(stepId);
+        this.saveProgress();
+        this.coreEngine.emit('onboarding:stepCompleted', { step: stepId });
+    }
+
+    /**
+     * Check if step is completed
+     */
+    isStepCompleted(stepId) {
+        return this.completedSteps.has(stepId);
+    }
+
+    /**
+     * Get completion percentage
+     */
+    getCompletionPercentage() {
+        return Math.round((this.completedSteps.size / this.steps.length) * 100);
+    }
+
+    /**
+     * Start onboarding manually
+     */
+    start() {
+        this.startOnboarding();
+    }
+
+    /**
+     * Skip onboarding
+     */
+    skip() {
+        this.skipOnboarding();
+    }
+
+    /**
+     * Show current step
+     */
+    showCurrentStep() {
+        if (this.currentStep >= 0 && this.currentStep < this.steps.length) {
+            const step = this.steps[this.currentStep];
+            this.showStep(step);
+        }
+    }
+
+    /**
+     * Go to next step
+     */
+    nextStep() {
+        if (this.currentStep < this.steps.length - 1) {
+            this.currentStep++;
+            this.showCurrentStep();
+        } else {
+            this.completeOnboarding();
+        }
+    }
+
+    /**
+     * Go to previous step
+     */
+    previousStep() {
+        if (this.currentStep > 0) {
+            this.currentStep--;
+            this.showCurrentStep();
+        }
+    }
+
+    /**
      * Reset onboarding (for testing)
      */
     reset() {

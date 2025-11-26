@@ -626,3 +626,278 @@ export class FeatureDiscoveryEngine {
         this.initialized = false;
     }
 }
+
+    /**
+     * Detect user skill level
+     */
+    detectSkillLevel() {
+        const usageCount = Object.keys(this.userProfile.featureUsage).length;
+        if (usageCount < 3) return 'beginner';
+        if (usageCount < 8) return 'intermediate';
+        if (usageCount < 15) return 'advanced';
+        return 'expert';
+    }
+
+    /**
+     * Update skill level
+     */
+    updateSkillLevel() {
+        this.userProfile.skillLevel = this.detectSkillLevel();
+        this.saveProfile();
+    }
+
+    /**
+     * Set user preference
+     */
+    setPreference(key, value) {
+        this.userProfile.preferences[key] = value;
+        this.saveProfile();
+    }
+
+    /**
+     * Calculate engagement score
+     */
+    calculateEngagementScore() {
+        const featureCount = Object.keys(this.userProfile.featureUsage).length;
+        const totalUsage = Object.values(this.userProfile.featureUsage).reduce((a, b) => a + b, 0);
+        return Math.min(100, (featureCount * 5) + (totalUsage * 2));
+    }
+
+    /**
+     * Get feature suggestions
+     */
+    getSuggestions() {
+        if (!this.featureCatalog) return [];
+        
+        return this.featureCatalog
+            .filter(f => !this.userProfile.featureUsage[f.id])
+            .filter(f => !this.dismissedSuggestions.has(f.id))
+            .filter(f => this.matchesSkillLevel(f))
+            .slice(0, 3);
+    }
+
+    /**
+     * Get suggestions for context
+     */
+    getSuggestionsForContext(context) {
+        if (!this.featureCatalog) return [];
+        
+        return this.featureCatalog
+            .filter(f => f.context === context || f.category === context)
+            .filter(f => !this.userProfile.featureUsage[f.id])
+            .slice(0, 2);
+    }
+
+    /**
+     * Check if feature matches skill level
+     */
+    matchesSkillLevel(feature) {
+        const skillLevels = ['beginner', 'intermediate', 'advanced', 'expert'];
+        const userLevel = skillLevels.indexOf(this.userProfile.skillLevel);
+        const featureLevel = skillLevels.indexOf(feature.difficulty || 'beginner');
+        return featureLevel <= userLevel + 1;
+    }
+
+    /**
+     * Calculate relevance score
+     */
+    calculateRelevanceScore(feature) {
+        let score = 0.5;
+        
+        // Boost if matches skill level
+        if (this.matchesSkillLevel(feature)) score += 0.2;
+        
+        // Boost if prerequisites met
+        if (feature.prerequisites && feature.prerequisites.every(p => this.userProfile.featureUsage[p])) {
+            score += 0.3;
+        }
+        
+        return Math.min(1, score);
+    }
+
+    /**
+     * Identify usage patterns
+     */
+    identifyPatterns() {
+        if (!this.usageHistory || this.usageHistory.length < 5) return [];
+        
+        const patterns = [];
+        const recentUsage = this.usageHistory.slice(-10);
+        
+        // Find sequences
+        for (let i = 0; i < recentUsage.length - 1; i++) {
+            const current = recentUsage[i].feature;
+            const next = recentUsage[i + 1].feature;
+            patterns.push({ from: current, to: next });
+        }
+        
+        return patterns;
+    }
+
+    /**
+     * Detect sequences
+     */
+    detectSequences() {
+        const patterns = this.identifyPatterns();
+        const sequences = {};
+        
+        patterns.forEach(p => {
+            const key = `${p.from}->${p.to}`;
+            sequences[key] = (sequences[key] || 0) + 1;
+        });
+        
+        return Object.entries(sequences)
+            .filter(([_, count]) => count > 1)
+            .map(([seq, count]) => ({ sequence: seq, count }));
+    }
+
+    /**
+     * Predict next feature
+     */
+    predictNextFeature() {
+        if (!this.usageHistory || this.usageHistory.length === 0) return null;
+        
+        const lastFeature = this.usageHistory[this.usageHistory.length - 1].feature;
+        const patterns = this.identifyPatterns();
+        const nextFeatures = patterns.filter(p => p.from === lastFeature);
+        
+        if (nextFeatures.length > 0) {
+            return nextFeatures[0].to;
+        }
+        
+        return null;
+    }
+
+    /**
+     * Show suggestion
+     */
+    showSuggestion(feature) {
+        if (!this.userProfile.preferences.showSuggestions) return;
+        
+        const notification = document.createElement('div');
+        notification.className = 'feature-suggestion';
+        notification.innerHTML = `
+            <div class="suggestion-content">
+                <span class="suggestion-icon">${feature.icon || '💡'}</span>
+                <div class="suggestion-text">
+                    <strong>${feature.name}</strong>
+                    <p>${feature.description}</p>
+                </div>
+                <button class="suggestion-accept">Try it</button>
+                <button class="suggestion-dismiss">×</button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        notification.querySelector('.suggestion-accept').addEventListener('click', () => {
+            this.coreEngine.emit('feature:activated', { featureId: feature.id });
+            notification.remove();
+        });
+        
+        notification.querySelector('.suggestion-dismiss').addEventListener('click', () => {
+            this.dismissSuggestion(feature.id);
+            notification.remove();
+        });
+        
+        this.coreEngine.emit('discovery:suggestion', { feature });
+    }
+
+    /**
+     * Hide suggestion
+     */
+    hideSuggestion() {
+        const notification = document.querySelector('.feature-suggestion');
+        if (notification) {
+            notification.remove();
+        }
+    }
+
+    /**
+     * Show feature tour
+     */
+    showFeatureTour(feature) {
+        if (!feature.steps) return;
+        
+        const tour = document.createElement('div');
+        tour.className = 'feature-tour';
+        tour.innerHTML = `
+            <div class="tour-content">
+                <h3>${feature.name} Tour</h3>
+                <div class="tour-steps"></div>
+                <button class="tour-close">Close</button>
+            </div>
+        `;
+        
+        document.body.appendChild(tour);
+        
+        tour.querySelector('.tour-close').addEventListener('click', () => {
+            tour.remove();
+        });
+    }
+
+    /**
+     * Get usage statistics
+     */
+    getUsageStatistics() {
+        const features = Object.entries(this.userProfile.featureUsage);
+        const sorted = features.sort((a, b) => b[1] - a[1]);
+        
+        return {
+            totalUsage: features.reduce((sum, [_, count]) => sum + count, 0),
+            mostUsedFeatures: sorted.slice(0, 5),
+            leastUsedFeatures: sorted.slice(-5).reverse()
+        };
+    }
+
+    /**
+     * Calculate adoption rate
+     */
+    calculateAdoptionRate() {
+        if (!this.featureCatalog) return 0;
+        const usedCount = Object.keys(this.userProfile.featureUsage).length;
+        return Math.round((usedCount / this.featureCatalog.length) * 100);
+    }
+
+    /**
+     * Get underutilized features
+     */
+    getUnderutilizedFeatures() {
+        if (!this.featureCatalog) return [];
+        
+        return this.featureCatalog.filter(f => 
+            !this.userProfile.featureUsage[f.id] || this.userProfile.featureUsage[f.id] < 2
+        );
+    }
+
+    /**
+     * Generate insights
+     */
+    generateInsights() {
+        return {
+            skillLevel: this.userProfile.skillLevel,
+            engagementScore: this.calculateEngagementScore(),
+            adoptionRate: this.calculateAdoptionRate(),
+            recommendations: this.getSuggestions(),
+            patterns: this.detectSequences()
+        };
+    }
+
+    /**
+     * Dismiss suggestion
+     */
+    dismissSuggestion(featureId, timestamp = Date.now()) {
+        this.dismissedSuggestions.set(featureId, timestamp);
+    }
+
+    /**
+     * Cleanup dismissed suggestions
+     */
+    cleanupDismissedSuggestions() {
+        const weekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+        for (const [id, timestamp] of this.dismissedSuggestions.entries()) {
+            if (timestamp < weekAgo) {
+                this.dismissedSuggestions.delete(id);
+            }
+        }
+    }
