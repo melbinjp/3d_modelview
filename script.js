@@ -8,6 +8,9 @@ class ModelViewer {
         this.mixer = null;
         this.clock = new THREE.Clock();
         this.stats = { vertices: 0, faces: 0, fps: 60 };
+        this.fpsCounterElement = null;
+        this.lastFpsUpdate = 0;
+        this.frames = 0;
         this.lights = {};
         this.composer = null;
         this.bloomPass = null;
@@ -78,6 +81,9 @@ class ModelViewer {
         this.gridHelper.visible = false;
         this.scene.add(this.gridHelper);
         
+        this.fpsCounterElement = document.getElementById('fpsCounter');
+        this.lastFpsUpdate = performance.now();
+
         window.addEventListener('resize', () => this.onWindowResize());
 
         document.getElementById('sidebar').classList.add('collapsed');
@@ -566,8 +572,18 @@ class ModelViewer {
             this.updateSuperheroCamera();
         }
 
-        this.stats.fps = Math.round(1 / delta);
-        document.getElementById('fpsCounter').textContent = this.stats.fps;
+        // Optimized FPS update - updates every 500ms
+        this.frames++;
+        const now = performance.now();
+
+        if (now >= this.lastFpsUpdate + 500) {
+            this.stats.fps = Math.round((this.frames * 1000) / (now - this.lastFpsUpdate));
+            if (this.fpsCounterElement) {
+                this.fpsCounterElement.textContent = this.stats.fps;
+            }
+            this.lastFpsUpdate = now;
+            this.frames = 0;
+        }
 
         if (this.composer && this.bloomPass.enabled) {
             this.composer.render();
