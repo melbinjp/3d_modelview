@@ -413,7 +413,8 @@ class ModelViewer {
     }
 
     getLoaderForFile(file) {
-        const extension = file.name.split('.').pop().toLowerCase();
+        const parts = file.name.split('.');
+        const extension = parts.length > 1 ? parts.pop().toLowerCase() : '';
         return this.getLoaderForExtension(extension);
     }
 
@@ -818,7 +819,8 @@ class ModelViewer {
     
     loadAudioFile(file) {
         const supportedFormats = ['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac', 'wma'];
-        const extension = file.name.split('.').pop().toLowerCase();
+        const parts = file.name.split('.');
+        const extension = parts.length > 1 ? parts.pop().toLowerCase() : '';
         
         if (!supportedFormats.includes(extension)) {
             this.showError('Unsupported audio format. Please use MP3, WAV, OGG, M4A, AAC, FLAC, or WMA.');
@@ -928,3 +930,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Sample models available:', sampleModels);
     }
 });
+// Export for testing
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { ModelViewer };
+}
