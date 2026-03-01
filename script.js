@@ -437,7 +437,7 @@ class ModelViewer {
         let model;
         if (loadedModel.scene) {
             model = loadedModel.scene;
-        } else if (loadedModel.isBufferGeometry || loadedModel.isGeometry) {
+        } else if (loadedModel.isBufferGeometry) {
             const material = new THREE.MeshPhongMaterial({ color: 0x888888 });
             model = new THREE.Mesh(loadedModel, material);
         } else {
