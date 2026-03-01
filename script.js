@@ -296,8 +296,11 @@ class ModelViewer {
                 canvas.height = 512;
                 const ctx = canvas.getContext('2d');
                 const gradient = ctx.createLinearGradient(0, 0, 0, 512);
-                gradient.addColorStop(0, '#667eea');
-                gradient.addColorStop(1, '#764ba2');
+                const computedStyle = getComputedStyle(document.documentElement);
+                const primaryColor = computedStyle.getPropertyValue('--primary-color').trim() || '#667eea';
+                const secondaryColor = computedStyle.getPropertyValue('--secondary-color').trim() || '#764ba2';
+                gradient.addColorStop(0, primaryColor);
+                gradient.addColorStop(1, secondaryColor);
                 ctx.fillStyle = gradient;
                 ctx.fillRect(0, 0, 512, 512);
                 const texture = new THREE.CanvasTexture(canvas);
