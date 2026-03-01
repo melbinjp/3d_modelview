@@ -37,6 +37,7 @@ class ModelViewer {
     }
 
     init() {
+        this.fpsElement = document.getElementById('fpsCounter');
         const container = document.getElementById('viewerContainer');
         
         this.scene = new THREE.Scene();
@@ -567,7 +568,9 @@ class ModelViewer {
         }
 
         this.stats.fps = Math.round(1 / delta);
-        document.getElementById('fpsCounter').textContent = this.stats.fps;
+        if (this.fpsElement) {
+            this.fpsElement.textContent = this.stats.fps;
+        }
 
         if (this.composer && this.bloomPass.enabled) {
             this.composer.render();
