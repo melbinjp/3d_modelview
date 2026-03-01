@@ -17,6 +17,7 @@ class ModelViewer {
         this.customAudioFile = null;
         this.animationPaused = false;
         this.superheroAnimationPaused = false;
+        this.superheroModelData = null;
         this.icons = {
             superhero: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3zM12 11l-4 4 1.41 1.41L12 13.83l2.59 2.58L16 15l-4-4z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
             close: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 6L6 18" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 6L18 18" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
@@ -626,6 +627,8 @@ class ModelViewer {
             const size = box.getSize(new THREE.Vector3());
             const maxSize = Math.max(size.x, size.y, size.z);
             
+            this.superheroModelData = { center, size, maxSize };
+
             this.spotlight = new THREE.SpotLight(0xffffff, 2.0, 0, Math.PI / 6, 0.3);
             this.spotlight.position.set(center.x + maxSize, center.y + maxSize * 2, center.z + maxSize);
             this.spotlight.target.position.copy(center);
@@ -658,10 +661,13 @@ class ModelViewer {
     
     updateSuperheroCamera() {
         const elapsed = (Date.now() - this.superheroStartTime) / 1000;
-        const box = new THREE.Box3().setFromObject(this.currentModel);
-        const center = box.getCenter(new THREE.Vector3());
-        const size = box.getSize(new THREE.Vector3());
-        const maxSize = Math.max(size.x, size.y, size.z);
+
+        // Use cached model data to avoid expensive bounding box calculations every frame
+        const { center, size, maxSize } = this.superheroModelData || {
+            center: new THREE.Vector3(0, 0, 0),
+            size: new THREE.Vector3(1, 1, 1),
+            maxSize: 1
+        };
         
         const musicDuration = this.superheroAudio ? (this.superheroAudio.duration || 30) : 30;
         const progress = elapsed / musicDuration;
