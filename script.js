@@ -1,3 +1,13 @@
+const SUPERHERO_ANIMATION_TIMINGS = {
+    BASS_THUMP_DELAY: 1000,
+    MUSIC_DELAY: 3000,
+    MODE_ACTIVATION_DELAY: 1000,
+    OVERLAY_FADE_IN_DELAY: 500,
+    OVERLAY_FADE_OUT_DELAY: 1500,
+    OVERLAY_HIDE_DELAY: 800,
+    FALLBACK_MUSIC_DURATION: 30000,
+};
+
 class ModelViewer {
     constructor() {
         this.scene = null;
@@ -589,8 +599,8 @@ class ModelViewer {
         overlay.classList.add('pitch-black');
         
         this.playAmbientDrone();
-        setTimeout(() => this.playBassThump(), 1000);
-        setTimeout(() => this.playSuperheroMusic(), 3000);
+        setTimeout(() => this.playBassThump(), SUPERHERO_ANIMATION_TIMINGS.BASS_THUMP_DELAY);
+        setTimeout(() => this.playSuperheroMusic(), SUPERHERO_ANIMATION_TIMINGS.MUSIC_DELAY);
         
         setTimeout(() => {
             this.superheroMode = true;
@@ -637,23 +647,23 @@ class ModelViewer {
             this.rimLight.position.set(center.x - maxSize, center.y, center.z - maxSize);
             this.scene.add(this.rimLight);
             
-            this.superheroStartTime = Date.now() - 3000;
+            this.superheroStartTime = Date.now() - SUPERHERO_ANIMATION_TIMINGS.MUSIC_DELAY;
             
             setTimeout(() => {
                 overlay.classList.remove('pitch-black');
                 overlay.classList.add('active');
                 setTimeout(() => {
                     overlay.classList.remove('active');
-                    setTimeout(() => overlay.classList.add('hidden'), 800);
-                }, 1500);
-            }, 500);
+                    setTimeout(() => overlay.classList.add('hidden'), SUPERHERO_ANIMATION_TIMINGS.OVERLAY_HIDE_DELAY);
+                }, SUPERHERO_ANIMATION_TIMINGS.OVERLAY_FADE_OUT_DELAY);
+            }, SUPERHERO_ANIMATION_TIMINGS.OVERLAY_FADE_IN_DELAY);
             
             if (this.superheroAudio) {
                 this.superheroAudio.addEventListener('ended', () => this.exitSuperheroMode());
             } else {
-                setTimeout(() => this.exitSuperheroMode(), 30000);
+                setTimeout(() => this.exitSuperheroMode(), SUPERHERO_ANIMATION_TIMINGS.FALLBACK_MUSIC_DURATION);
             }
-        }, 1000);
+        }, SUPERHERO_ANIMATION_TIMINGS.MODE_ACTIVATION_DELAY);
     }
     
     updateSuperheroCamera() {
