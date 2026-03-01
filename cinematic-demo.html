@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cinematic Superhero Mode Demo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #000;
+            font-family: Arial, sans-serif;
+        }
+        
+        canvas {
+            display: block;
+        }
+        
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 18px;
+            z-index: 1000;
+        }
+        
+        .error {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ff4444;
+            font-size: 16px;
+            text-align: center;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading" class="loading">Loading Cinematic Superhero Mode...</div>
+    <div id="error" class="error" style="display: none;">
+        <h3>Error Loading Demo</h3>
+        <p>Please make sure you're running this from a web server (not file://) and that all dependencies are available.</p>
+    </div>
+
+    <script type="module">
+        // Enhanced error handling and fallback loading
+        async function loadDemo() {
+            try {
+                // First try to load Three.js from CDN
+                const threeScript = document.createElement('script');
+                threeScript.type = 'module';
+                threeScript.textContent = `
+                    import * as THREE from 'https://unpkg.com/three@0.158.0/build/three.module.js';
+                    window.THREE = THREE;
+                    window.threeLoaded = true;
+                `;
+                document.head.appendChild(threeScript);
+                
+                // Wait for Three.js to load
+                await new Promise((resolve, reject) => {
+                    const checkThree = () => {
+                        if (window.threeLoaded) {
+                            resolve();
+                        } else {
+                            setTimeout(checkThree, 100);
+                        }
+                    };
+                    checkThree();
+                    setTimeout(() => reject(new Error('Three.js loading timeout')), 10000);
+                });
+                
+                // Now try to load our demo
+                try {
+                    const { CinematicSuperheroDemo } = await import('./examples/cinematic-superhero-demo.js');
+                    window.demo = new CinematicSuperheroDemo();
+                    document.getElementById('loading').style.display = 'none';
+                } catch (demoError) {
+                    console.warn('Demo module failed, creating fallback demo:', demoError);
+                    createFallbackDemo();
+                }
+                
+            } catch (error) {
+                console.error('Failed to load dependencies:', error);
+                createFallbackDemo();
+            }
+        }
+        
+        function createFallbackDemo() {
+            // Create a simple fallback demo that still demonstrates the concepts
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.body.appendChild(renderer.domElement);
+            
+            // Create simple test model
+            const geometry = new THREE.BoxGeometry(1, 2, 0.5);
+            const material = new THREE.MeshLambertMaterial({ color: 0x4169e1 });
+            const testModel = new THREE.Mesh(geometry, material);
+            testModel.castShadow = true;
+            testModel.receiveShadow = true;
+            scene.add(testModel);
+            
+            // Add lighting
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(5, 5, 5);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+            
+            // Add ground
+            const groundGeometry = new THREE.PlaneGeometry(20, 20);
+            const groundMaterial = new THREE.MeshLambertMaterial({ color: 0x333333 });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -2;
+            ground.receiveShadow = true;
+            scene.add(ground);
+            
+            camera.position.set(0, 0, 5);
+            
+            // Create UI
+            createFallbackUI(scene, camera, renderer, testModel);
+            
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                renderer.render(scene, camera);
+            }
+            animate();
+            
+            document.getElementById('loading').style.display = 'none';
+            window.demo = { scene, camera, renderer, testModel };
+        }
+        
+        function createFallbackUI(scene, camera, renderer, testModel) {
+            const uiContainer = document.createElement('div');
+            uiContainer.style.cssText = 'position: fixed; top: 20px; left: 20px; background: rgba(0, 0, 0, 0.8); color: white; padding: 20px; border-radius: 10px; font-family: Arial, sans-serif; z-index: 1000;';
+            
+            const title = document.createElement('h2');
+            title.textContent = 'Cinematic Demo (Fallback Mode)';
+            title.style.margin = '0 0 15px 0';
+            uiContainer.appendChild(title);
+            
+            // Environment selector
+            const envSelect = document.createElement('select');
+            envSelect.style.cssText = 'width: 200px; margin-bottom: 15px; padding: 5px;';
+            ['cosmic_scene', 'stormy_skies', 'urban_landscape', 'heroic_dawn', 'studio_setup'].forEach(env => {
+                const option = document.createElement('option');
+                option.value = env;
+                option.textContent = env.replace('_', ' ').replace(/\\b\\w/g, l => l.toUpperCase());
+                envSelect.appendChild(option);
+            });
+            uiContainer.appendChild(envSelect);
+            
+            // Start button
+            const startBtn = document.createElement('button');
+            startBtn.textContent = 'Start Cinematic Sequence';
+            startBtn.style.cssText = 'background: #4169e1; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 10px; margin-bottom: 10px;';
+            
+            let isAnimating = false;
+            let animationStartTime = 0;
+            
+            startBtn.addEventListener('click', () => {
+                if (!isAnimating) {
+                    isAnimating = true;
+                    animationStartTime = Date.now();
+                    startBtn.textContent = 'Sequence Running...';
+                    startBtn.disabled = true;
+                    
+                    // Simple cinematic sequence
+                    animateCinematicSequence();
+                    
+                    setTimeout(() => {
+                        isAnimating = false;
+                        startBtn.textContent = 'Start Cinematic Sequence';
+                        startBtn.disabled = false;
+                    }, 10000);
+                }
+            });
+            uiContainer.appendChild(startBtn);
+            
+            // Stop button
+            const stopBtn = document.createElement('button');
+            stopBtn.textContent = 'Stop Sequence';
+            stopBtn.style.cssText = 'background: #dc143c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 10px;';
+            stopBtn.addEventListener('click', () => {
+                isAnimating = false;
+                startBtn.textContent = 'Start Cinematic Sequence';
+                startBtn.disabled = false;
+                camera.position.set(0, 0, 5);
+                camera.lookAt(0, 0, 0);
+            });
+            uiContainer.appendChild(stopBtn);
+            
+            // Status display
+            const statusDisplay = document.createElement('div');
+            statusDisplay.style.cssText = 'background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 5px; margin-top: 10px; font-size: 12px;';
+            statusDisplay.innerHTML = '<strong>Status:</strong> Ready';
+            uiContainer.appendChild(statusDisplay);
+            
+            document.body.appendChild(uiContainer);
+            
+            function animateCinematicSequence() {
+                if (!isAnimating) return;
+                
+                const elapsed = (Date.now() - animationStartTime) / 1000;
+                const progress = Math.min(elapsed / 10, 1); // 10 second sequence
+                
+                // Simple camera movement
+                const radius = 5 - progress * 2;
+                const height = progress * 2;
+                const angle = progress * Math.PI * 2;
+                
+                camera.position.set(
+                    Math.cos(angle) * radius,
+                    height,
+                    Math.sin(angle) * radius
+                );
+                camera.lookAt(0, 0, 0);
+                
+                // Update status
+                const phase = progress < 0.25 ? 'approach' : 
+                             progress < 0.55 ? 'reveal' : 
+                             progress < 0.85 ? 'showcase' : 'finale';
+                statusDisplay.innerHTML = '<strong>Status:</strong> Phase: ' + phase + ' | Progress: ' + (progress * 100).toFixed(1) + '%';
+                
+                if (isAnimating && progress < 1) {
+                    requestAnimationFrame(animateCinematicSequence);
+                }
+            }
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (window.demo && window.demo.camera && window.demo.renderer) {
+                window.demo.camera.aspect = window.innerWidth / window.innerHeight;
+                window.demo.camera.updateProjectionMatrix();
+                window.demo.renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        });
+        
+        // Start loading
+        loadDemo().catch(error => {
+            console.error('Critical error:', error);
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'block';
+        });
+    </script>
+</body>
+</html>

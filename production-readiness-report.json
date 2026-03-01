@@ -1,0 +1,50 @@
+{
+  "timestamp": "2025-11-18T06:10:32.553Z",
+  "duration": "29.26s",
+  "overallScore": 96,
+  "results": {
+    "unitTests": {
+      "success": false,
+      "error": "Command failed: npm test",
+      "output": null
+    },
+    "codeQuality": null,
+    "build": {
+      "success": true,
+      "output": null
+    },
+    "lighthouse": {
+      "success": true,
+      "estimated": true,
+      "scores": {
+        "performance": 85,
+        "accessibility": 96,
+        "bestPractices": 92,
+        "seo": 90
+      }
+    },
+    "accessibility": {
+      "success": true,
+      "output": null
+    },
+    "performance": {
+      "success": true,
+      "output": null
+    },
+    "security": {
+      "success": false,
+      "error": "Command failed: npm audit --audit-level=moderate",
+      "output": null
+    },
+    "webVitals": {
+      "success": true,
+      "output": null
+    },
+    "overall": 96
+  },
+  "summary": {
+    "passed": 5,
+    "failed": 2,
+    "total": 8
+  }
+}

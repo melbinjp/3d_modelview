@@ -1,0 +1,1011 @@
+/* Model Editing Interface Styles */
+
+/* ==================== EDITING PANEL STYLES ==================== */
+
+.editing-modes {
+    margin-bottom: 20px;
+}
+
+.mode-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.mode-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 8px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mode-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--accent-color);
+}
+
+.mode-btn.active {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+.mode-btn svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+}
+
+.selection-info {
+    padding: 12px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.editing-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.action-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover:not(:disabled) {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--accent-color);
+}
+
+.action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.action-btn.secondary {
+    background: var(--bg-tertiary);
+}
+
+.action-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+}
+
+/* ==================== TRANSFORM CONTROLS ==================== */
+
+.transform-tools {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.transform-modes {
+    display: flex;
+    gap: 8px;
+}
+
+.transform-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 8px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.transform-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--accent-color);
+}
+
+.transform-btn.active {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+.transform-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+}
+
+.transform-values {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.value-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.value-group label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.xyz-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+}
+
+.xyz-inputs input {
+    padding: 6px 8px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-primary);
+    font-size: 12px;
+    text-align: center;
+}
+
+.xyz-inputs input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    background: var(--bg-primary);
+}
+
+.uniform-scale {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.uniform-scale input[type="checkbox"] {
+    margin: 0;
+}
+
+.transform-presets {
+    display: flex;
+    gap: 6px;
+}
+
+.preset-btn {
+    flex: 1;
+    padding: 8px 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-secondary);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.preset-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--accent-color);
+}
+
+/* ==================== MATERIAL EDITOR ==================== */
+
+.material-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.material-selection select {
+    width: 100%;
+    padding: 8px 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 13px;
+}
+
+.material-properties {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.property-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.property-group label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.color-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.color-input input[type="color"] {
+    width: 40px;
+    height: 32px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.color-input input[type="range"] {
+    flex: 1;
+}
+
+.property-group input[type="range"] {
+    width: 100%;
+    height: 6px;
+    background: var(--bg-secondary);
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+}
+
+.property-group input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.property-group input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+}
+
+.value-display {
+    font-size: 11px;
+    color: var(--text-secondary);
+    min-width: 30px;
+    text-align: right;
+}
+
+.material-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.preview-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.preview-toggle input[type="checkbox"] {
+    margin: 0;
+}
+
+.btn {
+    padding: 10px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.btn.primary {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+.btn.primary:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+}
+
+.btn.secondary {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+}
+
+.btn.secondary:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--accent-color);
+}
+
+/* ==================== TEXTURE SWAPPER ==================== */
+
+.texture-swapper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.texture-slot-selection select {
+    width: 100%;
+    padding: 8px 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 13px;
+}
+
+.current-texture label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.texture-preview {
+    width: 100%;
+    height: 120px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.texture-preview img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.texture-preview .no-texture {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.texture-info {
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.texture-upload input[type="file"] {
+    width: 100%;
+    padding: 8px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 12px;
+}
+
+.upload-info {
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.texture-library label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.texture-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.texture-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 6px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.texture-item:hover {
+    background: var(--bg-hover);
+    border-color: var(--accent-color);
+}
+
+.texture-item.selected {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+.texture-item .texture-preview {
+    width: 40px;
+    height: 40px;
+    border-radius: 3px;
+}
+
+.texture-name {
+    font-size: 10px;
+    text-align: center;
+    word-break: break-word;
+}
+
+.texture-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.setting-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.setting-group label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.xy-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+.xy-inputs input {
+    padding: 6px 8px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-primary);
+    font-size: 12px;
+    text-align: center;
+}
+
+.texture-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.texture-actions .btn {
+    flex: 1;
+}
+
+/* ==================== GEOMETRY EDITOR ==================== */
+
+.geometry-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.geometry-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 12px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+}
+
+.stat-value {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.geometry-tools {
+    display: flex;
+    gap: 8px;
+}
+
+.tool-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 8px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tool-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--accent-color);
+}
+
+.tool-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+}
+
+.geometry-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.geometry-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.geometry-actions .btn {
+    flex: 1;
+}
+
+/* ==================== ANNOTATION TOOLS ==================== */
+
+.annotation-tools {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.annotation-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.annotation-controls .btn {
+    flex: 1;
+    min-width: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    font-size: 12px;
+}
+
+.annotation-controls .btn.active {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+.annotation-controls .btn svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+}
+
+.annotation-list h4 {
+    margin: 0 0 10px 0;
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.annotations-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.no-annotations {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 12px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+}
+
+.annotation-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    margin-bottom: 6px;
+}
+
+.annotation-text {
+    flex: 1;
+    font-size: 12px;
+    color: var(--text-primary);
+    margin-right: 10px;
+}
+
+.annotation-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.annotation-actions button {
+    padding: 4px 8px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.annotation-actions button:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--accent-color);
+}
+
+.annotation-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.option-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.option-toggle input[type="checkbox"] {
+    margin: 0;
+}
+
+/* ==================== SCREENSHOT TOOLS ==================== */
+
+.screenshot-tools {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.resolution-settings select {
+    width: 100%;
+    padding: 8px 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 13px;
+}
+
+.custom-resolution {
+    margin-top: 10px;
+}
+
+.resolution-inputs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.resolution-inputs input {
+    flex: 1;
+    padding: 6px 8px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-primary);
+    font-size: 12px;
+    text-align: center;
+}
+
+.resolution-inputs span {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.screenshot-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.screenshot-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.screenshot-actions .btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.screenshot-actions .btn svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+}
+
+.capture-history h4 {
+    margin: 0 0 10px 0;
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.capture-history-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.no-captures {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 12px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+}
+
+.capture-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    margin-bottom: 6px;
+}
+
+.capture-thumbnail {
+    width: 40px;
+    height: 30px;
+    object-fit: cover;
+    border-radius: 3px;
+    border: 1px solid var(--border-color);
+}
+
+.capture-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.capture-name {
+    font-size: 11px;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.capture-size,
+.capture-time {
+    font-size: 10px;
+    color: var(--text-secondary);
+}
+
+.capture-actions button {
+    padding: 4px 8px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.capture-actions button:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--accent-color);
+}
+
+/* ==================== RESPONSIVE DESIGN ==================== */
+
+@media (max-width: 768px) {
+    .mode-buttons {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .editing-actions {
+        flex-direction: column;
+    }
+    
+    .transform-modes {
+        flex-direction: column;
+    }
+    
+    .xyz-inputs {
+        grid-template-columns: 1fr;
+    }
+    
+    .texture-grid {
+        grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+    }
+    
+    .geometry-tools {
+        flex-direction: column;
+    }
+    
+    .annotation-controls {
+        flex-direction: column;
+    }
+    
+    .screenshot-actions {
+        flex-direction: column;
+    }
+}
+
+/* ==================== DARK THEME ADJUSTMENTS ==================== */
+
+[data-theme="dark"] .mode-btn,
+[data-theme="dark"] .transform-btn,
+[data-theme="dark"] .tool-btn {
+    background: #2a2a2a;
+    border-color: #404040;
+    color: #cccccc;
+}
+
+[data-theme="dark"] .mode-btn:hover,
+[data-theme="dark"] .transform-btn:hover,
+[data-theme="dark"] .tool-btn:hover {
+    background: #353535;
+    border-color: #667eea;
+}
+
+[data-theme="dark"] .mode-btn.active,
+[data-theme="dark"] .transform-btn.active {
+    background: #667eea;
+    color: white;
+}
+
+[data-theme="dark"] .texture-preview,
+[data-theme="dark"] .geometry-info,
+[data-theme="dark"] .no-annotations,
+[data-theme="dark"] .no-captures {
+    background: #2a2a2a;
+    border-color: #404040;
+}
+
+[data-theme="dark"] input[type="range"]::-webkit-slider-thumb,
+[data-theme="dark"] input[type="range"]::-moz-range-thumb {
+    background: #667eea;
+}
+
+/* ==================== EDITING PANEL VISIBILITY ==================== */
+
+.editing-panel {
+    display: none;
+}
+
+.editing-panel.active {
+    display: block;
+}
+
+/* ==================== ANIMATION EFFECTS ==================== */
+
+.mode-btn,
+.transform-btn,
+.tool-btn,
+.btn,
+.texture-item,
+.annotation-item,
+.capture-item {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mode-btn:active,
+.transform-btn:active,
+.tool-btn:active,
+.btn:active {
+    transform: scale(0.95);
+}
+
+/* ==================== ACCESSIBILITY ==================== */
+
+.mode-btn:focus,
+.transform-btn:focus,
+.tool-btn:focus,
+.btn:focus,
+input:focus,
+select:focus {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* ==================== LOADING STATES ==================== */
+
+.btn.loading {
+    position: relative;
+    color: transparent;
+}
+
+.btn.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

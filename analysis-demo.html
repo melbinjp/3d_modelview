@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Tools Demo - 3D Model Viewer Pro</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="src/analysis/analysis.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+        }
+        
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .demo-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .demo-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            min-height: 600px;
+        }
+        
+        .demo-sidebar {
+            background: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+            overflow-y: auto;
+        }
+        
+        .demo-viewport {
+            position: relative;
+            background: #ffffff;
+        }
+        
+        #viewerContainer {
+            width: 100%;
+            height: 600px;
+            position: relative;
+        }
+        
+        .demo-info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        
+        .load-model-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        
+        .load-model-btn:hover {
+            background: #5a67d8;
+        }
+        
+        /* CSS Variables for analysis styles */
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #e9ecef;
+            --bg-hover: #f1f3f4;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --accent-color: #667eea;
+            --border-color: #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>Professional Analysis Tools Demo</h1>
+            <p>Comprehensive model statistics, measurement tools, material inspector, and presentation mode</p>
+        </div>
+        
+        <div class="demo-content">
+            <div class="demo-sidebar" id="sidebar">
+                <!-- Analysis panels will be inserted here -->
+            </div>
+            
+            <div class="demo-viewport">
+                <div id="viewerContainer">
+                    <button class="load-model-btn" onclick="loadSampleModel()">
+                        Load Sample Model
+                    </button>
+                </div>
+                
+                <div class="demo-info">
+                    <div><strong>Analysis Tools Demo</strong></div>
+                    <div>Load a model to see analysis features</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+        import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+        import { CoreEngine } from './src/core/CoreEngine.js';
+        import { RenderingEngine } from './src/rendering/RenderingEngine.js';
+        import { AnalysisManager } from './src/analysis/AnalysisManager.js';
+
+        class AnalysisDemo {
+            constructor() {
+                this.core = new CoreEngine();
+                this.renderingEngine = new RenderingEngine(this.core);
+                this.analysisManager = new AnalysisManager(this.core);
+                
+                // Register modules
+                this.core.registerModule('rendering', this.renderingEngine);
+                this.core.registerModule('analysis', this.analysisManager);
+                
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.controls = null;
+                this.currentModel = null;
+            }
+
+            async init() {
+                try {
+                    // Initialize core
+                    await this.core.init();
+                    
+                    // Setup Three.js scene
+                    this.setupScene();
+                    
+                    // Initialize analysis manager
+                    this.analysisManager.init();
+                    
+                    // Start render loop
+                    this.animate();
+                    
+                    console.log('Analysis Demo initialized successfully');
+                    
+                } catch (error) {
+                    console.error('Failed to initialize demo:', error);
+                }
+            }
+
+            setupScene() {
+                const container = document.getElementById('viewerContainer');
+                
+                // Scene
+                this.scene = new THREE.Scene();
+                this.scene.background = new THREE.Color(0xf0f0f0);
+                
+                // Camera
+                this.camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+                this.camera.position.set(5, 5, 5);
+                
+                // Renderer
+                this.renderer = new THREE.WebGLRenderer({ antialias: true });
+                this.renderer.setSize(container.clientWidth, container.clientHeight);
+                this.renderer.shadowMap.enabled = true;
+                this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                container.appendChild(this.renderer.domElement);
+                
+                // Controls
+                this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+                this.controls.enableDamping = true;
+                this.controls.dampingFactor = 0.05;
+                
+                // Lights
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+                this.scene.add(ambientLight);
+                
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+                directionalLight.position.set(5, 5, 5);
+                directionalLight.castShadow = true;
+                directionalLight.shadow.mapSize.width = 2048;
+                directionalLight.shadow.mapSize.height = 2048;
+                this.scene.add(directionalLight);
+                
+                // Grid
+                const gridHelper = new THREE.GridHelper(10, 10);
+                this.scene.add(gridHelper);
+                
+                // Mock the rendering engine for analysis manager
+                this.renderingEngine.scene = this.scene;
+                this.renderingEngine.camera = this.camera;
+                this.renderingEngine.renderer = this.renderer;
+                
+                // Handle window resize
+                window.addEventListener('resize', () => this.onWindowResize());
+            }
+
+            onWindowResize() {
+                const container = document.getElementById('viewerContainer');
+                this.camera.aspect = container.clientWidth / container.clientHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(container.clientWidth, container.clientHeight);
+            }
+
+            async loadModel(url) {
+                try {
+                    const loader = new GLTFLoader();
+                    const gltf = await new Promise((resolve, reject) => {
+                        loader.load(url, resolve, undefined, reject);
+                    });
+                    
+                    // Remove previous model
+                    if (this.currentModel) {
+                        this.scene.remove(this.currentModel);
+                    }
+                    
+                    // Add new model
+                    this.currentModel = gltf.scene;
+                    this.scene.add(this.currentModel);
+                    
+                    // Enable shadows
+                    this.currentModel.traverse((child) => {
+                        if (child.isMesh) {
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+                        }
+                    });
+                    
+                    // Fit camera to model
+                    this.fitCameraToModel();
+                    
+                    // Update core state
+                    this.core.setState({ currentModel: this.currentModel });
+                    
+                    // Emit events for analysis manager
+                    this.core.emit('assets:model:loaded', { 
+                        model: this.currentModel,
+                        animations: gltf.animations || []
+                    });
+                    
+                    this.core.emit('rendering:model:added', { model: this.currentModel });
+                    
+                    // Hide load button
+                    const loadBtn = document.querySelector('.load-model-btn');
+                    if (loadBtn) loadBtn.style.display = 'none';
+                    
+                    console.log('Model loaded successfully');
+                    
+                } catch (error) {
+                    console.error('Error loading model:', error);
+                }
+            }
+
+            fitCameraToModel() {
+                if (!this.currentModel) return;
+                
+                const box = new THREE.Box3().setFromObject(this.currentModel);
+                const center = box.getCenter(new THREE.Vector3());
+                const size = box.getSize(new THREE.Vector3());
+                
+                const maxDim = Math.max(size.x, size.y, size.z);
+                const fov = this.camera.fov * (Math.PI / 180);
+                let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+                
+                cameraZ *= 2; // Add some padding
+                
+                this.camera.position.set(center.x, center.y, center.z + cameraZ);
+                this.controls.target.copy(center);
+                this.controls.update();
+            }
+
+            animate() {
+                requestAnimationFrame(() => this.animate());
+                
+                this.controls.update();
+                this.renderer.render(this.scene, this.camera);
+            }
+        }
+
+        // Initialize demo
+        const demo = new AnalysisDemo();
+        demo.init();
+
+        // Global function for load button
+        window.loadSampleModel = () => {
+            demo.loadModel('https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf');
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,963 @@
+/**
+ * UX Enhancements CSS
+ * Styles for onboarding, gestures, feature discovery, and mobile optimizations
+ */
+
+/* ========================================
+   Onboarding Tooltips
+   ======================================== */
+
+.onboarding-tooltip {
+    position: fixed;
+    z-index: 10000;
+    max-width: 320px;
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+.onboarding-tooltip.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: all;
+}
+
+.tooltip-content {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.05);
+    position: relative;
+}
+
+body.dark-mode .tooltip-content {
+    background: #2a2a2a;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.tooltip-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #999;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.tooltip-close:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #333;
+}
+
+body.dark-mode .tooltip-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.tooltip-icon {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+.tooltip-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+body.dark-mode .tooltip-title {
+    color: #fff;
+}
+
+.tooltip-message {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #666;
+    margin: 0 0 15px 0;
+}
+
+body.dark-mode .tooltip-message {
+    color: #ccc;
+}
+
+.tooltip-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.tooltip-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tooltip-btn.primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.tooltip-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.tooltip-btn.secondary {
+    background: #f5f5f5;
+    color: #666;
+}
+
+body.dark-mode .tooltip-btn.secondary {
+    background: #444;
+    color: #ccc;
+}
+
+.tooltip-btn.secondary:hover {
+    background: #e9e9e9;
+}
+
+body.dark-mode .tooltip-btn.secondary:hover {
+    background: #555;
+}
+
+.tooltip-arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border: 10px solid transparent;
+}
+
+.onboarding-tooltip.position-top .tooltip-arrow {
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-top-color: white;
+}
+
+body.dark-mode .onboarding-tooltip.position-top .tooltip-arrow {
+    border-top-color: #2a2a2a;
+}
+
+.onboarding-tooltip.position-bottom .tooltip-arrow {
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-bottom-color: white;
+}
+
+body.dark-mode .onboarding-tooltip.position-bottom .tooltip-arrow {
+    border-bottom-color: #2a2a2a;
+}
+
+.onboarding-tooltip.position-left .tooltip-arrow {
+    right: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-left-color: white;
+}
+
+body.dark-mode .onboarding-tooltip.position-left .tooltip-arrow {
+    border-left-color: #2a2a2a;
+}
+
+.onboarding-tooltip.position-right .tooltip-arrow {
+    left: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-right-color: white;
+}
+
+body.dark-mode .onboarding-tooltip.position-right .tooltip-arrow {
+    border-right-color: #2a2a2a;
+}
+
+/* Onboarding Visual Effects */
+.onboarding-highlight {
+    animation: highlight-pulse 2s ease-in-out infinite;
+    position: relative;
+    z-index: 9999;
+}
+
+@keyframes highlight-pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 20px rgba(102, 126, 234, 0);
+    }
+}
+
+.onboarding-glow {
+    animation: glow-pulse 2s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+    0%, 100% {
+        filter: drop-shadow(0 0 5px rgba(102, 126, 234, 0.5));
+    }
+    50% {
+        filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.8));
+    }
+}
+
+.onboarding-bounce {
+    animation: bounce 1s ease-in-out infinite;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.onboarding-pulse {
+    animation: pulse-scale 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-scale {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Onboarding Completion */
+.onboarding-completion {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    z-index: 10001;
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.onboarding-completion.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.completion-content {
+    background: white;
+    border-radius: 16px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 400px;
+}
+
+body.dark-mode .completion-content {
+    background: #2a2a2a;
+}
+
+.completion-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+    animation: celebration 0.6s ease-out;
+}
+
+@keyframes celebration {
+    0% {
+        transform: scale(0) rotate(0deg);
+    }
+    50% {
+        transform: scale(1.2) rotate(180deg);
+    }
+    100% {
+        transform: scale(1) rotate(360deg);
+    }
+}
+
+.completion-content h2 {
+    font-size: 24px;
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+body.dark-mode .completion-content h2 {
+    color: #fff;
+}
+
+.completion-content p {
+    font-size: 16px;
+    color: #666;
+    margin: 0;
+}
+
+body.dark-mode .completion-content p {
+    color: #ccc;
+}
+
+/* ========================================
+   Feature Discovery Suggestions
+   ======================================== */
+
+.feature-suggestion {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    max-width: 360px;
+    opacity: 0;
+    transform: translateX(400px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.feature-suggestion.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.suggestion-content {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+body.dark-mode .suggestion-content {
+    background: #2a2a2a;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.suggestion-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #999;
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.suggestion-close:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #333;
+}
+
+body.dark-mode .suggestion-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.suggestion-icon {
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.suggestion-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+    color: #333;
+}
+
+body.dark-mode .suggestion-title {
+    color: #fff;
+}
+
+.suggestion-description {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #666;
+    margin: 0 0 10px 0;
+}
+
+body.dark-mode .suggestion-description {
+    color: #ccc;
+}
+
+.suggestion-benefit {
+    font-size: 13px;
+    line-height: 1.4;
+    color: #667eea;
+    margin: 0 0 15px 0;
+    padding: 10px;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 6px;
+}
+
+body.dark-mode .suggestion-benefit {
+    background: rgba(102, 126, 234, 0.2);
+}
+
+.suggestion-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.suggestion-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.suggestion-btn.primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.suggestion-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.suggestion-btn.secondary {
+    background: #f5f5f5;
+    color: #666;
+}
+
+body.dark-mode .suggestion-btn.secondary {
+    background: #444;
+    color: #ccc;
+}
+
+.suggestion-btn.secondary:hover {
+    background: #e9e9e9;
+}
+
+body.dark-mode .suggestion-btn.secondary:hover {
+    background: #555;
+}
+
+/* ========================================
+   Mobile Optimizations
+   ======================================== */
+
+@media (max-width: 768px) {
+    /* Mobile-optimized tooltips */
+    .onboarding-tooltip {
+        max-width: calc(100vw - 40px);
+        left: 20px !important;
+        right: 20px !important;
+    }
+    
+    .onboarding-tooltip.position-center {
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%);
+    }
+    
+    .onboarding-tooltip.show.position-center {
+        transform: translate(-50%, -50%) scale(1);
+    }
+    
+    /* Mobile-optimized suggestions */
+    .feature-suggestion {
+        bottom: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+    
+    .suggestion-content {
+        padding: 16px;
+    }
+    
+    .suggestion-title {
+        font-size: 16px;
+    }
+    
+    .suggestion-description {
+        font-size: 13px;
+    }
+    
+    .suggestion-actions {
+        flex-direction: column;
+    }
+    
+    .suggestion-btn {
+        width: 100%;
+    }
+}
+
+/* Touch-friendly tap targets */
+@media (hover: none) and (pointer: coarse) {
+    .tooltip-btn,
+    .suggestion-btn,
+    .tooltip-close,
+    .suggestion-close {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
+
+/* ========================================
+   Gesture Visual Feedback
+   ======================================== */
+
+.gesture-feedback {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.gesture-feedback.active {
+    opacity: 1;
+}
+
+.gesture-ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(102, 126, 234, 0.3);
+    transform: scale(0);
+    animation: ripple 0.6s ease-out;
+}
+
+@keyframes ripple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* ========================================
+   Loading States
+   ======================================== */
+
+.skeleton-loader {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+body.dark-mode .skeleton-loader {
+    background: linear-gradient(90deg, #2a2a2a 25%, #333 50%, #2a2a2a 75%);
+    background-size: 200% 100%;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* ========================================
+   Smooth Transitions
+   ======================================== */
+
+.smooth-transition {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.smooth-transition-fast {
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.smooth-transition-slow {
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ========================================
+   Accessibility Enhancements
+   ======================================== */
+
+/* Focus visible for keyboard navigation */
+.keyboard-user *:focus {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .tooltip-content,
+    .suggestion-content {
+        border: 2px solid currentColor;
+    }
+}
+
+
+/* ========================================
+   Skill Level Upgrade Notification
+   ======================================== */
+
+.skill-level-upgrade {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    z-index: 10001;
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.skill-level-upgrade.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.upgrade-content {
+    background: white;
+    border-radius: 16px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    min-width: 300px;
+}
+
+body.dark-mode .upgrade-content {
+    background: #2a2a2a;
+}
+
+.upgrade-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+    animation: celebration 0.6s ease-out;
+}
+
+.upgrade-content h3 {
+    font-size: 24px;
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+body.dark-mode .upgrade-content h3 {
+    color: #fff;
+}
+
+.upgrade-content p {
+    font-size: 16px;
+    color: #666;
+    margin: 0;
+}
+
+body.dark-mode .upgrade-content p {
+    color: #ccc;
+}
+
+/* ========================================
+   Mode Upgrade Suggestion
+   ======================================== */
+
+.mode-upgrade-suggestion {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    max-width: 360px;
+    opacity: 0;
+    transform: translateX(400px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mode-upgrade-suggestion.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* ========================================
+   Context Menu
+   ======================================== */
+
+.context-menu {
+    position: fixed;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    padding: 8px 0;
+    min-width: 180px;
+    z-index: 10000;
+    opacity: 0;
+    transform: scale(0.95);
+    animation: context-menu-appear 0.2s ease forwards;
+}
+
+body.dark-mode .context-menu {
+    background: #2a2a2a;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes context-menu-appear {
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.context-menu-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    color: #333;
+    font-size: 14px;
+    transition: background 0.2s ease;
+}
+
+body.dark-mode .context-menu-item {
+    color: #fff;
+}
+
+.context-menu-item:hover {
+    background: #f5f5f5;
+}
+
+body.dark-mode .context-menu-item:hover {
+    background: #444;
+}
+
+.context-menu-divider {
+    height: 1px;
+    background: #e0e0e0;
+    margin: 4px 0;
+}
+
+body.dark-mode .context-menu-divider {
+    background: #444;
+}
+
+/* ========================================
+   Performance Optimizations
+   ======================================== */
+
+/* GPU acceleration for smooth animations */
+.onboarding-tooltip,
+.feature-suggestion,
+.skill-level-upgrade,
+.mode-upgrade-suggestion,
+.context-menu {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+/* Reduce repaints */
+.onboarding-tooltip *,
+.feature-suggestion *,
+.skill-level-upgrade *,
+.mode-upgrade-suggestion * {
+    will-change: auto;
+}
+
+/* ========================================
+   Print Styles
+   ======================================== */
+
+@media print {
+    .onboarding-tooltip,
+    .feature-suggestion,
+    .skill-level-upgrade,
+    .mode-upgrade-suggestion,
+    .context-menu {
+        display: none !important;
+    }
+}
+
+/* ========================================
+   Responsive Breakpoints
+   ======================================== */
+
+/* Tablet */
+@media (max-width: 1024px) {
+    .onboarding-tooltip {
+        max-width: calc(100vw - 60px);
+    }
+    
+    .feature-suggestion {
+        max-width: calc(100vw - 40px);
+    }
+}
+
+/* Mobile landscape */
+@media (max-width: 768px) and (orientation: landscape) {
+    .onboarding-tooltip.position-center,
+    .skill-level-upgrade {
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+}
+
+/* Small mobile */
+@media (max-width: 480px) {
+    .tooltip-content,
+    .suggestion-content {
+        padding: 16px;
+    }
+    
+    .tooltip-title,
+    .suggestion-title {
+        font-size: 16px;
+    }
+    
+    .tooltip-message,
+    .suggestion-description {
+        font-size: 13px;
+    }
+    
+    .tooltip-btn,
+    .suggestion-btn {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+}
+
+/* ========================================
+   Dark Mode Transitions
+   ======================================== */
+
+body.dark-mode .tooltip-content,
+body.dark-mode .suggestion-content,
+body.dark-mode .upgrade-content,
+body.dark-mode .context-menu {
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* ========================================
+   Focus Management
+   ======================================== */
+
+/* Trap focus within modals */
+.onboarding-tooltip:focus-within,
+.feature-suggestion:focus-within {
+    outline: none;
+}
+
+/* Visible focus for keyboard users */
+.keyboard-user .tooltip-btn:focus,
+.keyboard-user .suggestion-btn:focus,
+.keyboard-user .context-menu-item:focus {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+/* ========================================
+   Loading States for Async Operations
+   ======================================== */
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9997;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.loading-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top: 3px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* ========================================
+   Utility Classes
+   ======================================== */
+
+.fade-in {
+    animation: fadeIn 0.3s ease forwards;
+}
+
+.fade-out {
+    animation: fadeOut 0.3s ease forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+.slide-up {
+    animation: slideUp 0.3s ease forwards;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.scale-in {
+    animation: scaleIn 0.3s ease forwards;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}

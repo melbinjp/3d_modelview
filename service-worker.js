@@ -1,18 +1,24 @@
-const CACHE_NAME = '3d-model-viewer-v2.0.0';
+const CACHE_NAME = '3d-model-viewer-v3.0.0';
 const urlsToCache = [
   '/',
   '/index.html',
   '/styles.css',
-  '/script.js',
   '/manifest.json',
-  'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
-  'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js',
-  'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js',
-  'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js',
-  'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js',
-  'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js',
-  'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js',
-  'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'
+  '/superhero-theme.mp3',
+  '/superhero-mode.js'
+];
+
+// Dynamic cache patterns for webpack bundles
+const CACHE_PATTERNS = [
+  /\/main\.[a-f0-9]+\.js$/,
+  /\/vendors\.[a-f0-9]+\.js$/,
+  /\/three\.[a-f0-9]+\.js$/,
+  /\/common\.[a-f0-9]+\.js$/,
+  /\/runtime\.[a-f0-9]+\.js$/,
+  /\/cinematic\.[a-f0-9]+\.js$/,
+  /\/physics\.[a-f0-9]+\.js$/,
+  /\/xr\.[a-f0-9]+\.js$/,
+  /\/assets\//
 ];
 
 // Install event - cache resources
@@ -45,13 +51,20 @@ self.addEventListener('fetch', (event) => {
             return response;
           }
 
-          // Clone the response
-          const responseToCache = response.clone();
+          // Check if this resource should be cached
+          const url = new URL(event.request.url);
+          const shouldCache = urlsToCache.includes(url.pathname) || 
+                            CACHE_PATTERNS.some(pattern => pattern.test(url.pathname));
 
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
+          if (shouldCache) {
+            // Clone the response
+            const responseToCache = response.clone();
+
+            caches.open(CACHE_NAME)
+              .then((cache) => {
+                cache.put(event.request, responseToCache);
+              });
+          }
 
           return response;
         });
