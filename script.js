@@ -928,3 +928,6 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Sample models available:', sampleModels);
     }
 });
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { ModelViewer };
+}
