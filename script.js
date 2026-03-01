@@ -752,9 +752,19 @@ class ModelViewer {
         this.controls.update();
     }
     
+    getAudioContext() {
+        if (!this._sharedAudioContext) {
+            this._sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (this._sharedAudioContext.state === 'suspended') {
+            this._sharedAudioContext.resume();
+        }
+        return this._sharedAudioContext;
+    }
+
     playAmbientDrone() {
         try {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const audioContext = this.getAudioContext();
             const osc = audioContext.createOscillator();
             const gain = audioContext.createGain();
             osc.connect(gain);
@@ -773,7 +783,7 @@ class ModelViewer {
     
     playBassThump() {
         try {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const audioContext = this.getAudioContext();
             const masterGain = audioContext.createGain();
             masterGain.gain.value = 0.9;
             masterGain.connect(audioContext.destination);
