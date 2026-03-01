@@ -42,9 +42,7 @@
     "test:debug": "npm run test:auto",
     "prepare": "husky install",
     "start:test-server": "node test/test-server.js &",
-    "stop:test-server": "pkill -f 'node test/test-server.js' || true",
-    "deploy": "npm run build:production && npm run deploy:gh-pages",
-    "deploy:gh-pages": "gh-pages -d dist"
+    "stop:test-server": "pkill -f 'node test/test-server.js' || true"
   },
   "dependencies": {
     "playwright": "^1.56.1",
