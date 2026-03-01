@@ -927,4 +927,4 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         console.log('Sample models available:', sampleModels);
     }
-});
+});if (typeof module !== 'undefined' && module.exports) module.exports = { ModelViewer };
