@@ -129,6 +129,21 @@ class ModelViewer {
     }
 
     setupEventListeners() {
+        this.setupSidebarListeners();
+        this.setupAccordionListeners();
+        this.setupSuperheroListeners();
+        this.setupAudioListeners();
+        this.setupModelLoadingListeners();
+        this.setupControlListeners();
+
+        document.getElementById('closeError').addEventListener('click', () => {
+            document.getElementById('errorModal').classList.add('hidden');
+        });
+
+        setTimeout(() => this.renderer.render(this.scene, this.camera), 500);
+    }
+
+    setupSidebarListeners() {
         document.getElementById('sidebarToggleBtn').addEventListener('click', () => {
             const sidebar = document.getElementById('sidebar');
             const toggleBtn = document.getElementById('sidebarToggleBtn');
@@ -144,7 +159,9 @@ class ModelViewer {
                 toggleBtn.classList.remove('active');
             }
         });
+    }
 
+    setupAccordionListeners() {
         document.querySelectorAll('.accordion-header').forEach(header => {
             header.addEventListener('click', () => {
                 const item = header.parentElement;
@@ -158,9 +175,9 @@ class ModelViewer {
                 }
             });
         });
-        
-        setTimeout(() => this.renderer.render(this.scene, this.camera), 500);
-        
+    }
+
+    setupSuperheroListeners() {
         document.getElementById('superheroBtn').addEventListener('click', () => {
             if (this.superheroMode) {
                 this.exitSuperheroMode();
@@ -173,10 +190,12 @@ class ModelViewer {
             this.superheroAnimationPaused = false;
             if (this.superheroAudio) this.superheroAudio.play();
         });
+
         document.getElementById('superheroPause').addEventListener('click', () => {
             this.superheroAnimationPaused = true;
             if (this.superheroAudio) this.superheroAudio.pause();
         });
+
         document.getElementById('superheroReset').addEventListener('click', () => {
             this.superheroAnimationPaused = false;
             if (this.superheroMode) {
@@ -187,7 +206,9 @@ class ModelViewer {
                 }
             }
         });
-        
+    }
+
+    setupAudioListeners() {
         const audioDrop = document.getElementById('audioDrop');
         const audioInput = document.getElementById('audioInput');
         audioDrop.addEventListener('click', () => audioInput.click());
@@ -202,7 +223,9 @@ class ModelViewer {
             if (e.target.files.length > 0) this.loadAudioFile(e.target.files[0]);
         });
         document.getElementById('clearAudio').addEventListener('click', () => this.clearCustomAudio());
+    }
 
+    setupModelLoadingListeners() {
         document.getElementById('loadUrlBtn').addEventListener('click', () => {
             const url = document.getElementById('modelUrl').value.trim();
             if (url) this.loadModelFromUrl(url);
@@ -226,12 +249,6 @@ class ModelViewer {
         });
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) this.loadModelFromFile(e.target.files[0]);
-        });
-
-        this.setupControlListeners();
-        
-        document.getElementById('closeError').addEventListener('click', () => {
-            document.getElementById('errorModal').classList.add('hidden');
         });
     }
 
