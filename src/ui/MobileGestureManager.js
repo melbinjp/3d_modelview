@@ -472,7 +472,6 @@ export class MobileGestureManager {
         this.touches.clear();
         this.initialized = false;
     }
-}
 
     /**
      * Check if device is mobile
@@ -572,10 +571,4 @@ export class MobileGestureManager {
         };
         return alternatives[gesture] || [];
     }
-
-    /**
-     * Set haptic enabled
-     */
-    setHapticEnabled(enabled) {
-        this.hapticEnabled = enabled;
-    }
+}

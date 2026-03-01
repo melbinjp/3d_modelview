@@ -1,0 +1,10 @@
+FeatureDiscoveryEngine > should queue suggestions
+Integration Tests Suite > ModelViewer Integration > should register all modules with core engine
+Integration Tests Suite > ModelViewer Integration > should handle module initialization sequence
+Integration Tests Suite > Asset Loading Integration > should coordinate asset loading between modules
+Integration Tests Suite > UI and Rendering Integration > should coordinate UI mode changes with rendering
+Integration Tests Suite > UI and Rendering Integration > should handle window resize across modules
+Integration Tests Suite > Export System Integration > should handle screenshot export with rendering engine
+Integration Tests Suite > Analysis Tools Integration > should analyze loaded models
+Integration Tests Suite > Analysis Tools Integration > should provide measurement tools
+Integration Tests Suite > Memory Management Integration > should cleanup resources when models are removed

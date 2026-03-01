@@ -6,7 +6,7 @@ export class FeatureDiscoveryEngine {
     constructor(coreEngine) {
         this.coreEngine = coreEngine;
         this.initialized = false;
-        
+
         // User behavior tracking
         this.behaviorProfile = {
             modelTypes: new Map(), // Track types of models loaded
@@ -15,7 +15,7 @@ export class FeatureDiscoveryEngine {
             skillLevel: 'beginner', // beginner, intermediate, expert
             preferences: new Map() // Inferred preferences
         };
-        
+
         // Feature catalog with prerequisites and suggestions
         this.features = {
             'lighting-presets': {
@@ -109,12 +109,12 @@ export class FeatureDiscoveryEngine {
                 benefit: 'Present your models like a pro'
             }
         };
-        
+
         // Suggestion queue
         this.suggestionQueue = [];
         this.shownSuggestions = new Set();
         this.dismissedSuggestions = new Set();
-        
+
         // Timing controls
         this.lastSuggestionTime = 0;
         this.suggestionCooldown = 60000; // 1 minute between suggestions
@@ -125,16 +125,16 @@ export class FeatureDiscoveryEngine {
      */
     async initialize() {
         if (this.initialized) return;
-        
+
         // Load saved behavior profile
         this.loadBehaviorProfile();
-        
+
         // Setup event listeners
         this.setupEventListeners();
-        
+
         // Start behavior analysis
         this.startBehaviorAnalysis();
-        
+
         this.initialized = true;
         this.coreEngine.emit('feature-discovery:initialized');
     }
@@ -183,18 +183,18 @@ export class FeatureDiscoveryEngine {
             this.analyzeModelType(data.model);
             this.checkSuggestions('model-loaded');
         });
-        
+
         // Track feature usage
         this.coreEngine.on('feature:used', (data) => {
             this.trackFeatureUsage(data.feature);
             this.checkSuggestions(`${data.feature}-used`);
         });
-        
+
         // Track camera interactions
         this.coreEngine.on('camera:interaction', () => {
             this.trackEvent('camera-interaction');
         });
-        
+
         // Track session time
         setInterval(() => {
             this.trackSessionTime();
@@ -208,7 +208,7 @@ export class FeatureDiscoveryEngine {
         const count = (this.behaviorProfile.featureUsage.get(eventType) || 0) + 1;
         this.behaviorProfile.featureUsage.set(eventType, count);
         this.saveBehaviorProfile();
-        
+
         // Check for milestone-based suggestions
         this.checkMilestone(eventType, count);
     }
@@ -220,7 +220,7 @@ export class FeatureDiscoveryEngine {
         const count = (this.behaviorProfile.featureUsage.get(feature) || 0) + 1;
         this.behaviorProfile.featureUsage.set(feature, count);
         this.saveBehaviorProfile();
-        
+
         // Update skill level based on feature usage
         this.updateSkillLevel();
     }
@@ -233,7 +233,7 @@ export class FeatureDiscoveryEngine {
         const hasAnimations = model.animations && model.animations.length > 0;
         const hasPBRMaterials = this.detectPBRMaterials(model);
         const complexity = this.calculateComplexity(model);
-        
+
         // Store model type
         const modelType = {
             hasAnimations,
@@ -241,20 +241,20 @@ export class FeatureDiscoveryEngine {
             complexity,
             timestamp: Date.now()
         };
-        
+
         const typeKey = `${hasAnimations ? 'animated' : 'static'}-${complexity}`;
         const count = (this.behaviorProfile.modelTypes.get(typeKey) || 0) + 1;
         this.behaviorProfile.modelTypes.set(typeKey, count);
-        
+
         // Suggest relevant features
         if (hasAnimations) {
             this.queueSuggestion('animation-controls', 'high');
         }
-        
+
         if (hasPBRMaterials && complexity > 0.5) {
             this.queueSuggestion('post-processing', 'medium');
         }
-        
+
         this.saveBehaviorProfile();
     }
 
@@ -279,7 +279,7 @@ export class FeatureDiscoveryEngine {
     calculateComplexity(model) {
         let vertices = 0;
         let materials = 0;
-        
+
         model.traverse((child) => {
             if (child.isMesh) {
                 if (child.geometry) {
@@ -288,11 +288,11 @@ export class FeatureDiscoveryEngine {
                 materials++;
             }
         });
-        
+
         // Normalize complexity (0-1 scale)
         const vertexComplexity = Math.min(vertices / 100000, 1);
         const materialComplexity = Math.min(materials / 20, 1);
-        
+
         return (vertexComplexity + materialComplexity) / 2;
     }
 
@@ -304,7 +304,7 @@ export class FeatureDiscoveryEngine {
         Object.entries(this.features).forEach(([featureId, feature]) => {
             feature.suggestAfter.forEach(trigger => {
                 const [triggerEvent, triggerCount] = trigger.split(':');
-                
+
                 if (triggerEvent === eventType && parseInt(triggerCount) === count) {
                     this.queueSuggestion(featureId, 'medium');
                 }
@@ -345,15 +345,15 @@ export class FeatureDiscoveryEngine {
         if (this.shownSuggestions.has(featureId) || this.dismissedSuggestions.has(featureId)) {
             return;
         }
-        
+
         // Don't suggest if already in queue
         if (this.suggestionQueue.find(s => s.featureId === featureId)) {
             return;
         }
-        
+
         const feature = this.features[featureId];
         if (!feature) return;
-        
+
         // Add to queue with priority
         this.suggestionQueue.push({
             featureId,
@@ -361,13 +361,13 @@ export class FeatureDiscoveryEngine {
             priority,
             timestamp: Date.now()
         });
-        
+
         // Sort by priority
         this.suggestionQueue.sort((a, b) => {
             const priorityOrder = { high: 3, medium: 2, low: 1 };
             return priorityOrder[b.priority] - priorityOrder[a.priority];
         });
-        
+
         // Try to show suggestion
         this.tryShowNextSuggestion();
     }
@@ -381,11 +381,11 @@ export class FeatureDiscoveryEngine {
         if (now - this.lastSuggestionTime < this.suggestionCooldown) {
             return;
         }
-        
+
         // Get next suggestion
         const suggestion = this.suggestionQueue.shift();
         if (!suggestion) return;
-        
+
         // Show suggestion
         this.showSuggestion(suggestion);
         this.lastSuggestionTime = now;
@@ -396,10 +396,10 @@ export class FeatureDiscoveryEngine {
      */
     showSuggestion(suggestion) {
         const { featureId, feature } = suggestion;
-        
+
         // Mark as shown
         this.shownSuggestions.add(featureId);
-        
+
         // Create suggestion UI
         const suggestionEl = document.createElement('div');
         suggestionEl.className = 'feature-suggestion';
@@ -416,39 +416,39 @@ export class FeatureDiscoveryEngine {
                 </div>
             </div>
         `;
-        
+
         // Setup event listeners
         const closeBtn = suggestionEl.querySelector('.suggestion-close');
         const tryBtn = suggestionEl.querySelector('.suggestion-btn.primary');
         const laterBtn = suggestionEl.querySelector('.suggestion-btn.secondary');
-        
+
         closeBtn.addEventListener('click', () => {
             this.dismissSuggestion(featureId, suggestionEl);
         });
-        
+
         tryBtn.addEventListener('click', () => {
             this.acceptSuggestion(featureId, suggestionEl);
         });
-        
+
         laterBtn.addEventListener('click', () => {
             this.deferSuggestion(featureId, suggestionEl);
         });
-        
+
         // Add to DOM
         document.body.appendChild(suggestionEl);
-        
+
         // Animate in
         requestAnimationFrame(() => {
             suggestionEl.classList.add('show');
         });
-        
+
         // Auto-dismiss after 15 seconds
         setTimeout(() => {
             if (suggestionEl.parentElement) {
                 this.deferSuggestion(featureId, suggestionEl);
             }
         }, 15000);
-        
+
         this.coreEngine.emit('feature-discovery:suggestion:shown', { featureId });
     }
 
@@ -458,14 +458,14 @@ export class FeatureDiscoveryEngine {
     acceptSuggestion(featureId, element) {
         element.classList.remove('show');
         setTimeout(() => element.remove(), 300);
-        
+
         // Activate the feature
         this.coreEngine.emit('feature:activate', { feature: featureId });
-        
+
         // Track acceptance
         this.behaviorProfile.preferences.set(`accepted-${featureId}`, true);
         this.saveBehaviorProfile();
-        
+
         this.coreEngine.emit('feature-discovery:suggestion:accepted', { featureId });
     }
 
@@ -475,10 +475,10 @@ export class FeatureDiscoveryEngine {
     deferSuggestion(featureId, element) {
         element.classList.remove('show');
         setTimeout(() => element.remove(), 300);
-        
+
         // Remove from shown set so it can be suggested again later
         this.shownSuggestions.delete(featureId);
-        
+
         this.coreEngine.emit('feature-discovery:suggestion:deferred', { featureId });
     }
 
@@ -488,14 +488,14 @@ export class FeatureDiscoveryEngine {
     dismissSuggestion(featureId, element) {
         element.classList.remove('show');
         setTimeout(() => element.remove(), 300);
-        
+
         // Mark as dismissed
         this.dismissedSuggestions.add(featureId);
-        
+
         // Track dismissal
         this.behaviorProfile.preferences.set(`dismissed-${featureId}`, true);
         this.saveBehaviorProfile();
-        
+
         this.coreEngine.emit('feature-discovery:suggestion:dismissed', { featureId });
     }
 
@@ -506,20 +506,20 @@ export class FeatureDiscoveryEngine {
         const totalFeatures = this.behaviorProfile.featureUsage.size;
         const advancedFeatures = Array.from(this.behaviorProfile.featureUsage.keys())
             .filter(f => f.includes('advanced') || f.includes('expert')).length;
-        
+
         let newLevel = 'beginner';
-        
+
         if (totalFeatures > 15 || advancedFeatures > 3) {
             newLevel = 'expert';
         } else if (totalFeatures > 8 || advancedFeatures > 1) {
             newLevel = 'intermediate';
         }
-        
+
         if (newLevel !== this.behaviorProfile.skillLevel) {
             const oldLevel = this.behaviorProfile.skillLevel;
             this.behaviorProfile.skillLevel = newLevel;
             this.saveBehaviorProfile();
-            
+
             this.coreEngine.emit('feature-discovery:skill-level:changed', {
                 oldLevel,
                 newLevel
@@ -534,7 +534,7 @@ export class FeatureDiscoveryEngine {
         const sessionTime = (this.behaviorProfile.featureUsage.get('session-time') || 0) + 1;
         this.behaviorProfile.featureUsage.set('session-time', sessionTime);
         this.saveBehaviorProfile();
-        
+
         // Check for time-based suggestions
         if (sessionTime === 5) {
             this.checkSuggestions('session-time:5min');
@@ -557,7 +557,7 @@ export class FeatureDiscoveryEngine {
     analyzeBehaviorPatterns() {
         // Analyze usage patterns and make intelligent suggestions
         const patterns = this.detectPatterns();
-        
+
         patterns.forEach(pattern => {
             if (pattern.confidence > 0.7) {
                 this.queueSuggestion(pattern.suggestedFeature, 'high');
@@ -570,7 +570,7 @@ export class FeatureDiscoveryEngine {
      */
     detectPatterns() {
         const patterns = [];
-        
+
         // Pattern: Frequent camera adjustments → suggest camera presets
         const cameraInteractions = this.behaviorProfile.featureUsage.get('camera-interaction') || 0;
         if (cameraInteractions > 15) {
@@ -580,7 +580,7 @@ export class FeatureDiscoveryEngine {
                 suggestedFeature: 'camera-presets'
             });
         }
-        
+
         // Pattern: Multiple model loads → suggest export
         const modelsLoaded = this.behaviorProfile.featureUsage.get('model-loaded') || 0;
         if (modelsLoaded > 5) {
@@ -590,7 +590,7 @@ export class FeatureDiscoveryEngine {
                 suggestedFeature: 'export-screenshot'
             });
         }
-        
+
         return patterns;
     }
 
@@ -618,6 +618,7 @@ export class FeatureDiscoveryEngine {
         this.suggestionQueue = [];
     }
 
+
     /**
      * Cleanup
      */
@@ -626,278 +627,3 @@ export class FeatureDiscoveryEngine {
         this.initialized = false;
     }
 }
-
-    /**
-     * Detect user skill level
-     */
-    detectSkillLevel() {
-        const usageCount = Object.keys(this.userProfile.featureUsage).length;
-        if (usageCount < 3) return 'beginner';
-        if (usageCount < 8) return 'intermediate';
-        if (usageCount < 15) return 'advanced';
-        return 'expert';
-    }
-
-    /**
-     * Update skill level
-     */
-    updateSkillLevel() {
-        this.userProfile.skillLevel = this.detectSkillLevel();
-        this.saveProfile();
-    }
-
-    /**
-     * Set user preference
-     */
-    setPreference(key, value) {
-        this.userProfile.preferences[key] = value;
-        this.saveProfile();
-    }
-
-    /**
-     * Calculate engagement score
-     */
-    calculateEngagementScore() {
-        const featureCount = Object.keys(this.userProfile.featureUsage).length;
-        const totalUsage = Object.values(this.userProfile.featureUsage).reduce((a, b) => a + b, 0);
-        return Math.min(100, (featureCount * 5) + (totalUsage * 2));
-    }
-
-    /**
-     * Get feature suggestions
-     */
-    getSuggestions() {
-        if (!this.featureCatalog) return [];
-        
-        return this.featureCatalog
-            .filter(f => !this.userProfile.featureUsage[f.id])
-            .filter(f => !this.dismissedSuggestions.has(f.id))
-            .filter(f => this.matchesSkillLevel(f))
-            .slice(0, 3);
-    }
-
-    /**
-     * Get suggestions for context
-     */
-    getSuggestionsForContext(context) {
-        if (!this.featureCatalog) return [];
-        
-        return this.featureCatalog
-            .filter(f => f.context === context || f.category === context)
-            .filter(f => !this.userProfile.featureUsage[f.id])
-            .slice(0, 2);
-    }
-
-    /**
-     * Check if feature matches skill level
-     */
-    matchesSkillLevel(feature) {
-        const skillLevels = ['beginner', 'intermediate', 'advanced', 'expert'];
-        const userLevel = skillLevels.indexOf(this.userProfile.skillLevel);
-        const featureLevel = skillLevels.indexOf(feature.difficulty || 'beginner');
-        return featureLevel <= userLevel + 1;
-    }
-
-    /**
-     * Calculate relevance score
-     */
-    calculateRelevanceScore(feature) {
-        let score = 0.5;
-        
-        // Boost if matches skill level
-        if (this.matchesSkillLevel(feature)) score += 0.2;
-        
-        // Boost if prerequisites met
-        if (feature.prerequisites && feature.prerequisites.every(p => this.userProfile.featureUsage[p])) {
-            score += 0.3;
-        }
-        
-        return Math.min(1, score);
-    }
-
-    /**
-     * Identify usage patterns
-     */
-    identifyPatterns() {
-        if (!this.usageHistory || this.usageHistory.length < 5) return [];
-        
-        const patterns = [];
-        const recentUsage = this.usageHistory.slice(-10);
-        
-        // Find sequences
-        for (let i = 0; i < recentUsage.length - 1; i++) {
-            const current = recentUsage[i].feature;
-            const next = recentUsage[i + 1].feature;
-            patterns.push({ from: current, to: next });
-        }
-        
-        return patterns;
-    }
-
-    /**
-     * Detect sequences
-     */
-    detectSequences() {
-        const patterns = this.identifyPatterns();
-        const sequences = {};
-        
-        patterns.forEach(p => {
-            const key = `${p.from}->${p.to}`;
-            sequences[key] = (sequences[key] || 0) + 1;
-        });
-        
-        return Object.entries(sequences)
-            .filter(([_, count]) => count > 1)
-            .map(([seq, count]) => ({ sequence: seq, count }));
-    }
-
-    /**
-     * Predict next feature
-     */
-    predictNextFeature() {
-        if (!this.usageHistory || this.usageHistory.length === 0) return null;
-        
-        const lastFeature = this.usageHistory[this.usageHistory.length - 1].feature;
-        const patterns = this.identifyPatterns();
-        const nextFeatures = patterns.filter(p => p.from === lastFeature);
-        
-        if (nextFeatures.length > 0) {
-            return nextFeatures[0].to;
-        }
-        
-        return null;
-    }
-
-    /**
-     * Show suggestion
-     */
-    showSuggestion(feature) {
-        if (!this.userProfile.preferences.showSuggestions) return;
-        
-        const notification = document.createElement('div');
-        notification.className = 'feature-suggestion';
-        notification.innerHTML = `
-            <div class="suggestion-content">
-                <span class="suggestion-icon">${feature.icon || '💡'}</span>
-                <div class="suggestion-text">
-                    <strong>${feature.name}</strong>
-                    <p>${feature.description}</p>
-                </div>
-                <button class="suggestion-accept">Try it</button>
-                <button class="suggestion-dismiss">×</button>
-            </div>
-        `;
-        
-        document.body.appendChild(notification);
-        
-        notification.querySelector('.suggestion-accept').addEventListener('click', () => {
-            this.coreEngine.emit('feature:activated', { featureId: feature.id });
-            notification.remove();
-        });
-        
-        notification.querySelector('.suggestion-dismiss').addEventListener('click', () => {
-            this.dismissSuggestion(feature.id);
-            notification.remove();
-        });
-        
-        this.coreEngine.emit('discovery:suggestion', { feature });
-    }
-
-    /**
-     * Hide suggestion
-     */
-    hideSuggestion() {
-        const notification = document.querySelector('.feature-suggestion');
-        if (notification) {
-            notification.remove();
-        }
-    }
-
-    /**
-     * Show feature tour
-     */
-    showFeatureTour(feature) {
-        if (!feature.steps) return;
-        
-        const tour = document.createElement('div');
-        tour.className = 'feature-tour';
-        tour.innerHTML = `
-            <div class="tour-content">
-                <h3>${feature.name} Tour</h3>
-                <div class="tour-steps"></div>
-                <button class="tour-close">Close</button>
-            </div>
-        `;
-        
-        document.body.appendChild(tour);
-        
-        tour.querySelector('.tour-close').addEventListener('click', () => {
-            tour.remove();
-        });
-    }
-
-    /**
-     * Get usage statistics
-     */
-    getUsageStatistics() {
-        const features = Object.entries(this.userProfile.featureUsage);
-        const sorted = features.sort((a, b) => b[1] - a[1]);
-        
-        return {
-            totalUsage: features.reduce((sum, [_, count]) => sum + count, 0),
-            mostUsedFeatures: sorted.slice(0, 5),
-            leastUsedFeatures: sorted.slice(-5).reverse()
-        };
-    }
-
-    /**
-     * Calculate adoption rate
-     */
-    calculateAdoptionRate() {
-        if (!this.featureCatalog) return 0;
-        const usedCount = Object.keys(this.userProfile.featureUsage).length;
-        return Math.round((usedCount / this.featureCatalog.length) * 100);
-    }
-
-    /**
-     * Get underutilized features
-     */
-    getUnderutilizedFeatures() {
-        if (!this.featureCatalog) return [];
-        
-        return this.featureCatalog.filter(f => 
-            !this.userProfile.featureUsage[f.id] || this.userProfile.featureUsage[f.id] < 2
-        );
-    }
-
-    /**
-     * Generate insights
-     */
-    generateInsights() {
-        return {
-            skillLevel: this.userProfile.skillLevel,
-            engagementScore: this.calculateEngagementScore(),
-            adoptionRate: this.calculateAdoptionRate(),
-            recommendations: this.getSuggestions(),
-            patterns: this.detectSequences()
-        };
-    }
-
-    /**
-     * Dismiss suggestion
-     */
-    dismissSuggestion(featureId, timestamp = Date.now()) {
-        this.dismissedSuggestions.set(featureId, timestamp);
-    }
-
-    /**
-     * Cleanup dismissed suggestions
-     */
-    cleanupDismissedSuggestions() {
-        const weekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
-        for (const [id, timestamp] of this.dismissedSuggestions.entries()) {
-            if (timestamp < weekAgo) {
-                this.dismissedSuggestions.delete(id);
-            }
-        }
-    }

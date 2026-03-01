@@ -13,9 +13,9 @@ describe('UX Enhancements Integration', () => {
         mockCore = {
             modules: new Map(),
             eventListeners: new Map(),
-            getModule: function(name) { return this.modules.get(name); },
-            registerModule: function(name, module) { this.modules.set(name, module); },
-            emit: function(event, data) {
+            getModule: function (name) { return this.modules.get(name); },
+            registerModule: function (name, module) { this.modules.set(name, module); },
+            emit: function (event, data) {
                 if (this.eventListeners.has(event)) {
                     this.eventListeners.get(event).forEach(callback => {
                         try {
@@ -26,13 +26,13 @@ describe('UX Enhancements Integration', () => {
                     });
                 }
             },
-            on: function(event, callback) {
+            on: function (event, callback) {
                 if (!this.eventListeners.has(event)) {
                     this.eventListeners.set(event, []);
                 }
                 this.eventListeners.get(event).push(callback);
             },
-            off: function(event, callback) {
+            off: function (event, callback) {
                 if (this.eventListeners.has(event)) {
                     const callbacks = this.eventListeners.get(event);
                     const index = callbacks.indexOf(callback);
@@ -56,9 +56,9 @@ describe('UX Enhancements Integration', () => {
         const GestureModule = await import('../src/ui/MobileGestureManager.js');
         const DiscoveryModule = await import('../src/ui/FeatureDiscoveryEngine.js');
         const IntegrationModule = await import('../src/ui/UXEnhancementsIntegration.js');
-        
+
         UXEnhancementsIntegration = IntegrationModule.UXEnhancementsIntegration;
-        
+
         // Create mock UIManager with actual sub-managers
         const mockUIManager = {
             core: mockCore,
@@ -66,12 +66,12 @@ describe('UX Enhancements Integration', () => {
             mobileGestureManager: new GestureModule.MobileGestureManager(mockCore),
             featureDiscoveryEngine: new DiscoveryModule.FeatureDiscoveryEngine(mockCore)
         };
-        
+
         // Initialize sub-managers
         await mockUIManager.onboardingManager.initialize();
         await mockUIManager.mobileGestureManager.initialize();
         await mockUIManager.featureDiscoveryEngine.initialize();
-        
+
         uxIntegration = new UXEnhancementsIntegration(mockCore, mockUIManager);
         await uxIntegration.initialize();
     });
@@ -136,7 +136,7 @@ describe('UX Enhancements Integration', () => {
             mockCore.on('ux-enhancements:initialized', () => {
                 eventReceived = true;
             });
-            
+
             // Re-emit to test
             mockCore.emit('ux-enhancements:initialized', { features: uxIntegration.features });
             expect(eventReceived).toBe(true);
@@ -158,7 +158,7 @@ describe('UX Enhancements Integration', () => {
             mockCore.on('gesture:pinch', () => {
                 eventReceived = true;
             });
-            
+
             mockCore.emit('gesture:pinch', { scale: 1.5 });
             expect(eventReceived).toBe(true);
         });
@@ -166,7 +166,7 @@ describe('UX Enhancements Integration', () => {
         test('should integrate with discovery engine', () => {
             const discovery = uxIntegration.uiManager.featureDiscoveryEngine;
             expect(discovery).toBeDefined();
-            expect(discovery.userProfile).toBeDefined();
+            expect(discovery.behaviorProfile).toBeDefined();
         });
     });
 
@@ -186,7 +186,7 @@ describe('UX Enhancements Integration', () => {
             mockCore.on('onboarding:completed', () => {
                 eventReceived = true;
             });
-            
+
             mockCore.emit('onboarding:completed', {});
             expect(eventReceived).toBe(true);
         });
@@ -198,7 +198,7 @@ describe('UX Enhancements Integration', () => {
             mockCore.on('modelLoaded', () => {
                 eventReceived = true;
             });
-            
+
             mockCore.emit('modelLoaded', { modelName: 'test.glb' });
             expect(eventReceived).toBe(true);
         });
@@ -208,7 +208,7 @@ describe('UX Enhancements Integration', () => {
             mockCore.on('feature:activated', () => {
                 eventReceived = true;
             });
-            
+
             mockCore.emit('feature:activated', { featureId: 'test-feature' });
             expect(eventReceived).toBe(true);
         });
@@ -218,7 +218,7 @@ describe('UX Enhancements Integration', () => {
             mockCore.on('error', () => {
                 eventReceived = true;
             });
-            
+
             mockCore.emit('error', { message: 'Test error' });
             expect(eventReceived).toBe(true);
         });
@@ -238,8 +238,8 @@ describe('UX Enhancements Integration', () => {
 
         test('should track user profile', () => {
             const discovery = uxIntegration.uiManager.featureDiscoveryEngine;
-            expect(discovery.userProfile).toBeDefined();
-            expect(discovery.userProfile.skillLevel).toBeDefined();
+            expect(discovery.behaviorProfile).toBeDefined();
+            expect(discovery.behaviorProfile.skillLevel).toBeDefined();
         });
     });
 
@@ -264,11 +264,11 @@ describe('UX Enhancements Integration', () => {
     describe('Performance and Optimization', () => {
         test('should handle rapid events efficiently', () => {
             const startTime = performance.now();
-            
+
             for (let i = 0; i < 100; i++) {
                 mockCore.emit('featureUsed', { feature: 'test-feature' });
             }
-            
+
             const endTime = performance.now();
             expect(endTime - startTime).toBeLessThan(1000);
         });
@@ -313,7 +313,7 @@ describe('UX Enhancements Integration', () => {
             const onboarding = uxIntegration.uiManager.onboardingManager;
             const gestures = uxIntegration.uiManager.mobileGestureManager;
             const discovery = uxIntegration.uiManager.featureDiscoveryEngine;
-            
+
             expect(onboarding).toBeDefined();
             expect(gestures).toBeDefined();
             expect(discovery).toBeDefined();
@@ -351,7 +351,7 @@ describe('UX Enhancements Integration', () => {
             const onboarding = uxIntegration.uiManager.onboardingManager;
             const gestures = uxIntegration.uiManager.mobileGestureManager;
             const discovery = uxIntegration.uiManager.featureDiscoveryEngine;
-            
+
             expect(typeof onboarding.destroy).toBe('function');
             expect(typeof gestures.destroy).toBe('function');
             expect(typeof discovery.destroy).toBe('function');
