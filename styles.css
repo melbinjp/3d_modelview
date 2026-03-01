@@ -123,7 +123,7 @@ body.dark-mode {
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: var(--primary-gradient);
     overflow: hidden;
     height: 100vh;
@@ -210,6 +210,7 @@ body {
     color: var(--text-color);
     font-size: 1.5rem;
     font-weight: 600;
+    letter-spacing: -0.02em;
 }
 
 .toggle-btn {
@@ -261,6 +262,8 @@ body {
     justify-content: space-between;
     align-items: center;
     transition: background 0.2s ease;
+    min-height: 48px;
+    letter-spacing: -0.01em;
 }
 
 .accordion-header:hover {
@@ -876,6 +879,78 @@ body {
     color: #4CAF50;
     font-size: 0.85rem;
     font-weight: 500;
+}
+
+/* Comprehensive small mobile layout */
+@media (max-width: 480px) {
+    .sidebar {
+        width: 100%;
+    }
+
+    .sidebar-header h2 {
+        font-size: 1.25rem;
+    }
+
+    .stats-panel {
+        top: 10px;
+        right: 10px;
+    }
+
+    .sidebar-toggle-btn {
+        top: 10px;
+        left: 10px;
+        width: 44px;
+        height: 44px;
+    }
+
+    .superhero-btn {
+        width: 50px !important;
+        height: 50px !important;
+        bottom: 20px !important;
+        right: 20px !important;
+    }
+
+    .control-section {
+        padding: 12px 16px;
+    }
+
+    .btn {
+        min-height: 44px;
+    }
+
+    .modal-content {
+        padding: 1.25rem;
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+    .accordion-header {
+        min-height: 52px;
+        padding: 16px 20px;
+    }
+
+    .slider::-webkit-slider-thumb {
+        width: 24px;
+        height: 24px;
+    }
+
+    .slider::-moz-range-thumb {
+        width: 24px;
+        height: 24px;
+    }
+
+    .btn {
+        min-height: 44px;
+    }
+
+    .checkbox-label {
+        min-height: 44px;
+    }
+
+    .select-field {
+        min-height: 44px;
+    }
 }
 
 @media (max-width: 600px) {

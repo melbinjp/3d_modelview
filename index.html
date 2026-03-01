@@ -14,6 +14,8 @@
     <link rel="dns-prefetch" href="//fonts.googleapis.com">
     <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Preload critical resources -->
     <link rel="preload" href="main.js" as="script">
@@ -27,7 +29,7 @@
     <!-- Critical CSS inlined for faster first paint -->
     <style>
         /* Critical above-the-fold styles */
-        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        body { margin: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
         #loadingScreen { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -261,14 +263,14 @@
                                     <label>Env Intensity</label>
                                     <input type="range" id="envIntensity" min="0" max="3" step="0.1" value="1" class="slider"><span class="value-display">1.0</span>
                                 </div>
-                                <div class="control-section" style="margin-top: 1rem; border-top: 1px solid #eee; padding-top: 1rem;">
+                                <div class="control-section" style="margin-top:1rem;border-top:1px solid var(--border-color);padding-top:1rem">
                                     <h4><svg class="icon" viewBox="0 0 24 24" fill-rule="evenodd" clip-rule="evenodd"><path d="M12 0c-3.315 0-6 2.685-6 6s6 18 6 18 6-15.315 6-18-2.685-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm0-6c-1.105 0-2 .895-2 2s.895 2 2 2 2-.895 2-2-.895-2-2-2z"/></svg> Load HDRI Environment</h4>
                                     <div class="input-group">
                                         <input type="text" id="hdriUrl" placeholder="Enter .hdr URL..." class="input-field">
                                         <button id="loadHdriBtn" class="btn primary">Load</button>
                                     </div>
                                     <div class="quick-samples">
-                                        <p style="font-size: 0.8rem; color: #666;">Enter a valid HDRI URL above to load custom environments.</p>
+                                        <p style="font-size:0.8rem;color:var(--text-color-light)">Enter a valid HDRI URL above to load custom environments.</p>
                                     </div>
                                 </div>
                             </div>
@@ -516,14 +518,14 @@
                 </div>
             </div>
 
-            <button id="sidebarToggleBtn" class="sidebar-toggle-btn">
+            <button id="sidebarToggleBtn" class="sidebar-toggle-btn" aria-label="Toggle sidebar" aria-expanded="false">
                 <span class="hamburger-line"></span>
                 <span class="hamburger-line"></span>
                 <span class="hamburger-line"></span>
             </button>
             
-            <button id="superheroBtn" class="superhero-btn" title="Cinematic Mode" data-help="superhero-btn">
-                <svg viewBox="0 0 24 24">
+            <button id="superheroBtn" class="superhero-btn" title="Cinematic Mode" aria-label="Toggle cinematic mode" data-help="superhero-btn">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3z"/>
                     <path d="M9 12l2 2 4-4"/>
                 </svg>
@@ -670,20 +672,7 @@
         }
     </script>
 
-    <!-- Service Worker Registration for Performance -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
-                    .then((registration) => {
-                        console.log('SW registered: ', registration);
-                    })
-                    .catch((registrationError) => {
-                        console.log('SW registration failed: ', registrationError);
-                    });
-            });
-        }
-    </script>
+    <!-- Service Worker registration removed - no service-worker.js file exists -->
 
 </body>
 </html>
