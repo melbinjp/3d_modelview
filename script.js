@@ -827,7 +827,34 @@ class ModelViewer {
         
         const reader = new FileReader();
         reader.onload = (e) => {
-            const blob = new Blob([e.target.result], { type: file.type });
+            const buffer = e.target.result;
+            const view = new Uint8Array(buffer);
+
+            // Magic number validation
+            let isValid = false;
+
+            // MP3: ID3 or FFFB/FFF3
+            if (view.length >= 3 && view[0] === 0x49 && view[1] === 0x44 && view[2] === 0x33) isValid = true; // ID3
+            else if (view.length >= 2 && view[0] === 0xFF && (view[1] & 0xE0) === 0xE0) isValid = true; // ADTS syncword
+            // WAV: RIFF...WAVE
+            else if (view.length >= 12 && view[0] === 0x52 && view[1] === 0x49 && view[2] === 0x46 && view[3] === 0x46 &&
+                view[8] === 0x57 && view[9] === 0x41 && view[10] === 0x56 && view[11] === 0x45) isValid = true;
+            // OGG: OggS
+            else if (view.length >= 4 && view[0] === 0x4F && view[1] === 0x67 && view[2] === 0x67 && view[3] === 0x53) isValid = true;
+            // FLAC: fLaC
+            else if (view.length >= 4 && view[0] === 0x66 && view[1] === 0x4C && view[2] === 0x61 && view[3] === 0x43) isValid = true;
+            // M4A/AAC: ftypM4A or ftypmp42 etc
+            else if (view.length >= 8 && view[4] === 0x66 && view[5] === 0x74 && view[6] === 0x79 && view[7] === 0x70) isValid = true;
+            // WMA: ASF header
+            else if (view.length >= 16 && view[0] === 0x30 && view[1] === 0x26 && view[2] === 0xB2 && view[3] === 0x75 &&
+                     view[4] === 0x8E && view[5] === 0x66 && view[6] === 0xCF && view[7] === 0x11) isValid = true;
+
+            if (!isValid) {
+                this.showError('Invalid audio file content. The file appears to be corrupted or not a genuine audio file.');
+                return;
+            }
+
+            const blob = new Blob([buffer], { type: file.type });
             this.customAudioFile = URL.createObjectURL(blob);
             
             const indicator = document.querySelector('.audio-indicator');
