@@ -903,15 +903,15 @@ document.addEventListener('DOMContentLoaded', () => {
     window.modelViewer = new ModelViewer();
 });
 
-// Sample models for testing
-const sampleModels = [
-    'https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf',
-    'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF/Duck.gltf',
-    'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Avocado/glTF/Avocado.gltf'
-];
-
 // Initialize sample model buttons after DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
+    // Sample models for testing
+    const sampleModels = [
+        'https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf',
+        'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF/Duck.gltf',
+        'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Avocado/glTF/Avocado.gltf'
+    ];
+
     setTimeout(() => {
         document.querySelectorAll('.sample-btn').forEach(btn => {
             btn.addEventListener('click', () => {
