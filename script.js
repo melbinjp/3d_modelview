@@ -431,6 +431,25 @@ class ModelViewer {
 
     onModelLoaded(loadedModel) {
         if (this.currentModel) {
+            this.currentModel.traverse((child) => {
+                if (child.isMesh) {
+                    if (child.geometry) {
+                        child.geometry.dispose();
+                    }
+                    if (child.material) {
+                        const materials = Array.isArray(child.material) ? child.material : [child.material];
+                        materials.forEach(material => {
+                            for (const key in material) {
+                                const value = material[key];
+                                if (value && typeof value === 'object' && 'isTexture' in value && value.isTexture) {
+                                    value.dispose();
+                                }
+                            }
+                            material.dispose();
+                        });
+                    }
+                }
+            });
             this.scene.remove(this.currentModel);
         }
 
