@@ -353,6 +353,20 @@ class ModelViewer {
     loadModelFromUrl(url) {
         this.showProgress(true, 'Loading model...');
         
+        try {
+            const parsedUrl = new URL(url, window.location.origin);
+            const allowedProtocols = ['http:', 'https:', 'data:', 'blob:'];
+            if (!allowedProtocols.includes(parsedUrl.protocol)) {
+                this.showError('Invalid or unsupported URL protocol');
+                this.showProgress(false);
+                return;
+            }
+        } catch (e) {
+            this.showError('Invalid URL');
+            this.showProgress(false);
+            return;
+        }
+
         const loader = this.getLoaderForUrl(url);
         if (!loader) {
             this.showError('Unsupported file format');
