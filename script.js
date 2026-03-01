@@ -639,14 +639,16 @@ class ModelViewer {
             
             this.superheroStartTime = Date.now() - 3000;
             
-            setTimeout(() => {
+            const delay = ms => new Promise(r => setTimeout(r, ms));
+            (async () => {
+                await delay(500);
                 overlay.classList.remove('pitch-black');
                 overlay.classList.add('active');
-                setTimeout(() => {
-                    overlay.classList.remove('active');
-                    setTimeout(() => overlay.classList.add('hidden'), 800);
-                }, 1500);
-            }, 500);
+                await delay(1500);
+                overlay.classList.remove('active');
+                await delay(800);
+                overlay.classList.add('hidden');
+            })();
             
             if (this.superheroAudio) {
                 this.superheroAudio.addEventListener('ended', () => this.exitSuperheroMode());
