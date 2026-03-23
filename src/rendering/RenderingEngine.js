@@ -24,7 +24,7 @@ export class RenderingEngine {
         this.controls = null;
         this.composer = null;
         this.clock = new THREE.Clock();
-        
+
         // Advanced systems
         this.postProcessingManager = null;
         this.shaderManager = null;
@@ -34,21 +34,21 @@ export class RenderingEngine {
         this.contactShadowManager = null;
         this.physicsEngine = null;
         this.webXRManager = null;
-        
+
         // Lighting system
         this.lights = {};
-        
+
         // Post-processing
         this.bloomPass = null;
-        
+
         // Scene objects
         this.groundPlane = null;
         this.gridHelper = null;
-        
+
         // Animation
         this.mixer = null;
         this.animationPaused = false;
-        
+
         this.initialized = false;
     }
 
@@ -75,22 +75,22 @@ export class RenderingEngine {
             this.initPostProcessing();
             this.initSceneObjects();
             this.initAdvancedSystems();
-            
+
             this.setupEventListeners();
             this.setupErrorHandling();
             this.initialized = true;
-            
+
             this.core.emit('rendering:initialized');
         } catch (error) {
             console.error('Failed to initialize RenderingEngine:', error);
-            
+
             // Handle initialization error through error manager
             await this.core.handleError(error, {
                 type: 'initialization_error',
                 severity: 'critical',
                 context: { module: 'rendering', phase: 'initialization' }
             });
-            
+
             throw error;
         }
     }
@@ -99,9 +99,7 @@ export class RenderingEngine {
      * Check WebGL support
      */
     checkWebGLSupport() {
-        if (process.env.NODE_ENV === 'test') {
-            return true;
-        }
+        // Test environment check removed to prevent false positives in browser bundles
         const webglRecovery = this.core.getWebGLRecovery();
         if (!webglRecovery.constructor.isWebGLSupported()) {
             this.core.handleError(new Error('WebGL not supported'), {
@@ -121,50 +119,47 @@ export class RenderingEngine {
 
     initCamera(container) {
         this.camera = new THREE.PerspectiveCamera(
-            75, 
-            container.clientWidth / container.clientHeight, 
-            0.1, 
+            75,
+            container.clientWidth / container.clientHeight,
+            0.1,
             1000
         );
         this.camera.position.set(5, 5, 5);
     }
 
     async initRenderer(container) {
-        if (process.env.NODE_ENV === 'test') {
-            return;
-        }
         try {
-            this.renderer = new THREE.WebGLRenderer({ 
-                antialias: true, 
+            this.renderer = new THREE.WebGLRenderer({
+                antialias: true,
                 preserveDrawingBuffer: true,
                 failIfMajorPerformanceCaveat: false // Allow software rendering as fallback
             });
-            
+
             this.renderer.setSize(container.clientWidth, container.clientHeight);
             this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for performance
             this.renderer.shadowMap.enabled = true;
             this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
             this.renderer.toneMappingExposure = 1;
-            
+
             container.appendChild(this.renderer.domElement);
-            
+
             // Ensure canvas is visible and properly sized
             const canvas = this.renderer.domElement;
             canvas.style.display = 'block';
             canvas.style.width = '100%';
             canvas.style.height = '100%';
-            
+
             // Setup WebGL context loss handling
             const webglRecovery = this.core.getWebGLRecovery();
             webglRecovery.setupContextLossHandlers(this.renderer.domElement, this.renderer);
-            
+
         } catch (error) {
             // Handle WebGL context creation failure
             await this.core.handleError(error, {
                 type: 'webgl_context_creation_failed',
                 severity: 'critical',
-                context: { 
+                context: {
                     container: container ? 'present' : 'missing',
                     webglSupported: this.core.getWebGLRecovery().constructor.isWebGLSupported()
                 }
@@ -174,9 +169,6 @@ export class RenderingEngine {
     }
 
     initControls() {
-        if (process.env.NODE_ENV === 'test') {
-            return;
-        }
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.05;
@@ -189,7 +181,7 @@ export class RenderingEngine {
         // Ambient light
         this.lights.ambient = new THREE.AmbientLight(0xffffff, 0.4);
         this.scene.add(this.lights.ambient);
-        
+
         // Directional light
         this.lights.directional = new THREE.DirectionalLight(0xffffff, 1);
         this.lights.directional.position.set(5, 5, 5);
@@ -199,7 +191,7 @@ export class RenderingEngine {
         this.lights.directional.shadow.camera.near = 0.5;
         this.lights.directional.shadow.camera.far = 50;
         this.scene.add(this.lights.directional);
-        
+
         // Light helper (initially hidden)
         const dirLightHelper = new THREE.DirectionalLightHelper(this.lights.directional, 1);
         dirLightHelper.visible = false;
@@ -213,9 +205,9 @@ export class RenderingEngine {
         this.composer.addPass(renderPass);
 
         this.bloomPass = new UnrealBloomPass(
-            new THREE.Vector2(window.innerWidth, window.innerHeight), 
-            1.5, 
-            0.4, 
+            new THREE.Vector2(window.innerWidth, window.innerHeight),
+            1.5,
+            0.4,
             0.85
         );
         this.bloomPass.enabled = false;
@@ -225,17 +217,17 @@ export class RenderingEngine {
     initSceneObjects() {
         // Ground plane
         const groundGeometry = new THREE.PlaneGeometry(50, 50);
-        const groundMaterial = new THREE.MeshLambertMaterial({ 
-            color: 0xffffff, 
-            transparent: true, 
-            opacity: 0.1 
+        const groundMaterial = new THREE.MeshLambertMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.1
         });
         this.groundPlane = new THREE.Mesh(groundGeometry, groundMaterial);
         this.groundPlane.rotation.x = -Math.PI / 2;
         this.groundPlane.position.y = 0;
         this.groundPlane.receiveShadow = true;
         this.scene.add(this.groundPlane);
-        
+
         // Grid helper
         this.gridHelper = new THREE.GridHelper(20, 20, 0x888888, 0xcccccc);
         this.gridHelper.material.transparent = true;
@@ -248,33 +240,30 @@ export class RenderingEngine {
      * Initialize advanced rendering systems
      */
     initAdvancedSystems() {
-        if (process.env.NODE_ENV === 'test') {
-            return;
-        }
         // Initialize post-processing manager
         this.postProcessingManager = new PostProcessingManager(this.renderer, this.scene, this.camera);
-        
+
         // Initialize shader manager
         this.shaderManager = new ShaderManager(this.core);
-        
+
         // Initialize advanced rendering manager
         this.advancedRenderingManager = new AdvancedRenderingManager(this.core, this.renderer, this.scene, this.camera);
-        
+
         // Initialize lighting manager
         this.lightingManager = new LightingManager(this.core, this.scene, this.renderer);
-        
+
         // Initialize material manager
         this.materialManager = new MaterialManager(this.core, this.renderer);
-        
+
         // Initialize contact shadow manager
         this.contactShadowManager = new ContactShadowManager(this.core, this.renderer, this.scene, this.camera);
-        
+
         // Initialize physics engine
         this.physicsEngine = new PhysicsEngine(this.core);
-        
+
         // Initialize WebXR manager
         this.webXRManager = new WebXRManager(this.core, this.renderer, this.scene, this.camera);
-        
+
         // Register modules with core
         this.core.registerModule('postProcessing', this.postProcessingManager);
         this.core.registerModule('shader', this.shaderManager);
@@ -288,11 +277,11 @@ export class RenderingEngine {
 
     setupEventListeners() {
         window.addEventListener('resize', () => this.onWindowResize());
-        
+
         // Listen to core events
         this.core.on('model:loaded', (data) => this.onModelLoaded(data));
         this.core.on('model:removed', () => this.onModelRemoved());
-        
+
         // Listen to error recovery events
         this.core.on('webgl:context-restored', () => this.onContextRestored());
         this.core.on('performance:quality-reduced', () => this.onQualityReduced());
@@ -323,7 +312,7 @@ export class RenderingEngine {
 
         this.scene.add(model);
         this.core.setState({ currentModel: model });
-        
+
         // Setup shadows for the model
         model.traverse((child) => {
             if (child.isMesh) {
@@ -334,7 +323,7 @@ export class RenderingEngine {
 
         // Force immediate render to make model visible
         this.render();
-        
+
         // Additional render calls to ensure visibility
         requestAnimationFrame(() => {
             this.render();
@@ -383,7 +372,7 @@ export class RenderingEngine {
 
         const box = new THREE.Box3().setFromObject(currentModel);
         const center = box.getCenter(new THREE.Vector3());
-        
+
         // Adjust model position if it's below ground
         if (box.min.y < 0) {
             currentModel.position.y = -box.min.y;
@@ -394,18 +383,18 @@ export class RenderingEngine {
         const boundingSphere = new THREE.Sphere();
         box.getBoundingSphere(boundingSphere);
         const radius = boundingSphere.radius;
-        
+
         const distance = radius / Math.sin(THREE.MathUtils.degToRad(this.camera.fov / 2));
-        
+
         this.camera.position.set(
-            center.x, 
-            center.y + radius * 0.4, 
+            center.x,
+            center.y + radius * 0.4,
             center.z + distance
         );
         this.camera.lookAt(center);
         this.controls.target.copy(center);
         this.controls.update();
-        
+
         // Force render after camera positioning
         this.render();
     }
@@ -431,20 +420,20 @@ export class RenderingEngine {
         this.camera.aspect = width / height;
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(width, height);
-        
+
         if (this.composer) {
             this.composer.setSize(width, height);
         }
-        
+
         // Update advanced systems
         if (this.postProcessingManager) {
             this.postProcessingManager.onResize(width, height);
         }
-        
+
         if (this.advancedRenderingManager) {
             this.advancedRenderingManager.onResize(width, height);
         }
-        
+
         this.render();
     }
 
@@ -503,10 +492,10 @@ export class RenderingEngine {
     forceRefresh() {
         // Update camera projection matrix
         this.camera.updateProjectionMatrix();
-        
+
         // Update controls
         this.controls.update();
-        
+
         // Force multiple renders
         this.render();
         requestAnimationFrame(() => {
@@ -522,11 +511,11 @@ export class RenderingEngine {
      */
     async handleRenderError(error) {
         console.error('Rendering error:', error);
-        
+
         // Determine error type
         let errorType = 'unknown_error';
         let severity = 'medium';
-        
+
         if (error.message.includes('WebGL')) {
             errorType = 'webgl_context_lost';
             severity = 'high';
@@ -537,11 +526,11 @@ export class RenderingEngine {
             errorType = 'shader_compilation_failed';
             severity = 'medium';
         }
-        
+
         await this.core.handleError(error, {
             type: errorType,
             severity: severity,
-            context: { 
+            context: {
                 module: 'rendering',
                 phase: 'render',
                 hasPostProcessing: !!this.postProcessingManager?.enabled,
@@ -555,20 +544,20 @@ export class RenderingEngine {
      */
     async onContextRestored() {
         console.info('WebGL context restored, reinitializing renderer');
-        
+
         try {
             // Reinitialize renderer components that may have been lost
             if (this.postProcessingManager) {
                 await this.postProcessingManager.reinitialize();
             }
-            
+
             if (this.shaderManager) {
                 await this.shaderManager.recompileShaders();
             }
-            
+
             // Emit restoration success
             this.core.emit('rendering:context-restored');
-            
+
         } catch (error) {
             await this.core.handleError(error, {
                 type: 'webgl_context_lost',
@@ -583,24 +572,24 @@ export class RenderingEngine {
      */
     onQualityReduced() {
         console.info('Reducing rendering quality for performance');
-        
+
         // Reduce pixel ratio
         const currentPixelRatio = this.renderer.getPixelRatio();
         if (currentPixelRatio > 1) {
             this.renderer.setPixelRatio(Math.max(1, currentPixelRatio * 0.75));
         }
-        
+
         // Disable expensive effects
         if (this.bloomPass && this.bloomPass.enabled) {
             this.bloomPass.enabled = false;
             console.info('Disabled bloom effect for performance');
         }
-        
+
         if (this.postProcessingManager && this.postProcessingManager.enabled) {
             this.postProcessingManager.reduceQuality();
             console.info('Reduced post-processing quality');
         }
-        
+
         // Reduce shadow quality
         if (this.lights.directional && this.lights.directional.shadow) {
             const currentSize = this.lights.directional.shadow.mapSize.width;
@@ -610,7 +599,7 @@ export class RenderingEngine {
                 console.info(`Reduced shadow map size to ${newSize}x${newSize}`);
             }
         }
-        
+
         this.core.emit('rendering:quality-reduced');
     }
 
@@ -619,24 +608,24 @@ export class RenderingEngine {
      */
     restoreQuality() {
         console.info('Restoring rendering quality');
-        
+
         // Restore pixel ratio
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        
+
         // Re-enable effects if they were disabled
         if (this.bloomPass) {
             this.bloomPass.enabled = false; // Keep disabled by default, user can re-enable
         }
-        
+
         if (this.postProcessingManager) {
             this.postProcessingManager.restoreQuality();
         }
-        
+
         // Restore shadow quality
         if (this.lights.directional && this.lights.directional.shadow) {
             this.lights.directional.shadow.mapSize.setScalar(2048);
         }
-        
+
         this.core.emit('rendering:quality-restored');
     }
 
@@ -676,33 +665,33 @@ export class RenderingEngine {
 
         const delta = this.clock.getDelta();
         const time = this.clock.getElapsedTime();
-        
+
         if (this.controls) {
             this.controls.update();
         }
         this.updateAnimations(delta);
-        
+
         // Update advanced systems
         if (this.physicsEngine && this.physicsEngine.enabled) {
             this.physicsEngine.step(delta);
         }
-        
+
         if (this.webXRManager) {
             this.webXRManager.update();
         }
-        
+
         if (this.shaderManager) {
             this.shaderManager.updateTime(time);
         }
-        
+
         if (this.lightingManager) {
             this.lightingManager.update(delta);
         }
-        
+
         if (this.contactShadowManager) {
             this.contactShadowManager.update();
         }
-        
+
         this.render();
     }
 
@@ -909,59 +898,59 @@ export class RenderingEngine {
     destroy() {
         // Remove event listeners first
         window.removeEventListener('resize', this.onWindowResize);
-        
+
         // Remove core event listeners
         this.core.off('model:loaded', this.onModelLoaded);
         this.core.off('model:removed', this.onModelRemoved);
         this.core.off('webgl:context-restored', this.onContextRestored);
         this.core.off('performance:quality-reduced', this.onQualityReduced);
-        
+
         // Destroy advanced systems
         if (this.postProcessingManager) {
             this.postProcessingManager.destroy();
         }
-        
+
         if (this.shaderManager) {
             this.shaderManager.destroy();
         }
-        
+
         if (this.advancedRenderingManager) {
             this.advancedRenderingManager.destroy();
         }
-        
+
         if (this.lightingManager) {
             this.lightingManager.destroy();
         }
-        
+
         if (this.materialManager) {
             this.materialManager.destroy();
         }
-        
+
         if (this.contactShadowManager) {
             this.contactShadowManager.destroy();
         }
-        
+
         if (this.physicsEngine) {
             this.physicsEngine.destroy();
         }
-        
+
         if (this.webXRManager) {
             this.webXRManager.destroy();
         }
-        
+
         // Dispose Three.js resources
         if (this.renderer && typeof this.renderer.dispose === 'function') {
             this.renderer.dispose();
         }
-        
+
         if (this.composer && typeof this.composer.dispose === 'function') {
             this.composer.dispose();
         }
-        
+
         if (this.mixer) {
             this.mixer.stopAllAction();
         }
-        
+
         // Dispose scene objects
         if (this.scene && typeof this.scene.traverse === 'function') {
             this.scene.traverse((child) => {
@@ -981,7 +970,7 @@ export class RenderingEngine {
                 }
             });
         }
-        
+
         this.initialized = false;
     }
 }

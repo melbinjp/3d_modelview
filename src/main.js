@@ -2,6 +2,15 @@
  * Main entry point for the 3D Model Viewer application
  * Optimized with lazy loading for better performance
  */
+// ---- Browser Polyfills ----
+// Shim process.env for third-party libraries that expect a Node.js environment
+if (typeof window !== 'undefined' && typeof window.process === 'undefined') {
+    window.process = {
+        env: {
+            NODE_ENV: 'development'
+        }
+    };
+}
 
 // Lazy load ModelViewer to improve initial load time
 let ModelViewer;
@@ -17,7 +26,7 @@ const performanceMarks = {
 // Future-proof initialization with comprehensive error handling and lazy loading
 document.addEventListener('DOMContentLoaded', async () => {
     performanceMarks.domReady = performance.now();
-    
+
     // Lazy load ModelViewer module
     try {
         const module = await import('./ModelViewer.js');
@@ -54,25 +63,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Create and initialize the model viewer with timeout
         const modelViewer = new ModelViewer();
-        
+
         // Set a reasonable timeout for initialization
         const initPromise = modelViewer.init();
-        const timeoutPromise = new Promise((_, reject) => 
+        const timeoutPromise = new Promise((_, reject) =>
             setTimeout(() => reject(new Error('Initialization timeout after 30 seconds')), 30000)
         );
 
         updateProgress('🎮 Setting up 3D engine...');
         await Promise.race([initPromise, timeoutPromise]);
-        
+
         updateProgress('🎨 Loading interface...');
-        
+
         // Make it globally accessible for legacy compatibility
         window.modelViewer = modelViewer;
-        
+
         updateProgress('✅ Ready to use!');
-        
+
         // Silent initialization complete
-        
+
         // Hide loading screen after a brief delay
         setTimeout(() => {
             const loadingScreen = document.getElementById('loadingScreen');
@@ -80,7 +89,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 loadingScreen.classList.add('hidden');
             }
         }, 500);
-        
+
     } catch (error) {
         console.error('Failed to initialize 3D Model Viewer:', error);
         showInitializationError(error);
@@ -94,7 +103,7 @@ function checkBrowserCompatibility() {
     // Check WebGL support
     const canvas = document.createElement('canvas');
     const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-    
+
     if (!gl) {
         return false;
     }
@@ -203,21 +212,21 @@ window.addEventListener('beforeunload', () => {
  */
 function reportPerformanceMetrics() {
     performanceMarks.initialized = performance.now();
-    
+
     const metrics = {
         domReady: performanceMarks.domReady - performanceMarks.start,
         moduleLoad: performanceMarks.moduleLoaded - performanceMarks.domReady,
         initialization: performanceMarks.initialized - performanceMarks.moduleLoaded,
         total: performanceMarks.initialized - performanceMarks.start
     };
-    
+
     console.log('🚀 Performance Metrics:', {
         'DOM Ready': `${metrics.domReady.toFixed(2)}ms`,
         'Module Load': `${metrics.moduleLoad.toFixed(2)}ms`,
         'Initialization': `${metrics.initialization.toFixed(2)}ms`,
         'Total Load Time': `${metrics.total.toFixed(2)}ms`
     });
-    
+
     // Report to analytics if available
     if (window.gtag) {
         window.gtag('event', 'timing_complete', {
@@ -225,7 +234,7 @@ function reportPerformanceMetrics() {
             value: Math.round(metrics.total)
         });
     }
-    
+
     // Web Vitals reporting
     if ('web-vitals' in window) {
         window.webVitals.getCLS(console.log);

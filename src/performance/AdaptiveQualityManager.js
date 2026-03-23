@@ -8,7 +8,7 @@ export class AdaptiveQualityManager {
     constructor(core, renderer) {
         this.core = core;
         this.renderer = renderer;
-        
+
         // Quality configuration
         this.config = {
             enabled: true,
@@ -65,23 +65,23 @@ export class AdaptiveQualityManager {
                 }
             }
         };
-        
+
         // Current state
         this.currentQuality = 'high';
         this.baseQuality = 'high'; // User-set base quality
         this.targetQuality = 'high';
-        
+
         // Performance monitoring
         this.performanceHistory = [];
         this.frameCount = 0;
         this.lastTime = performance.now();
         this.stableFrameCount = 0;
         this.lastQualityChange = 0;
-        
+
         // Quality transition
         this.isTransitioning = false;
         this.transitionProgress = 0;
-        
+
         this.initialized = false;
     }
 
@@ -98,7 +98,7 @@ export class AdaptiveQualityManager {
         this.setupEventListeners();
         this.startPerformanceMonitoring();
         this.initialized = true;
-        
+
         // Silent initialization
     }
 
@@ -108,10 +108,10 @@ export class AdaptiveQualityManager {
     setupEventListeners() {
         // Listen for performance updates
         this.core.on('performance:updated', (stats) => this.onPerformanceUpdate(stats));
-        
+
         // Listen for viewport changes
         this.core.on('viewport:resized', (data) => this.onViewportResize(data.width, data.height));
-        
+
         // Listen for user quality changes
         this.core.on('settings:quality_changed', (quality) => this.setBaseQuality(quality));
     }
@@ -121,22 +121,22 @@ export class AdaptiveQualityManager {
      */
     startPerformanceMonitoring() {
         // Skip monitoring in test environment
-        if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
+        if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'test') {
             return;
         }
-        
+
         const monitor = () => {
             if (!this.config.enabled) {
                 requestAnimationFrame(monitor);
                 return;
             }
-            
+
             this.updatePerformanceMetrics();
             this.evaluateQualityAdjustment();
-            
+
             requestAnimationFrame(monitor);
         };
-        
+
         requestAnimationFrame(monitor);
     }
 
@@ -146,26 +146,26 @@ export class AdaptiveQualityManager {
     updatePerformanceMetrics() {
         const now = performance.now();
         const deltaTime = now - this.lastTime;
-        
+
         this.frameCount++;
-        
+
         // Calculate FPS every second
         if (deltaTime >= 1000) {
             const fps = (this.frameCount * 1000) / deltaTime;
-            
+
             // Add to performance history
             this.performanceHistory.push({
                 fps,
                 timestamp: now,
                 quality: this.currentQuality
             });
-            
+
             // Keep only last 30 seconds of data
             const cutoffTime = now - 30000;
             this.performanceHistory = this.performanceHistory.filter(
                 entry => entry.timestamp > cutoffTime
             );
-            
+
             this.frameCount = 0;
             this.lastTime = now;
         }
@@ -176,13 +176,13 @@ export class AdaptiveQualityManager {
      */
     evaluateQualityAdjustment() {
         if (this.performanceHistory.length < 3) return; // Need some history
-        
+
         const recentPerformance = this.performanceHistory.slice(-3);
         const averageFPS = recentPerformance.reduce((sum, entry) => sum + entry.fps, 0) / recentPerformance.length;
-        
+
         // Determine target quality based on performance
         let targetQuality = this.currentQuality;
-        
+
         if (averageFPS < this.config.minFPS) {
             // Performance is poor, reduce quality
             targetQuality = this.getLowerQuality(this.currentQuality);
@@ -190,7 +190,7 @@ export class AdaptiveQualityManager {
         } else if (averageFPS > this.config.targetFPS * 1.2) {
             // Performance is good, potentially increase quality
             this.stableFrameCount++;
-            
+
             // Only increase quality if performance has been stable
             if (this.stableFrameCount >= this.config.stabilityThreshold) {
                 const higherQuality = this.getHigherQuality(this.currentQuality);
@@ -203,7 +203,7 @@ export class AdaptiveQualityManager {
             // Performance is acceptable, maintain current quality
             this.stableFrameCount++;
         }
-        
+
         // Apply quality change if needed
         if (targetQuality !== this.currentQuality) {
             this.changeQuality(targetQuality);
@@ -218,7 +218,7 @@ export class AdaptiveQualityManager {
         const currentIndex = qualityLevels.indexOf(this.currentQuality);
         const targetIndex = qualityLevels.indexOf(targetQuality);
         const baseIndex = qualityLevels.indexOf(this.baseQuality);
-        
+
         // Don't exceed user-set base quality
         return targetIndex <= baseIndex;
     }
@@ -229,11 +229,11 @@ export class AdaptiveQualityManager {
     getLowerQuality(currentQuality) {
         const qualityLevels = Object.keys(this.config.qualityLevels);
         const currentIndex = qualityLevels.indexOf(currentQuality);
-        
+
         if (currentIndex < qualityLevels.length - 1) {
             return qualityLevels[currentIndex + 1];
         }
-        
+
         return currentQuality; // Already at lowest quality
     }
 
@@ -243,11 +243,11 @@ export class AdaptiveQualityManager {
     getHigherQuality(currentQuality) {
         const qualityLevels = Object.keys(this.config.qualityLevels);
         const currentIndex = qualityLevels.indexOf(currentQuality);
-        
+
         if (currentIndex > 0) {
             return qualityLevels[currentIndex - 1];
         }
-        
+
         return currentQuality; // Already at highest quality
     }
 
@@ -256,19 +256,19 @@ export class AdaptiveQualityManager {
      */
     changeQuality(newQuality) {
         if (newQuality === this.currentQuality) return;
-        
+
         const now = performance.now();
-        
+
         // Prevent too frequent quality changes
         if (now - this.lastQualityChange < 2000) return; // Wait at least 2 seconds
-        
+
         console.log(`Adaptive quality change: ${this.currentQuality} -> ${newQuality}`);
-        
+
         this.currentQuality = newQuality;
         this.lastQualityChange = now;
-        
+
         this.applyQualitySettings(newQuality);
-        
+
         this.core.emit('adaptive_quality:changed', {
             from: this.currentQuality,
             to: newQuality,
@@ -285,31 +285,33 @@ export class AdaptiveQualityManager {
             console.warn(`Unknown quality level: ${quality}`);
             return;
         }
-        
+
         // Apply pixel ratio
         if (this.renderer && typeof this.renderer.setPixelRatio === 'function') {
             this.renderer.setPixelRatio(Math.min(settings.pixelRatio, window.devicePixelRatio));
         }
-        
+
         // Apply shadow map settings
-        if (this.renderer.shadowMap) {
+        if (this.renderer && this.renderer.shadowMap) {
             this.renderer.shadowMap.enabled = settings.shadowMapSize > 0;
             if (settings.shadowMapSize > 0) {
                 // Update shadow map size for all lights
                 this.updateShadowMapSizes(settings.shadowMapSize);
             }
         }
-        
+
         // Apply tone mapping
-        this.renderer.toneMapping = settings.toneMapping;
-        this.renderer.toneMappingExposure = settings.toneMappingExposure;
-        
+        if (this.renderer) {
+            this.renderer.toneMapping = settings.toneMapping;
+            this.renderer.toneMappingExposure = settings.toneMappingExposure;
+        }
+
         // Apply post-processing settings
         this.updatePostProcessingSettings(settings.postProcessing);
-        
+
         // Apply lighting limits
         this.updateLightingSettings(settings.maxLights);
-        
+
         // Force re-render
         this.core.emit('rendering:quality_changed', { quality, settings });
     }
@@ -320,7 +322,7 @@ export class AdaptiveQualityManager {
     updateShadowMapSizes(size) {
         const scene = this.core.getModule('rendering')?.scene;
         if (!scene) return;
-        
+
         scene.traverse((object) => {
             if (object.isLight && object.shadow) {
                 object.shadow.mapSize.width = size;
@@ -354,7 +356,7 @@ export class AdaptiveQualityManager {
     updateLightingSettings(maxLights) {
         const scene = this.core.getModule('rendering')?.scene;
         if (!scene) return;
-        
+
         let lightCount = 0;
         scene.traverse((object) => {
             if (object.isLight && object.type !== 'AmbientLight') {
@@ -379,7 +381,7 @@ export class AdaptiveQualityManager {
      */
     onViewportResize(width, height) {
         const pixelCount = width * height;
-        
+
         // Adjust quality based on viewport size
         if (pixelCount > 2073600) { // 1920x1080
             // Large viewport, might need to reduce quality
@@ -420,16 +422,16 @@ export class AdaptiveQualityManager {
      */
     setBaseQuality(quality) {
         this.baseQuality = quality;
-        
+
         // If current quality is higher than base, reduce it
         const qualityLevels = Object.keys(this.config.qualityLevels);
         const currentIndex = qualityLevels.indexOf(this.currentQuality);
         const baseIndex = qualityLevels.indexOf(this.baseQuality);
-        
+
         if (currentIndex < baseIndex) {
             this.changeQuality(this.baseQuality);
         }
-        
+
         console.log(`Base quality set to: ${quality}`);
     }
 
@@ -445,10 +447,10 @@ export class AdaptiveQualityManager {
      */
     getStats() {
         const recentPerformance = this.performanceHistory.slice(-10);
-        const averageFPS = recentPerformance.length > 0 
-            ? recentPerformance.reduce((sum, entry) => sum + entry.fps, 0) / recentPerformance.length 
+        const averageFPS = recentPerformance.length > 0
+            ? recentPerformance.reduce((sum, entry) => sum + entry.fps, 0) / recentPerformance.length
             : 0;
-        
+
         return {
             currentQuality: this.currentQuality,
             baseQuality: this.baseQuality,
@@ -464,12 +466,12 @@ export class AdaptiveQualityManager {
      */
     setEnabled(enabled) {
         this.config.enabled = enabled;
-        
+
         if (!enabled) {
             // Reset to base quality
             this.changeQuality(this.baseQuality);
         }
-        
+
         console.log(`Adaptive quality ${enabled ? 'enabled' : 'disabled'}`);
     }
 
@@ -486,7 +488,7 @@ export class AdaptiveQualityManager {
      */
     update(deltaTime) {
         if (!this.config.enabled || !this.initialized) return;
-        
+
         // Update transition animations if needed
         if (this.isTransitioning) {
             this.updateTransition(deltaTime);
@@ -498,12 +500,12 @@ export class AdaptiveQualityManager {
      */
     updateTransition(deltaTime) {
         this.transitionProgress += deltaTime * 2; // 0.5 second transition
-        
+
         if (this.transitionProgress >= 1.0) {
             this.transitionProgress = 1.0;
             this.isTransitioning = false;
         }
-        
+
         // Apply interpolated settings during transition
         // This could be used for smooth quality transitions in the future
     }

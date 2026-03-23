@@ -5,7 +5,7 @@ export class SuperheroMode {
     constructor(viewer) {
         this.viewer = viewer;
         this.superheroMode = false;
-        
+
         // Enhanced cinematic engine
         this.cinematicEngine = new CinematicEngine(this.viewer.renderingEngine || this.viewer);
         this.useCinematicMode = true; // Flag to use new cinematic system
@@ -102,12 +102,12 @@ export class SuperheroMode {
         // Fallback to original mode - access camera through rendering engine
         const camera = this.viewer.renderingEngine?.camera || this.viewer.camera;
         const controls = this.viewer.renderingEngine?.controls || this.viewer.controls;
-        
+
         if (!camera || !controls) {
             console.error('Camera or controls not available for superhero mode');
             return;
         }
-        
+
         this.originalCameraPos = {
             position: camera.position.clone(),
             target: controls.target.clone()
@@ -223,7 +223,7 @@ export class SuperheroMode {
         // Access camera and controls through rendering engine
         const camera = this.viewer.renderingEngine?.camera || this.viewer.camera;
         const controls = this.viewer.renderingEngine?.controls || this.viewer.controls;
-        
+
         if (!camera || !controls) {
             console.error('Camera or controls not available for cinematic superhero mode');
             return;
@@ -257,7 +257,7 @@ export class SuperheroMode {
         // Play audio and setup analysis
         this.playAmbientDrone();
         setTimeout(() => this.playBassThump(), 1000);
-        
+
         // Start cinematic sequence after audio setup
         setTimeout(async () => {
             // Setup audio for cinematic engine
@@ -265,11 +265,10 @@ export class SuperheroMode {
             if (this.customAudioFile || true) { // Always try to play music
                 audioElement = new Audio(this.customAudioFile || 'superhero-theme.mp3');
                 audioElement.volume = 0;
-                
+
                 try {
                     await audioElement.play();
                     this.superheroAudio = audioElement;
-                    this.setupAudioAnalysis();
                     this.fadeInAudio();
                 } catch (e) {
                     console.log('Audio play failed:', e);
@@ -317,7 +316,7 @@ export class SuperheroMode {
     selectEnvironmentType() {
         // Could be enhanced to analyze model type or allow user selection
         const environments = ['cosmic_scene', 'stormy_skies', 'urban_landscape', 'heroic_dawn', 'studio_setup'];
-        
+
         // For now, select based on time of day or random
         const hour = new Date().getHours();
         if (hour >= 6 && hour < 12) {
@@ -332,7 +331,7 @@ export class SuperheroMode {
     updateSuperheroCamera() {
         const currentModel = this.viewer.core?.getState()?.currentModel || this.viewer.currentModel;
         if (!this.superheroMode || !currentModel) return;
-        
+
         const camera = this.viewer.renderingEngine?.camera || this.viewer.camera;
 
         const now = Date.now();
@@ -436,10 +435,10 @@ export class SuperheroMode {
 
         document.body.classList.remove('superhero-mode-active');
         this.superheroMode = false;
-        
+
         const camera = this.viewer.renderingEngine?.camera || this.viewer.camera;
         const controls = this.viewer.renderingEngine?.controls || this.viewer.controls;
-        
+
         if (controls) {
             controls.enabled = true;
         }
@@ -552,20 +551,9 @@ export class SuperheroMode {
     }
 
     setupAudioAnalysis() {
-        if (this.audioContext) return;
-
-        try {
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            this.audioSource = this.audioContext.createMediaElementSource(this.superheroAudio);
-            this.audioAnalyser = this.audioContext.createAnalyser();
-
-            this.audioSource.connect(this.audioAnalyser);
-            this.audioAnalyser.connect(this.audioContext.destination);
-
-            this.audioAnalyser.fftSize = 256;
-        } catch (e) {
-            console.error("Web Audio API is not supported in this browser.", e);
-        }
+        // Obsolete: AudioAnalyzer.js now handles its own offline pre-analysis
+        // We leave this empty to satisfy any lingering internal calls,
+        // but avoid creating redundant AudioContexts that collide.
     }
 
     loadAudioFile(file) {

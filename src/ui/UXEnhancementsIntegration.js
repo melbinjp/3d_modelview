@@ -24,23 +24,23 @@ export class UXEnhancementsIntegration {
         try {
             // Initialize onboarding
             await this.initializeOnboarding();
-            
+
             // Initialize mobile gestures
             await this.initializeMobileGestures();
-            
+
             // Initialize feature discovery
             await this.initializeFeatureDiscovery();
-            
+
             // Setup cross-feature integrations
             this.setupIntegrations();
-            
+
             this.initialized = true;
             this.coreEngine.emit('ux-enhancements:initialized', {
                 features: this.features
             });
-            
+
             console.log('✅ UX Enhancements initialized successfully', this.features);
-            
+
         } catch (error) {
             console.error('Failed to initialize UX enhancements:', error);
             // Continue without enhancements - graceful degradation
@@ -59,23 +59,23 @@ export class UXEnhancementsIntegration {
 
             await this.uiManager.onboardingManager.initialize();
             this.features.onboarding = true;
-            
+
             // Setup onboarding event handlers
             this.coreEngine.on('onboarding:step:completed', (data) => {
                 // Track completion for analytics
                 this.trackEvent('onboarding_step_completed', data);
             });
-            
+
             this.coreEngine.on('onboarding:completed', () => {
                 // User completed onboarding
                 this.trackEvent('onboarding_completed');
-                
+
                 // Suggest switching to intermediate mode
                 setTimeout(() => {
                     this.suggestModeUpgrade();
                 }, 2000);
             });
-            
+
         } catch (error) {
             console.error('Onboarding initialization failed:', error);
             this.features.onboarding = false;
@@ -94,10 +94,10 @@ export class UXEnhancementsIntegration {
 
             await this.uiManager.mobileGestureManager.initialize();
             this.features.gestures = true;
-            
+
             // Setup gesture event handlers
             this.setupGestureHandlers();
-            
+
         } catch (error) {
             console.error('Mobile gestures initialization failed:', error);
             this.features.gestures = false;
@@ -116,10 +116,10 @@ export class UXEnhancementsIntegration {
 
             await this.uiManager.featureDiscoveryEngine.initialize();
             this.features.discovery = true;
-            
+
             // Setup discovery event handlers
             this.setupDiscoveryHandlers();
-            
+
         } catch (error) {
             console.error('Feature discovery initialization failed:', error);
             this.features.discovery = false;
@@ -346,10 +346,10 @@ export class UXEnhancementsIntegration {
      */
     handleSkillLevelChange(oldLevel, newLevel) {
         console.log(`Skill level upgraded: ${oldLevel} → ${newLevel}`);
-        
+
         // Show congratulations
         this.showSkillLevelUpgrade(newLevel);
-        
+
         // Suggest mode change if appropriate
         if (newLevel === 'intermediate' && this.uiManager.currentMode === 'simple') {
             setTimeout(() => {
@@ -371,9 +371,9 @@ export class UXEnhancementsIntegration {
                 <p>You're now a <strong>${level}</strong> user</p>
             </div>
         `;
-        
+
         document.body.appendChild(notification);
-        
+
         setTimeout(() => notification.classList.add('show'), 100);
         setTimeout(() => {
             notification.classList.remove('show');
@@ -386,7 +386,7 @@ export class UXEnhancementsIntegration {
      */
     suggestModeUpgrade() {
         if (this.uiManager.currentMode !== 'simple') return;
-        
+
         const suggestion = document.createElement('div');
         suggestion.className = 'mode-upgrade-suggestion';
         suggestion.innerHTML = `
@@ -400,26 +400,26 @@ export class UXEnhancementsIntegration {
                 </div>
             </div>
         `;
-        
+
         document.body.appendChild(suggestion);
-        
+
         // Event listeners
         const closeBtn = suggestion.querySelector('.suggestion-close');
         const upgradeBtn = suggestion.querySelector('#upgradeToAdvanced');
         const stayBtn = suggestion.querySelector('#staySimple');
-        
+
         const remove = () => {
             suggestion.classList.remove('show');
             setTimeout(() => suggestion.remove(), 300);
         };
-        
+
         closeBtn.addEventListener('click', remove);
         stayBtn.addEventListener('click', remove);
         upgradeBtn.addEventListener('click', () => {
             this.uiManager.setMode('advanced');
             remove();
         });
-        
+
         setTimeout(() => suggestion.classList.add('show'), 100);
     }
 
@@ -438,9 +438,9 @@ export class UXEnhancementsIntegration {
             <div class="context-menu-divider"></div>
             <div class="context-menu-item" data-action="screenshot">Take Screenshot</div>
         `;
-        
+
         document.body.appendChild(menu);
-        
+
         // Handle menu actions
         menu.addEventListener('click', (e) => {
             const item = e.target.closest('.context-menu-item');
@@ -449,7 +449,7 @@ export class UXEnhancementsIntegration {
                 menu.remove();
             }
         });
-        
+
         // Remove on click outside
         setTimeout(() => {
             document.addEventListener('click', () => menu.remove(), { once: true });
@@ -462,7 +462,7 @@ export class UXEnhancementsIntegration {
     handleContextMenuAction(action) {
         const renderingEngine = this.coreEngine.getModule('rendering');
         const exportSystem = this.coreEngine.getModule('export');
-        
+
         switch (action) {
             case 'reset-camera':
                 if (renderingEngine) renderingEngine.resetCamera();
@@ -482,7 +482,7 @@ export class UXEnhancementsIntegration {
     handleSwipeNavigation(direction) {
         const sidebar = document.getElementById('sidebar');
         const toggleBtn = document.getElementById('sidebarToggleBtn');
-        
+
         if (direction === 'right' && sidebar) {
             // Swipe right to open sidebar
             sidebar.classList.remove('collapsed');
@@ -504,9 +504,9 @@ export class UXEnhancementsIntegration {
             data,
             timestamp: Date.now()
         });
-        
+
         // Log to console in development
-        if (process.env.NODE_ENV !== 'production') {
+        if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV !== 'production') {
             console.log('📊 Analytics:', eventName, data);
         }
     }

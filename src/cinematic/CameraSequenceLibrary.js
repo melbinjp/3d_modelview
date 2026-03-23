@@ -14,119 +14,64 @@ export class CameraSequenceLibrary {
      * Initialize all camera sequences
      */
     initializeSequences() {
-        // Mysterious approach sequences
-        this.sequences.set('mysterious_approach_slow', new MysteriousApproachSequence('slow'));
-        this.sequences.set('mysterious_approach_medium', new MysteriousApproachSequence('medium'));
-        this.sequences.set('mysterious_approach_fast', new MysteriousApproachSequence('fast'));
-        
-        // Dramatic reveal sequences
-        this.sequences.set('dramatic_reveal_subtle', new DramaticRevealSequence('subtle'));
-        this.sequences.set('dramatic_reveal_moderate', new DramaticRevealSequence('moderate'));
-        this.sequences.set('dramatic_reveal_high', new DramaticRevealSequence('high'));
-        
-        // Showcase sequences
-        this.sequences.set('showcase_orbit', new ShowcaseOrbitSequence());
-        this.sequences.set('showcase_dolly', new ShowcaseDollySequence());
-        this.sequences.set('showcase_crane', new ShowcaseCraneSequence());
-        
-        // Epic finale sequences
-        this.sequences.set('epic_finale_heroic', new EpicFinaleSequence('heroic'));
-        this.sequences.set('epic_finale_powerful', new EpicFinaleSequence('powerful'));
-        this.sequences.set('epic_finale_aggressive', new EpicFinaleSequence('aggressive'));
-        
-        // Specialized sequences
-        this.sequences.set('character_reveal', new CharacterRevealSequence());
-        this.sequences.set('object_showcase', new ObjectShowcaseSequence());
-        this.sequences.set('environment_sweep', new EnvironmentSweepSequence());
+        // Marvel/Avenger Style sequences
+        this.sequences.set('the_look_up', new TheLookUpSequence());
+        this.sequences.set('the_hero_orbit', new TheHeroOrbitSequence());
+        this.sequences.set('the_dutch_angle', new TheDutchAngleRevealSequence());
+        this.sequences.set('the_action_cut', new TheActionCutSequence());
     }
 
     /**
      * Select appropriate sequence based on music analysis and model characteristics
      */
     selectSequence(musicAnalysis, modelSize) {
-        const { tempo, intensity, mood } = musicAnalysis;
-        
         // Create composite sequence based on analysis
-        const phases = this.selectPhases(tempo, intensity, mood, modelSize);
-        
+        const phases = this.selectPhases(musicAnalysis.tempoValue, musicAnalysis.intensityValue, musicAnalysis.mood, modelSize);
         return new CompositeSequence(phases, musicAnalysis);
     }
 
     /**
-     * Select sequence phases based on analysis
+     * Select sequence phases based on analysis to build a Hero Reveal
      */
-    selectPhases(tempo, intensity, mood, modelSize) {
+    selectPhases(tempoBPM, intensity, mood, modelSize) {
         const phases = [];
-        
-        // Phase 1: Mysterious Approach (25% of total time)
-        const approachKey = `mysterious_approach_${tempo}`;
-        if (this.sequences.has(approachKey)) {
-            phases.push({
-                name: 'approach',
-                sequence: this.sequences.get(approachKey),
-                duration: 0.25,
-                startTime: 0
-            });
-        }
-        
-        // Phase 2: Dramatic Reveal (30% of total time)
-        const revealKey = `dramatic_reveal_${intensity}`;
-        if (this.sequences.has(revealKey)) {
-            phases.push({
-                name: 'reveal',
-                sequence: this.sequences.get(revealKey),
-                duration: 0.30,
-                startTime: 0.25
-            });
-        }
-        
-        // Phase 3: Showcase (30% of total time)
-        const showcaseType = this.selectShowcaseType(mood, modelSize);
-        if (this.sequences.has(showcaseType)) {
-            phases.push({
-                name: 'showcase',
-                sequence: this.sequences.get(showcaseType),
-                duration: 0.30,
-                startTime: 0.55
-            });
-        }
-        
-        // Phase 4: Epic Finale (15% of total time)
-        const finaleKey = `epic_finale_${mood}`;
-        const fallbackFinale = 'epic_finale_heroic';
-        const finaleSequence = this.sequences.get(finaleKey) || this.sequences.get(fallbackFinale);
-        if (finaleSequence) {
-            phases.push({
-                name: 'finale',
-                sequence: finaleSequence,
-                duration: 0.15,
-                startTime: 0.85
-            });
-        }
-        
-        return phases;
-    }
 
-    /**
-     * Select showcase type based on mood and model characteristics
-     */
-    selectShowcaseType(mood, modelSize) {
-        // Large models benefit from orbit sequences
-        if (modelSize > 10) {
-            return 'showcase_orbit';
-        }
-        
-        // Character models work well with dolly movements
-        if (mood === 'heroic' || mood === 'powerful') {
-            return 'showcase_dolly';
-        }
-        
-        // Dramatic moods benefit from crane movements
-        if (mood === 'dramatic' || mood === 'mysterious') {
-            return 'showcase_crane';
-        }
-        
-        return 'showcase_orbit'; // Default
+        // The pacing is controlled by CinematicEngine scaling the whole duration.
+        // We just define the *relative* proportions of the sequence here.
+
+        // Phase 1: The Dutch Angle Reveal (Off-axis slow approach)
+        phases.push({
+            name: 'approach',
+            sequence: this.sequences.get('the_dutch_angle'),
+            duration: 0.25, // 25% of the total calculated song duration
+            startTime: 0
+        });
+
+        // Phase 2: The Look Up (Low angle crane up)
+        phases.push({
+            name: 'reveal',
+            sequence: this.sequences.get('the_look_up'),
+            duration: 0.25,
+            startTime: 0.25
+        });
+
+        // Phase 3: The Hero Orbit (360 Sweep)
+        phases.push({
+            name: 'showcase',
+            sequence: this.sequences.get('the_hero_orbit'),
+            duration: 0.40,
+            startTime: 0.50
+        });
+
+        // Phase 4: The Action Cut (Dramatic final pose focus)
+        phases.push({
+            name: 'finale',
+            sequence: this.sequences.get('the_action_cut'),
+            duration: 0.10,
+            startTime: 0.90
+        });
+
+        return phases;
     }
 
     /**
@@ -159,14 +104,14 @@ class CameraSequence {
      */
     getCameraState(progress, modelCenter, modelSize) {
         progress = Math.max(0, Math.min(1, progress));
-        
+
         // Find appropriate keyframes
         const keyframe = this.interpolateKeyframes(progress);
-        
+
         // Scale positions based on model size
         const scaledPosition = keyframe.position.clone().multiplyScalar(modelSize);
         const target = modelCenter.clone().add(keyframe.targetOffset.clone().multiplyScalar(modelSize));
-        
+
         return {
             position: scaledPosition.add(modelCenter),
             target: target,
@@ -181,15 +126,15 @@ class CameraSequence {
         if (this.keyframes.length === 0) {
             return this.getDefaultKeyframe();
         }
-        
+
         if (this.keyframes.length === 1) {
             return this.keyframes[0];
         }
-        
+
         // Find surrounding keyframes
         let prevFrame = this.keyframes[0];
         let nextFrame = this.keyframes[this.keyframes.length - 1];
-        
+
         for (let i = 0; i < this.keyframes.length - 1; i++) {
             if (progress >= this.keyframes[i].time && progress <= this.keyframes[i + 1].time) {
                 prevFrame = this.keyframes[i];
@@ -197,14 +142,14 @@ class CameraSequence {
                 break;
             }
         }
-        
+
         // Calculate interpolation factor
         const timeDiff = nextFrame.time - prevFrame.time;
         const localProgress = timeDiff > 0 ? (progress - prevFrame.time) / timeDiff : 0;
-        
+
         // Apply easing
         const easedProgress = this.applyEasing(localProgress, prevFrame.easing || 'linear');
-        
+
         // Interpolate values
         return {
             position: prevFrame.position.clone().lerp(nextFrame.position, easedProgress),
@@ -239,115 +184,125 @@ class CameraSequence {
 }
 
 /**
- * Mysterious approach sequence - slow, distant approach
+ * The Dutch Angle Reveal - Off-axis slow approach that gracefully straightens
  */
-class MysteriousApproachSequence extends CameraSequence {
-    constructor(tempo) {
-        super(`mysterious_approach_${tempo}`, 8);
-        this.setupKeyframes(tempo);
-    }
-
-    setupKeyframes(tempo) {
-        const distance = tempo === 'slow' ? 15 : tempo === 'medium' ? 12 : 10;
-        const height = 2;
-        
-        this.keyframes = [
-            {
-                time: 0,
-                position: new THREE.Vector3(-distance, height, distance),
-                targetOffset: new THREE.Vector3(0, 0, 0),
-                fov: 60,
-                easing: 'linear'
-            },
-            {
-                time: 0.6,
-                position: new THREE.Vector3(-distance * 0.7, height * 0.8, distance * 0.7),
-                targetOffset: new THREE.Vector3(0, 0, 0),
-                fov: 50,
-                easing: 'easeIn'
-            },
-            {
-                time: 1.0,
-                position: new THREE.Vector3(-distance * 0.4, height * 0.6, distance * 0.4),
-                targetOffset: new THREE.Vector3(0, 0, 0),
-                fov: 45,
-                easing: 'smooth'
-            }
-        ];
-    }
-}
-
-/**
- * Dramatic reveal sequence - quick movement to reveal model
- */
-class DramaticRevealSequence extends CameraSequence {
-    constructor(intensity) {
-        super(`dramatic_reveal_${intensity}`, 6);
-        this.setupKeyframes(intensity);
-    }
-
-    setupKeyframes(intensity) {
-        const speed = intensity === 'subtle' ? 0.8 : intensity === 'moderate' ? 1.2 : 1.8;
-        const angle = intensity === 'high' ? Math.PI * 0.3 : Math.PI * 0.2;
-        
-        this.keyframes = [
-            {
-                time: 0,
-                position: new THREE.Vector3(-6, 1, 6),
-                targetOffset: new THREE.Vector3(-1, 0, 0),
-                fov: 45,
-                easing: 'easeOut'
-            },
-            {
-                time: 0.4,
-                position: new THREE.Vector3(Math.sin(angle) * 4, 1.5, Math.cos(angle) * 4),
-                targetOffset: new THREE.Vector3(0, 0.5, 0),
-                fov: 40,
-                easing: 'smooth'
-            },
-            {
-                time: 1.0,
-                position: new THREE.Vector3(Math.sin(angle * 1.5) * 3, 1, Math.cos(angle * 1.5) * 3),
-                targetOffset: new THREE.Vector3(0, 0, 0),
-                fov: 35,
-                easing: 'easeIn'
-            }
-        ];
-    }
-}
-
-/**
- * Showcase orbit sequence - smooth orbital movement
- */
-class ShowcaseOrbitSequence extends CameraSequence {
+class TheDutchAngleRevealSequence extends CameraSequence {
     constructor() {
-        super('showcase_orbit', 8);
+        super('the_dutch_angle', 10);
         this.setupKeyframes();
     }
 
     setupKeyframes() {
-        const radius = 4;
-        const height = 1;
-        const steps = 16; // More keyframes for smoother movement
-        
+        this.keyframes = [
+            {
+                time: 0,
+                position: new THREE.Vector3(5, 0.5, 7), // Low, off-axis
+                targetOffset: new THREE.Vector3(-1, 0.5, 0),
+                fov: 35, // Telephoto zoom
+                easing: 'easeInOut'
+            },
+            {
+                time: 1.0,
+                position: new THREE.Vector3(0, 1.5, 5), // Sweeps to center
+                targetOffset: new THREE.Vector3(0, 0, 0),
+                fov: 45, // Widens out
+                easing: 'easeInOut'
+            }
+        ];
+    }
+}
+
+/**
+ * The Look Up - Starts low at the base and cranes up to hero's face
+ */
+class TheLookUpSequence extends CameraSequence {
+    constructor() {
+        super('the_look_up', 10);
+        this.setupKeyframes();
+    }
+
+    setupKeyframes() {
+        this.keyframes = [
+            {
+                time: 0,
+                position: new THREE.Vector3(0, -1, 3), // Very low
+                targetOffset: new THREE.Vector3(0, 0, 0), // Looking at waist
+                fov: 50,
+                easing: 'smooth'
+            },
+            {
+                time: 1.0,
+                position: new THREE.Vector3(0, 2, 4), // Eye level
+                targetOffset: new THREE.Vector3(0, 1.5, 0), // Looking at head/face
+                fov: 40,
+                easing: 'easeInOut'
+            }
+        ];
+    }
+}
+
+/**
+ * The Hero Orbit - Continuous, slow, elegant 360-degree sweep
+ */
+class TheHeroOrbitSequence extends CameraSequence {
+    constructor() {
+        super('the_hero_orbit', 10);
+        this.setupKeyframes();
+    }
+
+    setupKeyframes() {
+        const radius = 5;
+        const height = 1.5;
+        const steps = 18;
+
         this.keyframes = [];
-        
+
         for (let i = 0; i <= steps; i++) {
             const progress = i / steps;
             const angle = progress * Math.PI * 2;
-            
+
+            // Adding a slight sine wave to height for an elegant floating crane feel
             this.keyframes.push({
                 time: progress,
                 position: new THREE.Vector3(
                     Math.sin(angle) * radius,
-                    height + Math.sin(progress * Math.PI) * 0.3, // Reduced vertical movement
+                    height + Math.sin(progress * Math.PI) * 0.5,
                     Math.cos(angle) * radius
                 ),
-                targetOffset: new THREE.Vector3(0, 0, 0),
+                targetOffset: new THREE.Vector3(0, height * 0.5, 0), // Focus slightly upward
                 fov: 40,
-                easing: 'smooth'
+                easing: 'linear' // Must be linear so orbit doesn't stutter on segments
             });
         }
+    }
+}
+
+/**
+ * The Action Cut - Snap zoom / focus onto the top of the model
+ */
+class TheActionCutSequence extends CameraSequence {
+    constructor() {
+        super('the_action_cut', 10);
+        this.setupKeyframes();
+    }
+
+    setupKeyframes() {
+        this.keyframes = [
+            {
+                time: 0,
+                position: new THREE.Vector3(2, 2.5, 3),
+                targetOffset: new THREE.Vector3(0, 1.5, 0),
+                fov: 60,
+                easing: 'easeIn'
+            },
+            {
+                time: 1.0,
+                position: new THREE.Vector3(1, 1.5, 2),
+                targetOffset: new THREE.Vector3(0, 1.0, 0),
+                fov: 30, // Sharp zoom in
+                easing: 'easeOut'
+            }
+        ];
     }
 }
 
@@ -448,7 +403,7 @@ class EpicFinaleSequence extends CameraSequence {
 
     setupKeyframes(mood) {
         let finalPosition, finalFov;
-        
+
         switch (mood) {
             case 'heroic':
                 finalPosition = new THREE.Vector3(1, 0.5, 3);
@@ -466,7 +421,7 @@ class EpicFinaleSequence extends CameraSequence {
                 finalPosition = new THREE.Vector3(1, 0.5, 3);
                 finalFov = 35;
         }
-        
+
         this.keyframes = [
             {
                 time: 0,
@@ -642,7 +597,7 @@ class CompositeSequence {
         const tempoCode = musicAnalysis.tempo.charAt(0).toUpperCase();
         const intensityCode = musicAnalysis.intensity.charAt(0).toUpperCase();
         const moodCode = musicAnalysis.mood.substring(0, 3).toUpperCase();
-        
+
         this.name = `composite_${tempoCode}${intensityCode}_${moodCode}`;
         this.phases = phases;
         this.musicAnalysis = musicAnalysis;
@@ -651,20 +606,20 @@ class CompositeSequence {
 
     calculateTotalDuration() {
         // Base duration varies by tempo
-        const baseDuration = this.musicAnalysis.tempo === 'slow' ? 25 : 
-                           this.musicAnalysis.tempo === 'medium' ? 20 : 
-                           this.musicAnalysis.tempo === 'fast' ? 15 : 12;
-        
+        const baseDuration = this.musicAnalysis.tempo === 'slow' ? 25 :
+            this.musicAnalysis.tempo === 'medium' ? 20 :
+                this.musicAnalysis.tempo === 'fast' ? 15 : 12;
+
         // Adjust for intensity
         const intensityMultiplier = this.musicAnalysis.intensity === 'subtle' ? 1.3 :
-                                  this.musicAnalysis.intensity === 'moderate' ? 1.0 :
-                                  this.musicAnalysis.intensity === 'high' ? 0.8 : 0.7;
-        
+            this.musicAnalysis.intensity === 'moderate' ? 1.0 :
+                this.musicAnalysis.intensity === 'high' ? 0.8 : 0.7;
+
         // Adjust for mood
         const moodMultiplier = this.musicAnalysis.mood === 'mysterious' ? 1.2 :
-                             this.musicAnalysis.mood === 'dramatic' ? 1.1 :
-                             this.musicAnalysis.mood === 'aggressive' ? 0.9 : 1.0;
-        
+            this.musicAnalysis.mood === 'dramatic' ? 1.1 :
+                this.musicAnalysis.mood === 'aggressive' ? 0.9 : 1.0;
+
         return baseDuration * intensityMultiplier * moodMultiplier;
     }
 
@@ -674,10 +629,10 @@ class CompositeSequence {
         if (!currentPhase) {
             return this.getDefaultCameraState(modelCenter, modelSize);
         }
-        
+
         // Calculate local progress within phase
         const phaseProgress = (progress - currentPhase.startTime) / currentPhase.duration;
-        
+
         // Get camera state from phase sequence
         return currentPhase.sequence.getCameraState(phaseProgress, modelCenter, modelSize);
     }

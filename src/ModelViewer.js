@@ -32,7 +32,7 @@ export class ModelViewer {
     constructor() {
         // Initialize core engine
         this.core = new CoreEngine();
-        
+
         // Initialize modules
         this.renderingEngine = new RenderingEngine(this.core);
         this.assetManager = new AssetManager(this.core);
@@ -41,7 +41,7 @@ export class ModelViewer {
         this.analysisManager = new AnalysisManager(this.core);
         this.modelEditingManager = new ModelEditingManager(this.core);
         this.performanceManager = null; // Will be initialized after rendering engine
-        
+
         // Register modules with core
         this.core.registerModule('rendering', this.renderingEngine);
         this.core.registerModule('assets', this.assetManager);
@@ -49,13 +49,13 @@ export class ModelViewer {
         this.core.registerModule('export', this.exportSystem);
         this.core.registerModule('analysis', this.analysisManager);
         this.core.registerModule('editing', this.modelEditingManager);
-        
+
         // Legacy superhero mode (will be refactored in later tasks)
         this.superhero = null;
-        
+
         // Stats tracking
         this.stats = { vertices: 0, faces: 0, fps: 60 };
-        
+
         this.initialized = false;
     }
 
@@ -105,7 +105,7 @@ export class ModelViewer {
     }
 
     async _initializeModules(container) {
-        this.renderingEngine.init(container);
+        await this.renderingEngine.init(container);
         this._initializePerformanceManager();
         await this.assetManager.init();
         await this.uiManager.init();
@@ -134,7 +134,7 @@ export class ModelViewer {
     _setupEventListeners() {
         // Initialize superhero mode with legacy interface
         this.superhero = new SuperheroMode(this);
-        
+
         // Set initial sidebar state
         const sidebar = document.getElementById('sidebar');
         const toggleBtn = document.getElementById('sidebarToggleBtn');
@@ -174,7 +174,7 @@ export class ModelViewer {
         this.core.on('assets:model:loaded', (data) => this.onModelLoaded(data));
         this.core.on('rendering:model:added', (data) => this.onModelAddedToScene(data));
         this.core.on('assets:load:sample', (data) => this.handleLoadSample(data));
-        
+
         // UI event listeners
         this.setupFileHandling();
         this.setupControls();
@@ -188,7 +188,7 @@ export class ModelViewer {
         // URL loading
         const loadUrlBtn = document.getElementById('loadUrlBtn');
         const modelUrl = document.getElementById('modelUrl');
-        
+
         if (loadUrlBtn) {
             loadUrlBtn.addEventListener('click', () => {
                 const url = modelUrl?.value?.trim();
@@ -202,7 +202,7 @@ export class ModelViewer {
                 }
             });
         }
-        
+
         if (modelUrl) {
             modelUrl.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
@@ -222,19 +222,19 @@ export class ModelViewer {
         // File drag & drop
         const fileDrop = document.getElementById('fileDrop');
         const fileInput = document.getElementById('fileInput');
-        
+
         if (fileDrop && fileInput) {
             fileDrop.addEventListener('click', () => fileInput.click());
-            
+
             fileDrop.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 fileDrop.classList.add('dragover');
             });
-            
+
             fileDrop.addEventListener('dragleave', () => {
                 fileDrop.classList.remove('dragover');
             });
-            
+
             fileDrop.addEventListener('drop', (e) => {
                 e.preventDefault();
                 fileDrop.classList.remove('dragover');
@@ -242,7 +242,7 @@ export class ModelViewer {
                     this.loadModelFromFile(e.dataTransfer.files[0]);
                 }
             });
-            
+
             fileInput.addEventListener('change', (e) => {
                 if (e.target.files.length > 0) {
                     this.loadModelFromFile(e.target.files[0]);
@@ -258,11 +258,11 @@ export class ModelViewer {
         // Background controls
         const backgroundSelect = document.getElementById('backgroundSelect');
         const bgColor = document.getElementById('bgColor');
-        
+
         if (backgroundSelect) {
             backgroundSelect.addEventListener('change', (e) => this.updateBackground(e.target.value));
         }
-        
+
         if (bgColor) {
             bgColor.addEventListener('input', (e) => {
                 this.renderingEngine.setBackground(new THREE.Color(e.target.value));
@@ -271,19 +271,19 @@ export class ModelViewer {
 
         // Lighting controls
         this.setupLightingControls();
-        
+
         // Environment controls
         this.setupEnvironmentControls();
-        
+
         // Camera controls
         this.setupCameraControls();
-        
+
         // Export controls
         this.setupExportControls();
-        
+
         // Animation controls
         this.setupAnimationControls();
-        
+
         // Visual controls
         this.setupVisualControls();
     }
@@ -296,28 +296,28 @@ export class ModelViewer {
         const directionalIntensity = document.getElementById('directionalIntensity');
         const lightPosX = document.getElementById('lightPosX');
         const lightPosY = document.getElementById('lightPosY');
-        
+
         if (ambientIntensity) {
             ambientIntensity.addEventListener('input', (e) => {
                 this.renderingEngine.lights.ambient.intensity = parseFloat(e.target.value);
                 this.updateValueDisplay(e.target);
             });
         }
-        
+
         if (directionalIntensity) {
             directionalIntensity.addEventListener('input', (e) => {
                 this.renderingEngine.lights.directional.intensity = parseFloat(e.target.value);
                 this.updateValueDisplay(e.target);
             });
         }
-        
+
         if (lightPosX) {
             lightPosX.addEventListener('input', (e) => {
                 this.renderingEngine.lights.directional.position.x = parseFloat(e.target.value);
                 this.updateValueDisplay(e.target);
             });
         }
-        
+
         if (lightPosY) {
             lightPosY.addEventListener('input', (e) => {
                 this.renderingEngine.lights.directional.position.y = parseFloat(e.target.value);
@@ -333,14 +333,14 @@ export class ModelViewer {
         const loadHdriBtn = document.getElementById('loadHdriBtn');
         const hdriUrl = document.getElementById('hdriUrl');
         const envIntensity = document.getElementById('envIntensity');
-        
+
         if (loadHdriBtn && hdriUrl) {
             loadHdriBtn.addEventListener('click', () => {
                 const url = hdriUrl.value.trim();
                 if (url) this.loadEnvironment(url);
             });
         }
-        
+
         if (envIntensity) {
             envIntensity.addEventListener('input', (e) => {
                 this.renderingEngine.renderer.toneMappingExposure = parseFloat(e.target.value);
@@ -366,24 +366,24 @@ export class ModelViewer {
         const rotationSpeed = document.getElementById('rotationSpeed');
         const resetCamera = document.getElementById('resetCamera');
         const fitToView = document.getElementById('fitToView');
-        
+
         if (autoRotate) {
             autoRotate.addEventListener('change', (e) => {
                 this.renderingEngine.controls.autoRotate = e.target.checked;
             });
         }
-        
+
         if (rotationSpeed) {
             rotationSpeed.addEventListener('input', (e) => {
                 this.renderingEngine.controls.autoRotateSpeed = parseFloat(e.target.value);
                 this.updateValueDisplay(e.target);
             });
         }
-        
+
         if (resetCamera) {
             resetCamera.addEventListener('click', () => this.renderingEngine.resetCamera());
         }
-        
+
         if (fitToView) {
             fitToView.addEventListener('click', () => this.renderingEngine.fitCameraToModel());
         }
@@ -395,11 +395,11 @@ export class ModelViewer {
     setupExportControls() {
         const screenshotBtn = document.getElementById('screenshotBtn');
         const exportBtn = document.getElementById('exportBtn');
-        
+
         if (screenshotBtn) {
             screenshotBtn.addEventListener('click', () => this.exportSystem.exportScreenshot());
         }
-        
+
         if (exportBtn) {
             exportBtn.addEventListener('click', () => {
                 // Show the comprehensive export panel
@@ -420,7 +420,7 @@ export class ModelViewer {
         const playBtn = document.getElementById('playBtn');
         const pauseBtn = document.getElementById('pauseBtn');
         const resetBtn = document.getElementById('resetBtn');
-        
+
         if (playBtn) {
             playBtn.addEventListener('click', () => {
                 this.renderingEngine.animationPaused = false;
@@ -429,7 +429,7 @@ export class ModelViewer {
                 }
             });
         }
-        
+
         if (pauseBtn) {
             pauseBtn.addEventListener('click', () => {
                 this.renderingEngine.animationPaused = true;
@@ -438,7 +438,7 @@ export class ModelViewer {
                 }
             });
         }
-        
+
         if (resetBtn) {
             resetBtn.addEventListener('click', () => {
                 this.renderingEngine.animationPaused = false;
@@ -456,19 +456,19 @@ export class ModelViewer {
         const showGrid = document.getElementById('showGrid');
         const bloomEnabled = document.getElementById('bloomEnabled');
         const bloomStrength = document.getElementById('bloomStrength');
-        
+
         if (showGrid) {
             showGrid.addEventListener('change', (e) => {
                 this.renderingEngine.gridHelper.visible = e.target.checked;
             });
         }
-        
+
         if (bloomEnabled) {
             bloomEnabled.addEventListener('change', (e) => {
                 this.renderingEngine.bloomPass.enabled = e.target.checked;
             });
         }
-        
+
         if (bloomStrength) {
             bloomStrength.addEventListener('input', (e) => {
                 this.renderingEngine.bloomPass.strength = parseFloat(e.target.value);
@@ -508,7 +508,7 @@ export class ModelViewer {
         try {
             // Get sample model info from OnlineLibraryManager
             const sampleModel = await this.assetManager.onlineLibraryManager.getSampleModel(sampleId);
-            
+
             if (!sampleModel) {
                 throw new Error(`Sample model '${sampleId}' not found`);
             }
@@ -521,7 +521,7 @@ export class ModelViewer {
 
             // Use the unified model loading system
             await this.loadModel(sampleModel.downloadUrl, 'url');
-            
+
             // Emit event for analytics/tracking
             this.core.emit('sampleModelLoaded', {
                 id: sampleId,
@@ -545,7 +545,7 @@ export class ModelViewer {
     async handleLoadSample(data) {
         const sampleIds = ['duck', 'avocado', 'damaged-helmet'];
         const sampleId = sampleIds[data.index];
-        
+
         if (sampleId) {
             await this.loadSampleModel(sampleId);
         } else {
@@ -565,9 +565,9 @@ export class ModelViewer {
         try {
             // Show loading state
             this.core.setState({ isLoading: true });
-            
+
             let result;
-            
+
             // Determine source type and load accordingly
             if (typeof source === 'string') {
                 // URL or sample model
@@ -580,17 +580,17 @@ export class ModelViewer {
             } else {
                 throw new Error('Invalid model source provided');
             }
-            
+
             // Clear loading state
             this.core.setState({ isLoading: false });
-            
+
             console.log('Model loaded successfully:', result);
             return result;
-            
+
         } catch (error) {
             this.core.setState({ isLoading: false, error: error.message });
             console.error('Error loading model:', error);
-            
+
             // Show user-friendly error message
             this.showLoadingError(error, source);
             throw error;
@@ -672,11 +672,11 @@ export class ModelViewer {
             const texture = await this.assetManager.loadEnvironmentFromUrl(url);
             this.renderingEngine.setBackground(texture);
             this.renderingEngine.setEnvironment(texture);
-            
+
             // Update ground plane material for shadow catching
             const shadowCatcherMaterial = new THREE.ShadowMaterial({ opacity: 0.5 });
             this.renderingEngine.groundPlane.material = shadowCatcherMaterial;
-            
+
             console.log('Environment loaded successfully');
         } catch (error) {
             if (this.uiManager && this.uiManager.notificationSystem) {
@@ -689,7 +689,7 @@ export class ModelViewer {
             } else {
                 console.error('Error loading environment:', error);
             }
-            
+
             // Fallback to default environment
             try {
                 this.renderingEngine.setBackground(null);
@@ -705,15 +705,15 @@ export class ModelViewer {
      */
     onModelLoaded(data) {
         // Silent model loading
-        
+
         if (!data.model) {
             console.error('No model in loaded data');
             return;
         }
-        
+
         // Add model to scene through rendering engine
         this.renderingEngine.addModel(data.model);
-        
+
         // Handle animations
         if (data.animations && data.animations.length > 0) {
             // Silent animation setup
@@ -738,25 +738,25 @@ export class ModelViewer {
 
             // Fit camera to model
             this.renderingEngine.fitCameraToModel();
-            
+
             // Force complete refresh to ensure visibility
             this.renderingEngine.forceRefresh();
-            
+
             // Additional refresh after a short delay
             setTimeout(() => {
                 this.renderingEngine.forceRefresh();
             }, 100);
-            
+
             // Update stats
             this.updateModelStats(data.model);
-            
+
             // Emit event for other modules to react to model being added
-            this.core.emit('model:scene-ready', { 
-                model: data.model, 
+            this.core.emit('model:scene-ready', {
+                model: data.model,
                 stats: this.stats,
                 timestamp: Date.now()
             });
-            
+
         } catch (error) {
             if (this.uiManager && this.uiManager.notificationSystem) {
                 this.uiManager.notificationSystem.showNotification({
@@ -768,7 +768,7 @@ export class ModelViewer {
             } else {
                 console.error('ModelViewer: Error in onModelAddedToScene:', error);
             }
-            
+
             // Use error manager if available
             if (this.core?.getErrorManager) {
                 this.core.getErrorManager().handleError(error, {
@@ -817,20 +817,20 @@ export class ModelViewer {
                 hdriCanvas.width = 1024;
                 hdriCanvas.height = 512;
                 const hdriCtx = hdriCanvas.getContext('2d');
-                
+
                 const skyGradient = hdriCtx.createLinearGradient(0, 0, 0, 512);
                 skyGradient.addColorStop(0, '#87CEEB');
                 skyGradient.addColorStop(0.7, '#98D8E8');
                 skyGradient.addColorStop(1, '#F0F8FF');
                 hdriCtx.fillStyle = skyGradient;
                 hdriCtx.fillRect(0, 0, 1024, 512);
-                
+
                 // Add sun
                 hdriCtx.beginPath();
                 hdriCtx.arc(800, 100, 50, 0, Math.PI * 2);
                 hdriCtx.fillStyle = '#FFF8DC';
                 hdriCtx.fill();
-                
+
                 const hdriTexture = new THREE.CanvasTexture(hdriCanvas);
                 hdriTexture.mapping = THREE.EquirectangularReflectionMapping;
                 this.renderingEngine.setBackground(hdriTexture);
@@ -859,11 +859,11 @@ export class ModelViewer {
     hideLoadingScreen() {
         const loadingScreen = document.getElementById('loadingScreen');
         const mainContainer = document.getElementById('mainContainer');
-        
+
         if (loadingScreen) {
             loadingScreen.classList.add('hidden');
         }
-        
+
         if (mainContainer) {
             mainContainer.classList.remove('hidden');
         }
@@ -874,7 +874,7 @@ export class ModelViewer {
      */
     animate() {
         requestAnimationFrame(() => this.animate());
-        
+
         // Update FPS counter
         const delta = this.renderingEngine.clock.getDelta();
         this.stats.fps = Math.round(1 / delta);
@@ -890,7 +890,7 @@ export class ModelViewer {
 
         // Always update rendering engine
         this.renderingEngine.update();
-        
+
         // Update superhero mode (legacy)
         if (this.superhero) {
             this.superhero.update();
@@ -909,15 +909,15 @@ export class ModelViewer {
                 }
                 this.superhero = null;
             }
-            
+
             if (this.performanceManager) {
                 this.performanceManager.destroy();
                 this.performanceManager = null;
             }
-            
+
             // Cleanup other managers
-            [this.analysisManager, this.exportSystem, this.uiManager, 
-             this.assetManager, this.renderingEngine].forEach(manager => {
+            [this.analysisManager, this.exportSystem, this.uiManager,
+            this.assetManager, this.renderingEngine].forEach(manager => {
                 if (manager && typeof manager.destroy === 'function') {
                     try {
                         manager.destroy();
@@ -926,19 +926,19 @@ export class ModelViewer {
                     }
                 }
             });
-            
+
             // Cleanup core engine last
             if (this.core) {
                 this.core.destroy();
                 this.core = null;
             }
-            
+
             // Clear references
             this.stats = null;
             this.raycaster = null;
-            
+
             this.initialized = false;
-            
+
         } catch (error) {
             console.error('Error during ModelViewer cleanup:', error);
         }

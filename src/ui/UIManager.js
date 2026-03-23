@@ -19,7 +19,7 @@ export class UIManager {
         this.currentMode = 'simple'; // 'simple' or 'advanced'
         this.panels = new Map();
         this.eventListeners = new Map();
-        
+
         // Adaptive UI properties
         this.expertiseLevel = 'beginner'; // 'beginner', 'intermediate', 'expert'
         this.userInteractions = {
@@ -29,7 +29,7 @@ export class UIManager {
             modelLoadCount: 0,
             lastActivity: Date.now()
         };
-        
+
         // Progressive disclosure state
         this.revealedFeatures = new Set();
         this.contextualHelp = new Map();
@@ -39,25 +39,25 @@ export class UIManager {
             completed: false,
             steps: []
         };
-        
+
         // Accessibility and internationalization managers
         this.i18nManager = new I18nManager(core);
         this.accessibilityManager = new AccessibilityManager(core);
         this.themeManager = new ThemeManager(core);
         this.keyboardShortcutManager = new KeyboardShortcutManager(core);
-        
+
         // UX Enhancement managers
         this.onboardingManager = new OnboardingManager(core);
         this.mobileGestureManager = new MobileGestureManager(core);
         this.featureDiscoveryEngine = new FeatureDiscoveryEngine(core);
         this.uxEnhancementsIntegration = null; // Will be initialized after other managers
-        
+
         // UI components
         this.layoutManager = new LayoutManager();
         this.helpSystem = new HelpSystem();
         this.fileManagerPanel = new FileManagerPanel(core);
         this.notificationSystem = new NotificationSystem(core);
-        
+
         this.initialized = false;
     }
 
@@ -75,11 +75,10 @@ export class UIManager {
         await this.accessibilityManager.initialize();
         await this.themeManager.initialize();
         await this.keyboardShortcutManager.initialize();
-        
-        // Initialize UX enhancement managers through integration layer
-        this.uxEnhancementsIntegration = new UXEnhancementsIntegration(this.core, this);
-        await this.uxEnhancementsIntegration.initialize();
-        
+
+        // UX Enhancement managers disabled to prevent unwanted popups
+        this.uxEnhancementsIntegration = null;
+
         // Initialize other sub-managers
         this.layoutManager.init(this);
         this.helpSystem.init(this);
@@ -90,7 +89,7 @@ export class UIManager {
         this.setupAdaptiveUI();
         this.detectUserExpertise();
         this.initializeGuidedTour();
-        
+
         // Wait for AssetManager to be fully initialized before enabling asset library features
         this.core.on('assets:initialized', () => {
             // Silent asset initialization
@@ -98,10 +97,10 @@ export class UIManager {
             this.enableAssetLibraryFeatures();
             this.initializeFileManagerPanel();
         });
-        
+
         // Start tracking user interactions
         this.startInteractionTracking();
-        
+
         this.initialized = true;
         this.core.emit('ui:initialized');
     }
@@ -115,10 +114,10 @@ export class UIManager {
         this.core.on('assets:loading:progress', (data) => this.updateProgress(data.progress));
         this.core.on('assets:loading:complete', () => this.showProgress(false));
         this.core.on('assets:loading:error', () => this.showProgress(false)); // Just hide loading, no error message
-        
+
         this.core.on('assets:model:loaded', (data) => this.onModelLoaded(data));
         this.core.on('assets:model:error', () => this.showProgress(false)); // Just hide loading, no error message
-        
+
         // Setup UI event listeners
         this.setupSidebarToggle();
         this.setupAccordion();
@@ -132,7 +131,7 @@ export class UIManager {
     setupSidebarToggle() {
         const toggleBtn = document.getElementById('sidebarToggleBtn');
         const sidebar = document.getElementById('sidebar');
-        
+
         if (toggleBtn && sidebar) {
             toggleBtn.addEventListener('click', () => {
                 sidebar.classList.toggle('collapsed');
@@ -198,7 +197,7 @@ export class UIManager {
         // Check localStorage for previous expertise level
         const savedExpertise = localStorage.getItem('ui-expertise-level');
         const savedMode = localStorage.getItem('ui-mode');
-        
+
         if (savedExpertise && savedMode) {
             this.expertiseLevel = savedExpertise;
             this.setMode(savedMode);
@@ -207,7 +206,7 @@ export class UIManager {
 
         // Analyze user behavior patterns
         const interactions = this.getUserInteractionHistory();
-        
+
         if (interactions.totalSessions > 10 && interactions.advancedFeatureUsage > 5) {
             this.expertiseLevel = 'expert';
             this.setMode('advanced');
@@ -257,14 +256,8 @@ export class UIManager {
     setupAdaptiveUI() {
         // Create mode switcher
         this.createModeToggle();
-        
-        // Setup progressive disclosure triggers
-        this.setupProgressiveDisclosure();
-        
-        // Initialize contextual help
-        this.setupContextualHelp();
-        
-        // Setup smart defaults
+
+        // Disable progressive disclosure and apply all features immediately
         this.applySmartDefaults();
     }
 
@@ -309,12 +302,12 @@ export class UIManager {
      */
     toggleMode() {
         const newMode = this.currentMode === 'simple' ? 'advanced' : 'simple';
-        
+
         // Track advanced feature usage
         if (newMode === 'advanced') {
             this.trackAdvancedFeatureUsage('mode_switch');
         }
-        
+
         this.setMode(newMode);
         this.showModeTransitionFeedback(newMode);
     }
@@ -352,7 +345,7 @@ export class UIManager {
      */
     updateModeSpecificFeatures() {
         const isAdvanced = this.currentMode === 'advanced';
-        
+
         // Update mode toggle button
         const modeToggleBtn = document.getElementById('modeToggleBtn');
         if (modeToggleBtn) {
@@ -376,44 +369,16 @@ export class UIManager {
      * Setup progressive disclosure system
      */
     setupProgressiveDisclosure() {
-        // Define feature progression paths
-        this.featureProgression = {
-            'basic-loading': ['drag-drop', 'url-loading'],
-            'model-interaction': ['camera-controls', 'animation-controls'],
-            'visual-enhancement': ['lighting-controls', 'effects-controls'],
-            'advanced-features': ['export-system', 'measurement-tools', 'asset-library']
-        };
-
-        // Setup reveal triggers
-        this.setupRevealTriggers();
+        // Disabled completely
+        return;
     }
 
     /**
      * Setup feature reveal triggers
      */
     setupRevealTriggers() {
-        // Reveal camera controls after first model load
-        this.core.on('assets:model:loaded', (data) => {
-            // Silent model loaded event
-            this.revealFeature('camera-controls');
-            
-            // Track model load count
-            this.userInteractions.modelLoadCount++;
-        });
-
-        // Reveal animation controls if model has animations
-        this.core.on('assets:model:loaded', (data) => {
-            console.log('Checking for animations in loaded model:', data);
-            if (data.model && this.hasAnimations(data.model)) {
-                console.log('Model has animations, revealing animation controls');
-                this.revealFeature('animation-controls');
-            }
-        });
-
-        // Reveal advanced features based on usage patterns
-        this.core.on('ui:interaction', (data) => {
-            this.handleInteractionForProgression(data);
-        });
+        // Disabled completely
+        return;
     }
 
     /**
@@ -426,22 +391,11 @@ export class UIManager {
 
         const featureElement = document.querySelector(`[data-feature="${featureId}"]`);
         if (!featureElement) {
-            console.warn(`Feature element not found for: ${featureId}`);
             return;
         }
 
         this.revealedFeatures.add(featureId);
-        
-        // Add reveal animation
-        featureElement.classList.add('feature-revealing');
-        
-        // Show contextual help for new feature only if element exists
-        this.showFeatureIntroduction(featureId);
-        
-        setTimeout(() => {
-            featureElement.classList.remove('feature-revealing');
-            featureElement.classList.add('feature-revealed');
-        }, 500);
+        featureElement.classList.add('feature-revealed');
     }
 
     /**
@@ -450,21 +404,6 @@ export class UIManager {
     showFeatureIntroduction(featureId) {
         // Disable feature introductions for production
         return;
-        
-        const introductions = {
-            'camera-controls': 'New controls available! Use these buttons to reset your camera view.',
-            'animation-controls': 'This model has animations! Use these controls to play them.',
-            'lighting-controls': 'Enhance your model with professional lighting controls.',
-            'effects-controls': 'Add visual effects like bloom to make your model shine.',
-            'export-system': 'Ready to share? Export your model or take screenshots.',
-            'measurement-tools': 'Measure distances and analyze your model in detail.',
-            'asset-library': 'Discover thousands of 3D models in our online library.'
-        };
-
-        const message = introductions[featureId];
-        if (message) {
-            this.showTooltip(featureId, message, 5000);
-        }
     }
 
     /**
@@ -535,77 +474,16 @@ export class UIManager {
      * Initialize guided tour system
      */
     initializeGuidedTour() {
-        // Check if user has completed tour
-        const tourCompleted = localStorage.getItem('guided-tour-completed');
-        if (tourCompleted) {
-            return;
-        }
-
-        // Define tour steps
-        this.guidedTour.steps = [
-            {
-                target: '#fileDrop',
-                title: 'Welcome to 3D Model Viewer Pro!',
-                content: 'Let\'s start by loading a 3D model. You can drag and drop files here or click to browse.',
-                position: 'bottom'
-            },
-            {
-                target: '#superheroBtn',
-                title: 'Cinematic Mode',
-                content: 'Once you load a model, try the cinematic mode for dramatic reveals!',
-                position: 'left'
-            },
-            {
-                target: '.sidebar-header',
-                title: 'Advanced Features',
-                content: 'As you use the viewer, more advanced features will become available in this sidebar.',
-                position: 'right'
-            },
-            {
-                target: '#modeToggleBtn',
-                title: 'UI Modes',
-                content: 'Switch between Simple and Advanced modes based on your needs.',
-                position: 'bottom'
-            }
-        ];
-
-        // Show tour after a short delay for new users
-        if (this.expertiseLevel === 'beginner') {
-            setTimeout(() => {
-                this.offerGuidedTour();
-            }, 2000);
-        }
+        // Disabled completely
+        localStorage.setItem('guided-tour-completed', 'true');
+        return;
     }
 
     /**
      * Offer guided tour to new users
      */
     offerGuidedTour() {
-        const tourOffer = document.createElement('div');
-        tourOffer.className = 'tour-offer';
-        tourOffer.innerHTML = `
-            <div class="tour-offer-content">
-                <h3>Welcome to 3D Model Viewer Pro!</h3>
-                <p>Would you like a quick tour to get started?</p>
-                <div class="tour-offer-buttons">
-                    <button id="startTour" class="btn primary">Yes, show me around</button>
-                    <button id="skipTour" class="btn secondary">Skip tour</button>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(tourOffer);
-
-        // Add event listeners
-        document.getElementById('startTour').addEventListener('click', () => {
-            tourOffer.remove();
-            this.startGuidedTour();
-        });
-
-        document.getElementById('skipTour').addEventListener('click', () => {
-            tourOffer.remove();
-            localStorage.setItem('guided-tour-completed', 'true');
-        });
+        return;
     }
 
     /**
@@ -628,7 +506,7 @@ export class UIManager {
 
         const step = this.guidedTour.steps[stepIndex];
         const target = document.querySelector(step.target);
-        
+
         if (!target) {
             // Skip to next step if target not found
             this.showTourStep(stepIndex + 1);
@@ -645,7 +523,7 @@ export class UIManager {
         this.guidedTour.active = false;
         this.guidedTour.completed = true;
         localStorage.setItem('guided-tour-completed', 'true');
-        
+
         this.showTooltip('tour-complete', 'Tour completed! Enjoy exploring 3D Model Viewer Pro.', 3000);
     }
 
@@ -707,15 +585,15 @@ export class UIManager {
         // Track clicks on advanced features
         document.addEventListener('click', (e) => {
             this.userInteractions.totalClicks++;
-            
+
             // Check if clicking on advanced features
             if (e.target.closest('.advanced-feature')) {
                 this.trackAdvancedFeatureUsage('click');
             }
-            
+
             // Update last activity
             this.userInteractions.lastActivity = Date.now();
-            
+
             // Emit interaction event for progressive disclosure
             this.core.emit('ui:interaction', {
                 type: 'click',
@@ -740,7 +618,7 @@ export class UIManager {
      */
     trackAdvancedFeatureUsage(feature) {
         this.userInteractions.advancedFeatureUsage++;
-        
+
         // Update expertise level if threshold reached
         if (this.userInteractions.advancedFeatureUsage > 3 && this.expertiseLevel === 'beginner') {
             this.updateExpertiseLevel('intermediate');
@@ -755,12 +633,12 @@ export class UIManager {
     updateExpertiseLevel(newLevel) {
         const oldLevel = this.expertiseLevel;
         this.expertiseLevel = newLevel;
-        
+
         localStorage.setItem('ui-expertise-level', newLevel);
-        
+
         // Show progression feedback
         this.showExpertiseProgression(oldLevel, newLevel);
-        
+
         // Suggest mode upgrade if appropriate
         if (newLevel === 'expert' && this.currentMode === 'simple') {
             this.suggestModeUpgrade();
@@ -785,7 +663,7 @@ export class UIManager {
         `;
 
         document.body.appendChild(feedback);
-        
+
         setTimeout(() => feedback.classList.add('show'), 10);
         setTimeout(() => {
             feedback.classList.remove('show');
@@ -829,12 +707,12 @@ export class UIManager {
         // Reveal features based on interaction patterns
         if (data.type === 'click') {
             const target = data.target;
-            
+
             // Reveal export features after multiple model loads
             if (target.closest('#loadUrlBtn, #fileInput') && this.userInteractions.modelLoadCount > 2) {
                 this.revealFeature('export-system');
             }
-            
+
             // Reveal measurement tools after camera interactions
             if (target.closest('.camera-controls') && this.userInteractions.totalClicks > 20) {
                 this.revealFeature('measurement-tools');
@@ -867,7 +745,7 @@ export class UIManager {
             modelLoadCount: Math.max(history.modelLoadCount, this.userInteractions.modelLoadCount),
             sessionTime: history.sessionTime + this.userInteractions.sessionTime
         };
-        
+
         localStorage.setItem('user-interaction-history', JSON.stringify(updated));
     }
 
@@ -898,11 +776,11 @@ export class UIManager {
     clearAssetResults() {
         const resultsContainer = document.getElementById('assetGrid');
         const resultsCount = document.querySelector('.results-count');
-        
+
         if (resultsContainer) {
             resultsContainer.innerHTML = '';
         }
-        
+
         if (resultsCount) {
             resultsCount.textContent = 'Ready to search';
         }
@@ -931,7 +809,7 @@ export class UIManager {
     showAssetLibraryNotReady() {
         const resultsContainer = document.getElementById('assetGrid');
         const resultsCount = document.querySelector('.results-count');
-        
+
         if (resultsContainer) {
             resultsContainer.innerHTML = `
                 <div style="text-align: center; padding: 2rem; color: #666;">
@@ -945,11 +823,11 @@ export class UIManager {
                 </div>
             `;
         }
-        
+
         if (resultsCount) {
             resultsCount.textContent = 'Initializing...';
         }
-        
+
         // Try again in 1 second
         setTimeout(() => {
             if (this.core.assetManager?.onlineLibraryManager) {
@@ -971,7 +849,7 @@ export class UIManager {
         const openModalBtn = document.getElementById('openAssetLibraryModal');
         const modal = document.getElementById('assetLibraryModal');
         const closeModalBtn = document.getElementById('closeAssetLibrary');
-        
+
         if (openModalBtn && modal) {
             openModalBtn.addEventListener('click', () => {
                 modal.classList.remove('hidden');
@@ -982,13 +860,13 @@ export class UIManager {
                 }
             });
         }
-        
+
         if (closeModalBtn && modal) {
             closeModalBtn.addEventListener('click', () => {
                 modal.classList.add('hidden');
             });
         }
-        
+
         // Close modal when clicking outside
         if (modal) {
             modal.addEventListener('click', (e) => {
@@ -997,7 +875,7 @@ export class UIManager {
                 }
             });
         }
-        
+
         // Keyboard support
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
@@ -1014,13 +892,13 @@ export class UIManager {
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.tab === tab);
         });
-        
+
         // Check if AssetManager is ready
         if (!this.core.assetManager?.onlineLibraryManager) {
             this.showAssetLibraryNotReady();
             return;
         }
-        
+
         // Load tab content
         switch (tab) {
             case 'search':
@@ -1044,14 +922,14 @@ export class UIManager {
                 console.warn('OnlineLibraryManager not available yet');
                 return;
             }
-            
+
             const favorites = this.core.assetManager.onlineLibraryManager.getFavorites();
             const resultsCount = document.querySelector('.results-count');
-            
+
             if (resultsCount) {
                 resultsCount.textContent = `${favorites.length} favorites`;
             }
-            
+
             this.displayAssetResults(favorites);
         } catch (error) {
             console.error('Failed to load favorites:', error);
@@ -1067,14 +945,14 @@ export class UIManager {
                 console.warn('OnlineLibraryManager not available yet');
                 return;
             }
-            
+
             const offline = await this.core.assetManager.onlineLibraryManager.searchOfflineAssets('', null, { count: 100 });
             const resultsCount = document.querySelector('.results-count');
-            
+
             if (resultsCount) {
                 resultsCount.textContent = `${offline.length} offline assets`;
             }
-            
+
             this.displayAssetResults(offline);
         } catch (error) {
             console.error('Failed to load offline assets:', error);
@@ -1088,7 +966,7 @@ export class UIManager {
         const gridViewBtn = document.getElementById('gridView');
         const listViewBtn = document.getElementById('listView');
         const assetGrid = document.getElementById('assetGrid');
-        
+
         if (mode === 'grid') {
             gridViewBtn?.classList.add('active');
             listViewBtn?.classList.remove('active');
@@ -1116,11 +994,11 @@ export class UIManager {
         // Error modal removed - no user-facing error messages
         this.registerPanel('sidebar', document.getElementById('sidebar'));
         this.registerPanel('controls', document.getElementById('superheroControls'));
-        
+
         // Initialize export panel
         this.exportPanel = new ExportPanel(this.core);
         this.registerPanel('export', this.exportPanel.element);
-        
+
         // Setup asset library UI
         this.setupAssetLibraryUI();
         this.setupAssetLibraryModal();
@@ -1134,7 +1012,7 @@ export class UIManager {
             console.warn(`Panel element not found: ${name}`);
             return;
         }
-        
+
         this.panels.set(name, {
             element,
             visible: !element.classList.contains('hidden'),
@@ -1189,7 +1067,7 @@ export class UIManager {
     showProgress(show, text = 'Loading...') {
         const progressBar = document.getElementById('progressBar');
         const progressText = document.querySelector('.progress-text');
-        
+
         if (show) {
             this.showPanel('progress');
             if (progressText) {
@@ -1226,7 +1104,7 @@ export class UIManager {
     toggleTheme(isDark) {
         document.body.classList.toggle('dark-mode', isDark);
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        
+
         this.core.updateState('settings.theme', isDark ? 'dark' : 'light');
         this.core.emit('ui:theme:changed', { theme: isDark ? 'dark' : 'light' });
     }
@@ -1238,7 +1116,7 @@ export class UIManager {
         const theme = localStorage.getItem('theme');
         const isDark = theme === 'dark';
         const themeToggle = document.getElementById('themeToggle');
-        
+
         if (themeToggle) {
             themeToggle.checked = isDark;
         }
@@ -1252,6 +1130,13 @@ export class UIManager {
         // Update UI elements that depend on loaded model
         this.updateModelStats(data.model);
         this.updateHierarchy(data.model);
+
+        // Hide centralized drag-and-drop overlay and show floating toolbar
+        const emptyStateOverlay = document.getElementById('emptyStateOverlay');
+        if (emptyStateOverlay) emptyStateOverlay.classList.add('hidden');
+
+        const bottomToolbar = document.getElementById('bottomToolbar');
+        if (bottomToolbar) bottomToolbar.classList.add('visible');
     }
 
     /**
@@ -1277,7 +1162,7 @@ export class UIManager {
 
         const vertexCount = document.getElementById('vertexCount');
         const faceCount = document.getElementById('faceCount');
-        
+
         if (vertexCount) vertexCount.textContent = vertices.toLocaleString();
         if (faceCount) faceCount.textContent = Math.floor(faces).toLocaleString();
     }
@@ -1345,13 +1230,13 @@ export class UIManager {
         const searchInput = document.getElementById('librarySearch');
         const searchBtn = document.getElementById('searchBtn');
         const suggestionsContainer = document.getElementById('searchSuggestions');
-        
+
         console.log('Asset library elements found:', {
             searchInput: !!searchInput,
             searchBtn: !!searchBtn,
             suggestionsContainer: !!suggestionsContainer
         });
-        
+
         if (searchInput && searchBtn) {
             // Search on button click
             searchBtn.addEventListener('click', (e) => {
@@ -1359,7 +1244,7 @@ export class UIManager {
                 e.preventDefault();
                 this.performAssetSearch();
             });
-            
+
             // Search on Enter key
             searchInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
@@ -1368,12 +1253,12 @@ export class UIManager {
                     this.performAssetSearch();
                 }
             });
-            
+
             // Show suggestions on input
             searchInput.addEventListener('input', (e) => {
                 this.showSearchSuggestions(e.target.value);
             });
-            
+
             // Hide suggestions when clicking outside
             document.addEventListener('click', (e) => {
                 if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
@@ -1381,31 +1266,31 @@ export class UIManager {
                 }
             });
         }
-        
+
         // Tab switching
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 this.switchAssetTab(btn.dataset.tab);
             });
         });
-        
+
         // View toggle
         const gridViewBtn = document.getElementById('gridView');
         const listViewBtn = document.getElementById('listView');
-        
+
         if (gridViewBtn && listViewBtn) {
             gridViewBtn.addEventListener('click', () => this.setAssetView('grid'));
             listViewBtn.addEventListener('click', () => this.setAssetView('list'));
         }
-        
+
         // Filter changes
         const librarySelect = document.getElementById('librarySelect');
         const formatFilter = document.getElementById('formatFilter');
-        
+
         if (librarySelect) {
             librarySelect.addEventListener('change', () => this.performAssetSearch());
         }
-        
+
         if (formatFilter) {
             formatFilter.addEventListener('change', () => this.performAssetSearch());
         }
@@ -1416,14 +1301,14 @@ export class UIManager {
      */
     async performAssetSearch() {
         console.log('performAssetSearch called');
-        
+
         const searchInput = document.getElementById('librarySearch');
         const librarySelect = document.getElementById('librarySelect');
         const formatFilter = document.getElementById('formatFilter');
         const loadingIndicator = document.getElementById('loadingAssets');
         const resultsContainer = document.getElementById('assetGrid');
         const resultsCount = document.querySelector('.results-count');
-        
+
         console.log('Elements found:', {
             searchInput: !!searchInput,
             librarySelect: !!librarySelect,
@@ -1432,38 +1317,38 @@ export class UIManager {
             resultsContainer: !!resultsContainer,
             resultsCount: !!resultsCount
         });
-        
+
         if (!searchInput) {
             console.log('No search input found, returning');
             return;
         }
-        
+
         // Direct check using window.modelViewer as fallback
         const assetManager = this.core?.assetManager || window.modelViewer?.assetManager;
         const onlineLibraryManager = assetManager?.onlineLibraryManager;
-        
+
         console.log('Checking asset managers:', {
             coreAssetManager: !!this.core?.assetManager,
             windowAssetManager: !!window.modelViewer?.assetManager,
             onlineLibraryManager: !!onlineLibraryManager,
             assetManagerInitialized: assetManager?.initialized
         });
-        
+
         if (!onlineLibraryManager) {
             console.log('OnlineLibraryManager not ready');
             this.showAssetLibraryNotReady();
             return;
         }
-        
+
         console.log('All checks passed, proceeding with search');
-        
+
         // Get current values
         const query = searchInput.value.trim();
         const libraryId = librarySelect?.value || null;
         const format = formatFilter?.value || null;
-        
+
         console.log('Search parameters:', { query, libraryId, format });
-        
+
         // Allow empty query to show all assets from selected library
         if (!query && !libraryId) {
             // If no query and no library selected, show message
@@ -1474,10 +1359,10 @@ export class UIManager {
             }
             return;
         }
-        
+
         // Use empty string for query if not provided but library is selected
         const searchQuery = query || '';
-        
+
         try {
             // Show loading and clear results
             if (loadingIndicator) {
@@ -1488,44 +1373,44 @@ export class UIManager {
                 resultsContainer.innerHTML = '';
                 console.log('Results container cleared');
             }
-            
+
             console.log('Performing search with:', { query: searchQuery, libraryId, format });
-            
+
             // Perform search using the found asset manager
             const results = await assetManager.searchOnlineAssets(searchQuery, libraryId, {
                 format,
                 count: 20
             });
-            
+
             console.log('Search completed, results:', results);
-            
+
             // Hide loading
             if (loadingIndicator) {
                 loadingIndicator.classList.add('hidden');
                 console.log('Loading indicator hidden');
             }
-            
+
             // Update results count
             if (resultsCount) {
                 resultsCount.textContent = `${results.length} results found`;
                 console.log('Results count updated');
             }
-            
+
             // Display results
             console.log('Displaying results...');
             this.displayAssetResults(results);
             console.log('Results displayed');
-            
+
         } catch (error) {
             console.error('Asset search failed:', error);
-            
+
             // Always hide loading indicator
             loadingIndicator?.classList.add('hidden');
-            
+
             if (resultsCount) {
                 resultsCount.textContent = 'Search failed';
             }
-            
+
             // Show error in results area
             if (resultsContainer) {
                 resultsContainer.innerHTML = `
@@ -1535,7 +1420,7 @@ export class UIManager {
                     </div>
                 `;
             }
-            
+
             // Silent error - no user message
         } finally {
             // Ensure loading is always hidden
@@ -1549,14 +1434,14 @@ export class UIManager {
     displayAssetResults(results) {
         const resultsContainer = document.getElementById('assetGrid');
         if (!resultsContainer) return;
-        
+
         resultsContainer.innerHTML = '';
-        
+
         if (results.length === 0) {
             resultsContainer.innerHTML = '<div class="no-results">No assets found</div>';
             return;
         }
-        
+
         results.forEach(asset => {
             const assetElement = this.createAssetElement(asset);
             resultsContainer.appendChild(assetElement);
@@ -1571,14 +1456,14 @@ export class UIManager {
         div.className = 'asset-item';
         div.dataset.assetId = asset.id;
         div.dataset.library = asset.library;
-        
+
         const thumbnail = asset.thumbnail || this.getPlaceholderThumbnail();
-        
+
         div.innerHTML = `
             <div class="asset-thumbnail">
-                ${asset.thumbnail ? 
-                    `<img src="${asset.thumbnail}" alt="${asset.name}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;">` :
-                    `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; color: #666; text-align: center; padding: 1rem;">
+                ${asset.thumbnail ?
+                `<img src="${asset.thumbnail}" alt="${asset.name}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;">` :
+                `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; color: #666; text-align: center; padding: 1rem;">
                         <svg style="width: 48px; height: 48px; margin-bottom: 0.5rem; opacity: 0.5;" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
                             <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
@@ -1587,7 +1472,7 @@ export class UIManager {
                         <div style="font-size: 0.8rem; font-weight: 500;">${asset.format.toUpperCase()}</div>
                         <div style="font-size: 0.7rem; opacity: 0.7;">3D Model</div>
                     </div>`
-                }
+            }
                 <div class="asset-actions">
                     <button class="asset-action-btn" data-action="favorite" title="Add to Favorites">
                         <svg class="icon" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
@@ -1612,32 +1497,32 @@ export class UIManager {
                 <div class="asset-load-hint">Click to load model</div>
             </div>
         `;
-        
+
         // Add click handler to load asset
         div.addEventListener('click', (e) => {
             if (!e.target.closest('.asset-action-btn')) {
                 this.loadAssetFromLibrary(asset);
             }
         });
-        
+
         // Add action button handlers
         const favoriteBtn = div.querySelector('[data-action="favorite"]');
         const downloadBtn = div.querySelector('[data-action="download"]');
-        
+
         if (favoriteBtn) {
             favoriteBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.toggleAssetFavorite(asset, div);
             });
         }
-        
+
         if (downloadBtn) {
             downloadBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.downloadAssetOffline(asset, div);
             });
         }
-        
+
         return div;
     }
 
@@ -1647,14 +1532,14 @@ export class UIManager {
     async loadAssetFromLibrary(asset) {
         try {
             this.showProgress(true, `Loading ${asset.name}...`);
-            
+
             // Use the same fallback approach as in search
             const assetManager = this.core?.assetManager || window.modelViewer?.assetManager;
-            
+
             if (!assetManager) {
                 throw new Error('AssetManager not available');
             }
-            
+
             await assetManager.loadAssetFromLibrary(asset);
         } catch (error) {
             console.error('Failed to load asset:', error);
@@ -1671,11 +1556,11 @@ export class UIManager {
         try {
             const assetManager = this.core?.assetManager || window.modelViewer?.assetManager;
             const onlineLibraryManager = assetManager?.onlineLibraryManager;
-            
+
             if (!onlineLibraryManager) {
                 throw new Error('OnlineLibraryManager not available');
             }
-            
+
             if (asset.isFavorite) {
                 onlineLibraryManager.removeFromFavorites(asset);
                 asset.isFavorite = false;
@@ -1683,7 +1568,7 @@ export class UIManager {
                 onlineLibraryManager.addToFavorites(asset);
                 asset.isFavorite = true;
             }
-            
+
             // Update UI
             this.updateAssetElement(element, asset);
         } catch (error) {
@@ -1701,17 +1586,17 @@ export class UIManager {
                 downloadBtn.innerHTML = '<div class="loader-small"></div>';
                 downloadBtn.disabled = true;
             }
-            
+
             const assetManager = this.core?.assetManager || window.modelViewer?.assetManager;
             const onlineLibraryManager = assetManager?.onlineLibraryManager;
-            
+
             if (!onlineLibraryManager) {
                 throw new Error('OnlineLibraryManager not available');
             }
-            
+
             await onlineLibraryManager.downloadAsset(asset, { saveOffline: true });
             asset.isOfflineAvailable = true;
-            
+
             // Update UI
             this.updateAssetElement(element, asset);
         } catch (error) {
@@ -1748,10 +1633,10 @@ export class UIManager {
             suggestionsContainer?.classList.add('hidden');
             return;
         }
-        
+
         if (this.core.assetManager?.onlineLibraryManager) {
             const suggestions = this.core.assetManager.onlineLibraryManager.getSearchSuggestions(query);
-            
+
             if (suggestions.length > 0) {
                 suggestionsContainer.innerHTML = suggestions.map(suggestion => `
                     <div class="search-suggestion" data-query="${suggestion.text}">
@@ -1759,7 +1644,7 @@ export class UIManager {
                         <span>${suggestion.text}</span>
                     </div>
                 `).join('');
-                
+
                 // Add click handlers
                 suggestionsContainer.querySelectorAll('.search-suggestion').forEach(item => {
                     item.addEventListener('click', () => {
@@ -1768,7 +1653,7 @@ export class UIManager {
                         this.performAssetSearch();
                     });
                 });
-                
+
                 suggestionsContainer.classList.remove('hidden');
             } else {
                 suggestionsContainer.classList.add('hidden');
@@ -1784,13 +1669,13 @@ export class UIManager {
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.tab === tab);
         });
-        
+
         // Check if AssetManager is ready
         if (!this.core.assetManager?.onlineLibraryManager) {
             this.showAssetLibraryNotReady();
             return;
         }
-        
+
         // Load tab content
         switch (tab) {
             case 'search':
@@ -1814,14 +1699,14 @@ export class UIManager {
                 console.warn('OnlineLibraryManager not available yet');
                 return;
             }
-            
+
             const favorites = this.core.assetManager.onlineLibraryManager.getFavorites();
             const resultsCount = document.querySelector('.results-count');
-            
+
             if (resultsCount) {
                 resultsCount.textContent = `${favorites.length} favorites`;
             }
-            
+
             this.displayAssetResults(favorites);
         } catch (error) {
             console.error('Failed to load favorites:', error);
@@ -1837,14 +1722,14 @@ export class UIManager {
                 console.warn('OnlineLibraryManager not available yet');
                 return;
             }
-            
+
             const offline = await this.core.assetManager.onlineLibraryManager.searchOfflineAssets('', null, { count: 100 });
             const resultsCount = document.querySelector('.results-count');
-            
+
             if (resultsCount) {
                 resultsCount.textContent = `${offline.length} offline assets`;
             }
-            
+
             this.displayAssetResults(offline);
         } catch (error) {
             console.error('Failed to load offline assets:', error);
@@ -1858,7 +1743,7 @@ export class UIManager {
         const gridViewBtn = document.getElementById('gridView');
         const listViewBtn = document.getElementById('listView');
         const assetGrid = document.getElementById('assetGrid');
-        
+
         if (mode === 'grid') {
             gridViewBtn?.classList.add('active');
             listViewBtn?.classList.remove('active');
@@ -1882,11 +1767,11 @@ export class UIManager {
     clearAssetResults() {
         const resultsContainer = document.getElementById('assetGrid');
         const resultsCount = document.querySelector('.results-count');
-        
+
         if (resultsContainer) {
             resultsContainer.innerHTML = '';
         }
-        
+
         if (resultsCount) {
             resultsCount.textContent = 'Ready to search';
         }
@@ -1915,7 +1800,7 @@ export class UIManager {
     showAssetLibraryNotReady() {
         const resultsContainer = document.getElementById('assetGrid');
         const resultsCount = document.querySelector('.results-count');
-        
+
         if (resultsContainer) {
             resultsContainer.innerHTML = `
                 <div style="text-align: center; padding: 2rem; color: #666;">
@@ -1929,11 +1814,11 @@ export class UIManager {
                 </div>
             `;
         }
-        
+
         if (resultsCount) {
             resultsCount.textContent = 'Initializing...';
         }
-        
+
         // Try again in 1 second
         setTimeout(() => {
             if (this.core.assetManager?.onlineLibraryManager) {
@@ -1955,7 +1840,7 @@ export class UIManager {
         const openModalBtn = document.getElementById('openAssetLibraryModal');
         const modal = document.getElementById('assetLibraryModal');
         const closeModalBtn = document.getElementById('closeAssetLibrary');
-        
+
         if (openModalBtn && modal) {
             openModalBtn.addEventListener('click', () => {
                 modal.classList.remove('hidden');
@@ -1966,13 +1851,13 @@ export class UIManager {
                 }
             });
         }
-        
+
         if (closeModalBtn && modal) {
             closeModalBtn.addEventListener('click', () => {
                 modal.classList.add('hidden');
             });
         }
-        
+
         // Close modal when clicking outside
         if (modal) {
             modal.addEventListener('click', (e) => {
@@ -1981,23 +1866,23 @@ export class UIManager {
                 }
             });
         }
-        
+
         // Keyboard support
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
                 modal.classList.add('hidden');
             }
         });
-        
+
         // Modal search functionality
         const modalSearchInput = document.getElementById('modalLibrarySearch');
         const modalSearchBtn = document.getElementById('modalSearchBtn');
-        
+
         if (modalSearchInput && modalSearchBtn) {
             modalSearchBtn.addEventListener('click', () => {
                 this.performModalAssetSearch();
             });
-            
+
             modalSearchInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -2005,16 +1890,16 @@ export class UIManager {
                 }
             });
         }
-        
+
         // Modal view toggle
         const modalGridViewBtn = document.getElementById('modalGridView');
         const modalListViewBtn = document.getElementById('modalListView');
-        
+
         if (modalGridViewBtn && modalListViewBtn) {
             modalGridViewBtn.addEventListener('click', () => this.setModalAssetView('grid'));
             modalListViewBtn.addEventListener('click', () => this.setModalAssetView('list'));
         }
-        
+
         // Modal tab switching
         document.querySelectorAll('.modal-tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -2033,16 +1918,16 @@ export class UIManager {
         const loadingIndicator = document.getElementById('modalLoadingAssets');
         const resultsContainer = document.getElementById('modalAssetGrid');
         const resultsCount = document.getElementById('modalResultsCount');
-        
+
         // Use the same search logic as the sidebar
         const assetManager = this.core?.assetManager || window.modelViewer?.assetManager;
         const onlineLibraryManager = assetManager?.onlineLibraryManager;
-        
+
         if (!onlineLibraryManager) {
             console.log('OnlineLibraryManager not ready for modal search');
             return;
         }
-        
+
         const query = searchInput?.value.trim() || '';
         const libraryId = librarySelect?.value || null;
         const format = formatFilter?.value || null;
@@ -2050,9 +1935,9 @@ export class UIManager {
         const sortBy = document.getElementById('modalSortFilter')?.value || 'relevance';
         const hasAnimations = document.getElementById('hasAnimations')?.checked;
         const hasTextures = document.getElementById('hasTextures')?.checked;
-        
+
         console.log('Modal search parameters:', { query, libraryId, format, category, sortBy, hasAnimations, hasTextures });
-        
+
         try {
             // Show loading
             if (loadingIndicator) {
@@ -2061,7 +1946,7 @@ export class UIManager {
             if (resultsContainer) {
                 resultsContainer.innerHTML = '';
             }
-            
+
             // Perform search
             const results = await assetManager.searchOnlineAssets(query, libraryId, {
                 format,
@@ -2071,33 +1956,33 @@ export class UIManager {
                 hasTextures,
                 count: 50 // More results for modal
             });
-            
+
             console.log('Modal search results:', results);
-            
+
             // Hide loading
             if (loadingIndicator) {
                 loadingIndicator.classList.add('hidden');
             }
-            
+
             // Update results count
             if (resultsCount) {
                 resultsCount.textContent = `${results.length} results found`;
             }
-            
+
             // Display results in modal
             this.displayModalAssetResults(results);
-            
+
         } catch (error) {
             console.error('Modal asset search failed:', error);
-            
+
             if (loadingIndicator) {
                 loadingIndicator.classList.add('hidden');
             }
-            
+
             if (resultsCount) {
                 resultsCount.textContent = 'Search failed';
             }
-            
+
             if (resultsContainer) {
                 resultsContainer.innerHTML = `
                     <div style="text-align: center; padding: 4rem 2rem; color: #dc3545; grid-column: 1 / -1;">
@@ -2121,9 +2006,9 @@ export class UIManager {
     displayModalAssetResults(results) {
         const resultsContainer = document.getElementById('modalAssetGrid');
         if (!resultsContainer) return;
-        
+
         resultsContainer.innerHTML = '';
-        
+
         if (results.length === 0) {
             resultsContainer.innerHTML = `
                 <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; color: #666;">
@@ -2136,7 +2021,7 @@ export class UIManager {
             `;
             return;
         }
-        
+
         results.forEach(asset => {
             const assetElement = this.createAssetElement(asset);
             resultsContainer.appendChild(assetElement);
@@ -2150,7 +2035,7 @@ export class UIManager {
         const gridViewBtn = document.getElementById('modalGridView');
         const listViewBtn = document.getElementById('modalListView');
         const assetGrid = document.getElementById('modalAssetGrid');
-        
+
         if (mode === 'grid') {
             gridViewBtn?.classList.add('active');
             listViewBtn?.classList.remove('active');
@@ -2176,7 +2061,7 @@ export class UIManager {
         document.querySelectorAll('.modal-tab-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.tab === tab);
         });
-        
+
         // Load tab content (reuse existing logic)
         switch (tab) {
             case 'search':
@@ -2217,7 +2102,7 @@ export class UIManager {
         this.core.off('assets:model:loaded');
         this.core.off('assets:model:error');
         this.core.off('ui:interaction');
-        
+
         // Destroy sub-managers
         if (this.i18nManager) {
             this.i18nManager.destroy();
@@ -2237,14 +2122,14 @@ export class UIManager {
         if (this.fileManagerPanel) {
             this.fileManagerPanel.destroy();
         }
-        
+
         // Remove DOM event listeners
         this.eventListeners.forEach((listeners, element) => {
             listeners.forEach(({ event, handler }) => {
                 element.removeEventListener(event, handler);
             });
         });
-        
+
         this.eventListeners.clear();
         this.panels.clear();
         this.initialized = false;
@@ -2279,7 +2164,7 @@ class LayoutManager {
     handleResize() {
         const width = window.innerWidth;
         let newBreakpoint = 'desktop';
-        
+
         if (width <= this.breakpoints.mobile) {
             newBreakpoint = 'mobile';
         } else if (width <= this.breakpoints.tablet) {
