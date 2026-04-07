@@ -144,7 +144,6 @@ module.exports = (env, argv) => {
               return JSON.stringify(JSON.parse(content.toString()));
             } : undefined
           },
-          { from: 'service-worker.js', to: 'service-worker.js' },
           { from: 'CNAME' },
         ],
       }),
