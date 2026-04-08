@@ -900,7 +900,7 @@ export class AccessibilityManager {
     }
 
     resetCamera() {
-        const resetBtn = document.getElementById('resetCameraBtn');
+        const resetBtn = document.getElementById('resetCamera');
         if (resetBtn) {
             resetBtn.click();
         }

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="app.title">3D Model Viewer Pro</title>
+    <title>3D Model Viewer Pro</title>
     <meta name="description"
         content="Professional 3D model viewer with advanced controls, animations, and real-time rendering. Supports GLB, GLTF, FBX, OBJ formats with WebGL acceleration.">
     <meta name="keywords"
@@ -78,39 +78,6 @@
         .hidden {
             display: none !important;
         }
-
-        /* Skip Links - Hidden until focused */
-        .skip-links {
-            position: absolute;
-            top: -40px;
-            left: 6px;
-            z-index: 10000;
-        }
-
-        .skip-link {
-            position: absolute;
-            top: -40px;
-            left: 6px;
-            background: #000;
-            color: #fff;
-            padding: 8px 16px;
-            text-decoration: none;
-            border-radius: 4px;
-            font-size: 14px;
-            font-weight: 500;
-            transition: top 0.3s ease;
-            z-index: 10001;
-        }
-
-        .skip-link:focus {
-            top: 6px;
-            outline: 2px solid #fff;
-            outline-offset: 2px;
-        }
-
-        .skip-link:hover {
-            background: #333;
-        }
     </style>
 
     <!-- Load non-critical CSS asynchronously -->
@@ -118,27 +85,13 @@
     <noscript>
         <link rel="stylesheet" href="styles.css">
     </noscript>
-    <link rel="preload" href="src/ui/accessibility.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript>
-        <link rel="stylesheet" href="src/ui/accessibility.css">
-    </noscript>
     <link rel="preload" href="src/editing/model-editing.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript>
         <link rel="stylesheet" href="src/editing/model-editing.css">
     </noscript>
-    <link rel="preload" href="src/ui/ux-enhancements.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript>
-        <link rel="stylesheet" href="src/ui/ux-enhancements.css">
-    </noscript>
 </head>
 
 <body class="keyboard-user">
-    <!-- Skip Links for Accessibility - Hidden until focused -->
-    <nav class="skip-links" aria-label="Skip navigation">
-        <a href="#viewerContainer" class="skip-link">Skip to 3D Viewer</a>
-        <a href="#sidebar" class="skip-link">Skip to Controls</a>
-        <a href="#viewport" class="skip-link">Skip to Main Content</a>
-    </nav>
 
     <div id="app">
         <div id="loadingScreen">
@@ -155,18 +108,18 @@
                 <h2>Drop a 3D Model Here</h2>
                 <p>or</p>
                 <div class="input-group centralized-input">
-                    <label for="modelUrl" class="sr-only" data-i18n="ui.modelUrl">Model URL</label>
+                    <label for="modelUrl" class="sr-only">Model URL</label>
                     <input type="text" id="modelUrl" placeholder="Enter model URL..."
-                        class="input-field centralized-search" data-i18n-placeholder="ui.modelUrlPlaceholder">
-                    <button id="loadUrlBtn" class="btn primary" data-i18n="action.load">Load</button>
+                        class="input-field centralized-search">
+                    <button id="loadUrlBtn" class="btn primary">Load</button>
                 </div>
 
                 <div class="file-drop" id="fileDrop" data-help="file-drop" role="button" tabindex="0"
-                    aria-label="Drag and drop 3D model files or click to browse" data-i18n-aria-label="a11y.fileDrop">
+                    aria-label="Drag and drop 3D model files or click to browse">
                     <input type="file" id="fileInput" accept=".glb,.gltf,.fbx,.obj,.dae,.stl,.ply,.mtl" hidden
-                        aria-label="Select 3D model file" data-i18n-aria-label="a11y.fileInput">
+                        aria-label="Select 3D model file">
                     <div class="drop-content">
-                        <p><strong data-i18n="file.dragDrop">Browse Files</strong></p>
+                        <p><strong>Browse Files</strong></p>
                         <div class="format-tags"><span class="format-tag">GLB</span><span
                                 class="format-tag">GLTF</span><span class="format-tag">FBX</span><span
                                 class="format-tag">OBJ</span></div>
@@ -187,7 +140,7 @@
         <div id="mainContainer" class="hidden">
             <div id="sidebar" class="sidebar collapsed" role="complementary" aria-label="Control panel">
                 <div class="sidebar-header">
-                    <h2 data-i18n="ui.controls">Controls</h2>
+                    <h2>Controls</h2>
                     <div class="theme-switcher">
                         <input type="checkbox" id="themeToggle" class="theme-toggle-checkbox">
                         <label for="themeToggle" class="theme-toggle-label">
@@ -204,7 +157,7 @@
                             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
                                 <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M12 3v12M8 11l4 4 4-4" />
                             </svg>
-                            <span data-i18n="ui.loadModel">Load Model</span>
+                            <span>Load Model</span>
                         </h3>
                         <div class="accordion-content" role="tabpanel" id="load-model-content"
                             aria-labelledby="load-model-header">
@@ -230,144 +183,6 @@
                                             </svg>
                                             Duck
                                         </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item" data-feature="asset-library">
-                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24">
-                                <path
-                                    d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                                <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-                                <line x1="12" y1="22.08" x2="12" y2="12" />
-                            </svg> Asset Library</h3>
-                        <div class="accordion-content">
-                            <div class="control-section">
-                                <div class="library-search">
-                                    <div class="work-in-progress-notice">
-                                        <div class="wip-header">
-                                            <svg class="wip-icon" viewBox="0 0 24 24">
-                                                <path
-                                                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                                            </svg>
-                                            <span class="wip-title">Asset Library (Beta)</span>
-                                        </div>
-                                        <div class="wip-content">
-                                            <p class="wip-description">Online asset browsing with search, favorites, and
-                                                offline caching.</p>
-                                            <div class="wip-status">
-                                                <div class="status-item completed">
-                                                    <svg class="status-icon" viewBox="0 0 24 24">
-                                                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-                                                    </svg>
-                                                    <span>Basic Framework</span>
-                                                </div>
-                                                <div class="status-item pending">
-                                                    <svg class="status-icon" viewBox="0 0 24 24">
-                                                        <circle cx="12" cy="12" r="10" />
-                                                        <path d="M12 6v6l4 2" />
-                                                    </svg>
-                                                    <span>Search & Filtering Logic</span>
-                                                </div>
-                                                <div class="status-item pending">
-                                                    <svg class="status-icon" viewBox="0 0 24 24">
-                                                        <circle cx="12" cy="12" r="10" />
-                                                        <path d="M12 6v6l4 2" />
-                                                    </svg>
-                                                    <span>Asset Categorization (Models/Textures/Environments)</span>
-                                                </div>
-                                                <div class="status-item pending">
-                                                    <svg class="status-icon" viewBox="0 0 24 24">
-                                                        <circle cx="12" cy="12" r="10" />
-                                                        <path d="M12 6v6l4 2" />
-                                                    </svg>
-                                                    <span>Library Integration & API Fixes</span>
-                                                </div>
-                                                <div class="status-item pending">
-                                                    <svg class="status-icon" viewBox="0 0 24 24">
-                                                        <circle cx="12" cy="12" r="10" />
-                                                        <path d="M12 6v6l4 2" />
-                                                    </svg>
-                                                    <span>UI Polish & Mobile UX</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="input-group">
-                                        <input type="text" id="librarySearch" placeholder="Search models..."
-                                            class="input-field">
-                                        <button id="searchBtn" class="btn primary">Search</button>
-                                    </div>
-                                    <div id="openAssetLibraryModal" class="library-quick-actions"
-                                        title="Browse Asset Library">
-                                        <div class="asset-library-fab">
-                                            <svg class="icon" viewBox="0 0 24 24">
-                                                <path
-                                                    d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                                                <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-                                                <line x1="12" y1="22.08" x2="12" y2="12" />
-                                            </svg>
-                                        </div>
-                                        <span class="fab-label">Browse Library</span>
-                                    </div>
-                                    <div id="searchSuggestions" class="search-suggestions hidden"></div>
-                                </div>
-
-                                <div class="library-filters">
-                                    <select id="librarySelect" class="select-field">
-                                        <option value="">All Libraries</option>
-                                        <option value="gltf-samples">glTF Samples (GitHub)</option>
-                                        <option value="threejs-examples">Three.js Examples</option>
-                                        <option value="free3d">Free3D Models</option>
-                                        <option value="polyhaven">Poly Haven</option>
-                                        <option value="sketchfab">Sketchfab</option>
-                                    </select>
-                                    <select id="formatFilter" class="select-field">
-                                        <option value="">All Formats</option>
-                                        <option value="gltf">GLTF</option>
-                                        <option value="glb">GLB</option>
-                                        <option value="fbx">FBX</option>
-                                        <option value="obj">OBJ</option>
-                                    </select>
-                                </div>
-
-                                <div class="library-tabs">
-                                    <button class="tab-btn active" data-tab="search">Search</button>
-                                    <button class="tab-btn" data-tab="favorites">Favorites</button>
-                                    <button class="tab-btn" data-tab="offline">Offline</button>
-                                </div>
-
-                                <div id="libraryResults" class="library-results">
-                                    <div class="results-header">
-                                        <span class="results-count">Ready to search</span>
-                                        <div class="view-toggle">
-                                            <button id="gridView" class="view-btn active" title="Grid View">
-                                                <svg class="icon" viewBox="0 0 24 24">
-                                                    <rect x="3" y="3" width="7" height="7" />
-                                                    <rect x="14" y="3" width="7" height="7" />
-                                                    <rect x="14" y="14" width="7" height="7" />
-                                                    <rect x="3" y="14" width="7" height="7" />
-                                                </svg>
-                                            </button>
-                                            <button id="listView" class="view-btn" title="List View">
-                                                <svg class="icon" viewBox="0 0 24 24">
-                                                    <line x1="8" y1="6" x2="21" y2="6" />
-                                                    <line x1="8" y1="12" x2="21" y2="12" />
-                                                    <line x1="8" y1="18" x2="21" y2="18" />
-                                                    <line x1="3" y1="6" x2="3.01" y2="6" />
-                                                    <line x1="3" y1="12" x2="3.01" y2="12" />
-                                                    <line x1="3" y1="18" x2="3.01" y2="18" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div id="assetGrid" class="asset-grid"></div>
-                                    <div id="loadingAssets" class="loading-assets hidden">
-                                        <div class="loader-small"></div>
-                                        <span>Searching assets...</span>
                                     </div>
                                 </div>
                             </div>
@@ -437,8 +252,6 @@
                                         min="-10" max="10" step="0.5" value="5" class="slider"><span
                                         class="value-display">5.0</span></div>
 
-                                <!-- Advanced Lighting (Advanced Mode Only) -->
-                                <div class="advanced-only">
                                     <div class="control-group"><label>Shadow Quality</label><select id="shadowQuality"
                                             class="select-field advanced-feature">
                                             <option value="low">Low</option>
@@ -453,7 +266,7 @@
                                             id="lightTemperature" min="2000" max="10000" step="100" value="6500"
                                             class="slider advanced-feature"><span class="value-display">6500K</span>
                                     </div>
-                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -471,8 +284,6 @@
                                         id="bloomStrength" min="0" max="3" step="0.1" value="1.5" class="slider"><span
                                         class="value-display">1.5</span></div>
 
-                                <!-- Advanced Effects (Advanced Mode Only) -->
-                                <div class="advanced-only">
                                     <div class="control-group"><label class="checkbox-label"><input type="checkbox"
                                                 id="ssaoEnabled" class="advanced-feature"><span
                                                 class="checkmark"></span>SSAO</label></div>
@@ -482,7 +293,7 @@
                                     <div class="control-group"><label>Depth of Field</label><input type="range"
                                             id="dofStrength" min="0" max="1" step="0.1" value="0"
                                             class="slider advanced-feature"><span class="value-display">0.0</span></div>
-                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -555,115 +366,30 @@
                         <div class="accordion-content">
                             <div class="control-section">
                                 <div class="control-group">
-                                    <button id="resetCameraBtn" class="btn secondary full-width">Reset Camera</button>
+                                    <button id="resetCamera" class="btn secondary full-width">Reset Camera</button>
                                     <button id="fitToView" class="btn secondary full-width">Fit to View</button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="accordion-item" data-feature="file-manager">
-                        <h3 class="accordion-header">
-                            <svg class="icon" viewBox="0 0 24 24">
-                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-                            </svg>
-                            File Manager
-                        </h3>
-                        <div class="accordion-content">
-                            <div class="control-section">
-                                <div class="file-manager-toolbar">
-                                    <div class="search-container">
-                                        <input type="text" id="fileSearch" placeholder="Search files..."
-                                            class="search-input">
-                                        <button id="searchBtn" class="search-btn">
-                                            <svg viewBox="0 0 24 24" class="icon">
-                                                <circle cx="11" cy="11" r="8" />
-                                                <path d="m21 21-4.35-4.35" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <div class="toolbar-actions">
-                                        <button id="newProjectBtn" class="btn secondary" title="New Project">
-                                            <svg viewBox="0 0 24 24" class="icon">
-                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                                                <polyline points="14,2 14,8 20,8" />
-                                                <line x1="16" y1="13" x2="8" y2="13" />
-                                                <line x1="16" y1="17" x2="8" y2="17" />
-                                            </svg>
-                                        </button>
-                                        <button id="newCollectionBtn" class="btn secondary" title="New Collection">
-                                            <svg viewBox="0 0 24 24" class="icon">
-                                                <path
-                                                    d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-                                                <line x1="12" y1="11" x2="12" y2="17" />
-                                                <line x1="9" y1="14" x2="15" y2="14" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="view-tabs">
-                                    <button class="tab-btn active" data-view="recent">Recent</button>
-                                    <button class="tab-btn" data-view="projects">Projects</button>
-                                    <button class="tab-btn" data-view="collections">Collections</button>
-                                </div>
-                                <div class="file-manager-content">
-                                    <div id="recentView" class="view-content active">
-                                        <div class="files-grid" id="recentFilesGrid">
-                                            <div class="empty-state">
-                                                <svg class="icon" viewBox="0 0 24 24">
-                                                    <path
-                                                        d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                                                    <polyline points="14,2 14,8 20,8" />
-                                                </svg>
-                                                <p>No files found</p>
-                                                <small>Load some 3D models to see them here</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div id="projectsView" class="view-content">
-                                        <div class="projects-list" id="projectsList">
-                                            <div class="empty-state">
-                                                <p>No projects yet</p>
-                                                <small>Create a project to organize your models</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div id="collectionsView" class="view-content">
-                                        <div class="collections-list" id="collectionsList">
-                                            <div class="empty-state">
-                                                <p>No collections yet</p>
-                                                <small>Create a collection to group related models</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item" data-feature="analysis-tools">
-                        <h3 class="accordion-header">
-                            <svg class="icon" viewBox="0 0 24 24">
-                                <path d="M9 11H7l4-4 4 4h-2v4h-4v-4z" />
-                                <path d="M21 12h-8M3 6h18M3 18h18" />
-                            </svg>
-                            Analysis Tools
-                        </h3>
+                    <div class="accordion-item">
+                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24">
+                                <path d="M12 20V10M18 20V4M6 20v-6" />
+                            </svg> Analysis</h3>
                         <div class="accordion-content">
                             <div class="control-section">
                                 <div class="control-group">
-                                    <button id="measurementBtn" class="btn secondary full-width">
-                                        <svg class="icon" viewBox="0 0 24 24">
-                                            <path d="M9 11H7l4-4 4 4h-2v4h-4v-4z" />
-                                        </svg>
-                                        Measurement Tool
-                                    </button>
                                     <button id="statsBtn" class="btn secondary full-width">
                                         <svg class="icon" viewBox="0 0 24 24">
                                             <path d="M12 20V10M18 20V4M6 20v-6" />
                                         </svg>
                                         Model Statistics
                                     </button>
+                                </div>
+                                <div class="control-group">
+                                    <button id="measureBtn" class="btn secondary full-width">Measure Distance</button>
+                                    <div id="measurementResult" class="measurement-result"></div>
                                 </div>
                             </div>
                         </div>
@@ -702,17 +428,6 @@
                         </div>
                     </div>
 
-                    <div class="accordion-item" data-feature="measurement-tools">
-                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24">
-                                <path d="M21.7 14.3l-1.4-1.4L16 17.2V4h-2v13.2l-4.3-4.3-1.4 1.4L15 21.5l6.7-7.2z" />
-                            </svg> Tools</h3>
-                        <div class="accordion-content">
-                            <div class="control-section">
-                                <button id="measureBtn" class="btn secondary full-width">Measure Distance</button>
-                                <div id="measurementResult" class="measurement-result"></div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -748,7 +463,7 @@
             </button>
 
             <!-- Floating Bottom Toolbar -->
-            <div id="bottomToolbar" class="superhero-btn-container hidden">
+            <div id="bottomToolbar" class="superhero-btn-container">
                 <div id="superheroControls" class="superhero-controls hidden"
                     style="position:static; padding:0; background:none; box-shadow:none; gap: 8px;">
                     <button id="superheroPlay" class="btn secondary"
@@ -783,156 +498,6 @@
             <div id="fadeOverlay" class="fade-overlay hidden"></div>
         </div>
 
-        <!-- URL modal removed - now using direct input -->
-        <!-- Error modal removed - no user-facing error messages -->
-
-        <div id="assetLibraryModal" class="asset-library-modal hidden">
-            <div class="asset-library-modal-content">
-                <div class="asset-library-modal-header">
-                    <h2>Asset Library</h2>
-                    <button id="closeAssetLibrary" class="modal-close-btn">&times;</button>
-                </div>
-
-                <div class="asset-library-modal-body">
-                    <div class="asset-library-search-section">
-                        <div class="search-main-row">
-                            <div class="search-input-container">
-                                <svg class="search-icon" viewBox="0 0 24 24">
-                                    <path
-                                        d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
-                                </svg>
-                                <input type="text" id="modalLibrarySearch"
-                                    placeholder="Search 3D models, animations, textures..." class="modal-search-input">
-                                <button id="modalSearchBtn" class="search-btn">Search</button>
-                            </div>
-                        </div>
-
-                        <div class="filters-section">
-                            <div class="filter-group">
-                                <label>Library</label>
-                                <select id="modalLibrarySelect" class="filter-select">
-                                    <option value="">All Libraries</option>
-                                    <option value="gltf-samples">glTF Samples</option>
-                                    <option value="threejs-examples">Three.js Examples</option>
-                                    <option value="environments">Environments & HDRIs</option>
-                                    <option value="free3d">Free3D Models</option>
-                                    <option value="polyhaven">Poly Haven</option>
-                                </select>
-                            </div>
-
-                            <div class="filter-group">
-                                <label>Format</label>
-                                <select id="modalFormatFilter" class="filter-select">
-                                    <option value="">All Formats</option>
-                                    <option value="gltf">GLTF</option>
-                                    <option value="glb">GLB</option>
-                                    <option value="fbx">FBX</option>
-                                    <option value="obj">OBJ</option>
-                                </select>
-                            </div>
-
-                            <div class="filter-group">
-                                <label>Category</label>
-                                <select id="modalCategoryFilter" class="filter-select">
-                                    <option value="">All Categories</option>
-                                    <option value="characters">Characters</option>
-                                    <option value="vehicles">Vehicles</option>
-                                    <option value="architecture">Architecture</option>
-                                    <option value="nature">Nature</option>
-                                    <option value="furniture">Furniture</option>
-                                    <option value="weapons">Weapons</option>
-                                    <option value="animals">Animals</option>
-                                </select>
-                            </div>
-
-                            <div class="filter-group">
-                                <label>Sort By</label>
-                                <select id="modalSortFilter" class="filter-select">
-                                    <option value="relevance">Relevance</option>
-                                    <option value="name">Name A-Z</option>
-                                    <option value="name-desc">Name Z-A</option>
-                                    <option value="recent">Recently Added</option>
-                                    <option value="popular">Most Popular</option>
-                                </select>
-                            </div>
-
-                            <div class="filter-group">
-                                <label>Features</label>
-                                <div class="feature-filters">
-                                    <label class="feature-checkbox">
-                                        <input type="checkbox" id="hasAnimations">
-                                        <span>Animations</span>
-                                    </label>
-                                    <label class="feature-checkbox">
-                                        <input type="checkbox" id="hasTextures">
-                                        <span>Textures</span>
-                                    </label>
-                                    <label class="feature-checkbox">
-                                        <input type="checkbox" id="isRigged">
-                                        <span>Rigged</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="modal-tabs">
-                            <button class="modal-tab-btn active" data-tab="search">
-                                <svg class="tab-icon" viewBox="0 0 24 24">
-                                    <path
-                                        d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
-                                </svg>
-                                Search
-                            </button>
-                            <button class="modal-tab-btn" data-tab="favorites">
-                                <svg class="tab-icon" viewBox="0 0 24 24">
-                                    <path
-                                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                                </svg>
-                                Favorites
-                            </button>
-                            <button class="modal-tab-btn" data-tab="offline">
-                                <svg class="tab-icon" viewBox="0 0 24 24">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
-                                </svg>
-                                Offline
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="asset-library-results-section">
-                        <div class="modal-results-header">
-                            <span id="modalResultsCount" class="results-count">Ready to search</span>
-                            <div class="view-toggle">
-                                <button id="modalGridView" class="view-btn active" title="Grid View">
-                                    <svg class="icon" viewBox="0 0 24 24">
-                                        <rect x="3" y="3" width="7" height="7" />
-                                        <rect x="14" y="3" width="7" height="7" />
-                                        <rect x="14" y="14" width="7" height="7" />
-                                        <rect x="3" y="14" width="7" height="7" />
-                                    </svg>
-                                </button>
-                                <button id="modalListView" class="view-btn" title="List View">
-                                    <svg class="icon" viewBox="0 0 24 24">
-                                        <line x1="8" y1="6" x2="21" y2="6" />
-                                        <line x1="8" y1="12" x2="21" y2="12" />
-                                        <line x1="8" y1="18" x2="21" y2="18" />
-                                        <line x1="3" y1="6" x2="3.01" y2="6" />
-                                        <line x1="3" y1="12" x2="3.01" y2="12" />
-                                        <line x1="3" y1="18" x2="3.01" y2="18" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div id="modalAssetGrid" class="modal-asset-grid"></div>
-                        <div id="modalLoadingAssets" class="loading-assets hidden">
-                            <div class="loader-small"></div>
-                            <span>Searching assets...</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Import Three.js and the modular application -->
@@ -948,21 +513,5 @@
     <!-- Load main application -->
     <script type="module" src="src/main.js"></script>
 
-    <!-- Google-Style Floating Action Bar (FAB) Toolbar -->
-    <div class="google-fab-toolbar hidden" id="google-fab-toolbar">
-        <button class="fab-btn" id="sidebarToggleBtn" title="Advanced Settings" aria-label="Advanced Settings">
-            <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 C9.57,21.83,9.77,22,10.01,22h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
-        </button>
-    </div>
-
-    <!-- Logic to reveal the FAB once a model is loaded or the UI starts -->
-    <script>
-      window.addEventListener('load', () => {
-          setTimeout(() => {
-              const toolbar = document.getElementById('google-fab-toolbar');
-              if (toolbar) toolbar.classList.remove('hidden');
-          }, 1500);
-      });
-    </script>
 </body>
 </html>
