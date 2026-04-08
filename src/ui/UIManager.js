@@ -488,7 +488,6 @@ class LayoutManager {
         document.body.classList.remove('layout-mobile', 'layout-tablet', 'layout-desktop');
         document.body.classList.add(`layout-${breakpoint}`);
     }
-
 }
 
 /**

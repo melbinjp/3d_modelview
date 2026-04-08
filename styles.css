@@ -1262,12 +1262,10 @@ body.dark-mode .superhero-btn-container {
     transition: all 0.3s ease;
 }
 
-
 /* Import additional stylesheets */
 @import url('analysis.css');
 
-
-/* Modal Styles (Error Modal) */
+/* Modal Styles */
 .modal {
     position: fixed;
     top: 0;
