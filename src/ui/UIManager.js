@@ -11,7 +11,7 @@ import { FeatureDiscoveryEngine } from './FeatureDiscoveryEngine.js';
 import { UXEnhancementsIntegration } from './UXEnhancementsIntegration.js';
 
 /**
- * UIManager - Manages adaptive UI that switches between simple and advanced modes
+ * UIManager - Manages the user interface, panels, and UI interactions
  */
 export class UIManager {
     constructor(core) {
@@ -1045,18 +1045,12 @@ export class UIManager {
     }
 
     /**
-     * Update panel visibility based on current mode
+     * Update panel visibility
      */
     updatePanelVisibility() {
-        this.panels.forEach((panel, name) => {
-            if (panel.mode === 'both' || panel.mode === this.currentMode) {
-                // Panel should be visible in current mode
-                if (panel.visible) {
-                    panel.element.classList.remove('hidden');
-                }
-            } else {
-                // Panel should be hidden in current mode
-                panel.element.classList.add('hidden');
+        this.panels.forEach((panel) => {
+            if (panel.visible) {
+                panel.element.classList.remove('hidden');
             }
         });
     }
