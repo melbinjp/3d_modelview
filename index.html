@@ -192,9 +192,10 @@
                     <div class="accordion-item">
                         <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24">
                                 <path d="M3 12a9 9 0 1 1 18 0M3 20h18" />
-                            </svg> Environment</h3>
+                            </svg> Environment & Scene</h3>
                         <div class="accordion-content">
                             <div class="control-section">
+                                <h4>Environment</h4>
                                 <div class="control-group">
                                     <label>Background</label>
                                     <select id="backgroundSelect" class="select-field">
@@ -228,17 +229,9 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
 
-                    <div class="accordion-item" data-feature="lighting-controls">
-                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24">
-                                <circle cx="12" cy="12" r="5" />
-                                <path
-                                    d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-                            </svg> Lighting</h3>
-                        <div class="accordion-content">
-                            <div class="control-section">
+                            <div class="control-section" data-feature="lighting-controls" style="margin-top:1rem;border-top:1px solid var(--border-color);padding-top:1rem">
+                                <h4>Lighting</h4>
                                 <div class="control-group"><label>Ambient</label><input type="range"
                                         id="ambientIntensity" min="0" max="2" step="0.1" value="0.4"
                                         class="slider"><span class="value-display">0.4</span></div>
@@ -252,48 +245,39 @@
                                         min="-10" max="10" step="0.5" value="5" class="slider"><span
                                         class="value-display">5.0</span></div>
 
-                                    <div class="control-group"><label>Shadow Quality</label><select id="shadowQuality"
-                                            class="select-field advanced-feature">
-                                            <option value="low">Low</option>
-                                            <option value="medium" selected>Medium</option>
-                                            <option value="high">High</option>
-                                            <option value="ultra">Ultra</option>
-                                        </select></div>
-                                    <div class="control-group"><label class="checkbox-label"><input type="checkbox"
-                                                id="contactShadows" class="advanced-feature"><span
-                                                class="checkmark"></span>Contact Shadows</label></div>
-                                    <div class="control-group"><label>Light Temperature</label><input type="range"
-                                            id="lightTemperature" min="2000" max="10000" step="100" value="6500"
-                                            class="slider advanced-feature"><span class="value-display">6500K</span>
-                                    </div>
-
+                                <div class="control-group"><label>Shadow Quality</label><select id="shadowQuality"
+                                        class="select-field advanced-feature">
+                                        <option value="low">Low</option>
+                                        <option value="medium" selected>Medium</option>
+                                        <option value="high">High</option>
+                                        <option value="ultra">Ultra</option>
+                                    </select></div>
+                                <div class="control-group"><label class="checkbox-label"><input type="checkbox"
+                                            id="contactShadows" class="advanced-feature"><span
+                                            class="checkmark"></span>Contact Shadows</label></div>
+                                <div class="control-group"><label>Light Temperature</label><input type="range"
+                                        id="lightTemperature" min="2000" max="10000" step="100" value="6500"
+                                        class="slider advanced-feature"><span class="value-display">6500K</span>
+                                </div>
                             </div>
-                        </div>
-                    </div>
 
-                    <div class="accordion-item" data-feature="effects-controls">
-                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24">
-                                <path
-                                    d="M12 3L13.5 8.5L19 10L13.5 11.5L12 17L10.5 11.5L5 10L10.5 8.5L12 3zM5 3L6 5L5 7L4 5L5 3zM19 17L20 19L19 21L18 19L19 17z" />
-                            </svg> Effects</h3>
-                        <div class="accordion-content">
-                            <div class="control-section">
+                            <div class="control-section" data-feature="effects-controls" style="margin-top:1rem;border-top:1px solid var(--border-color);padding-top:1rem">
+                                <h4>Effects</h4>
                                 <div class="control-group"><label class="checkbox-label"><input type="checkbox"
                                             id="bloomEnabled"><span class="checkmark"></span>Bloom</label></div>
                                 <div class="control-group"><label>Bloom Strength</label><input type="range"
                                         id="bloomStrength" min="0" max="3" step="0.1" value="1.5" class="slider"><span
                                         class="value-display">1.5</span></div>
 
-                                    <div class="control-group"><label class="checkbox-label"><input type="checkbox"
-                                                id="ssaoEnabled" class="advanced-feature"><span
-                                                class="checkmark"></span>SSAO</label></div>
-                                    <div class="control-group"><label class="checkbox-label"><input type="checkbox"
-                                                id="ssrEnabled" class="advanced-feature"><span
-                                                class="checkmark"></span>Screen Space Reflections</label></div>
-                                    <div class="control-group"><label>Depth of Field</label><input type="range"
-                                            id="dofStrength" min="0" max="1" step="0.1" value="0"
-                                            class="slider advanced-feature"><span class="value-display">0.0</span></div>
-
+                                <div class="control-group"><label class="checkbox-label"><input type="checkbox"
+                                            id="ssaoEnabled" class="advanced-feature"><span
+                                            class="checkmark"></span>SSAO</label></div>
+                                <div class="control-group"><label class="checkbox-label"><input type="checkbox"
+                                            id="ssrEnabled" class="advanced-feature"><span
+                                            class="checkmark"></span>Screen Space Reflections</label></div>
+                                <div class="control-group"><label>Depth of Field</label><input type="range"
+                                        id="dofStrength" min="0" max="1" step="0.1" value="0"
+                                        class="slider advanced-feature"><span class="value-display">0.0</span></div>
                             </div>
                         </div>
                     </div>

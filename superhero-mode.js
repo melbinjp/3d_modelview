@@ -50,25 +50,6 @@ export class SuperheroMode {
             }
         });
 
-        document.getElementById('superheroPlay').addEventListener('click', () => {
-            this.superheroAnimationPaused = false;
-            if (this.superheroAudio) this.superheroAudio.play();
-        });
-        document.getElementById('superheroPause').addEventListener('click', () => {
-            this.superheroAnimationPaused = true;
-            if (this.superheroAudio) this.superheroAudio.pause();
-        });
-        document.getElementById('superheroReset').addEventListener('click', () => {
-            this.superheroAnimationPaused = false;
-            if (this.superheroMode) {
-                this.superheroStartTime = Date.now();
-                if (this.superheroAudio) {
-                    this.superheroAudio.currentTime = 0;
-                    this.superheroAudio.play();
-                }
-            }
-        });
-
         const audioDrop = document.getElementById('audioDrop');
         const audioInput = document.getElementById('audioInput');
         audioDrop.addEventListener('click', () => audioInput.click());
@@ -129,7 +110,6 @@ export class SuperheroMode {
             this.cameraAnimationState = this.CAMERA_ANIMATION_STATES.ANCHOR;
             this.stateEnterTime = Date.now();
 
-            document.getElementById('superheroControls').classList.remove('hidden');
             document.getElementById('superheroBtn').innerHTML = this.icons.close;
 
             const sidebar = document.getElementById('sidebar');
@@ -244,7 +224,6 @@ export class SuperheroMode {
         this.superheroMode = true;
         controls.enabled = false;
 
-        document.getElementById('superheroControls').classList.remove('hidden');
         document.getElementById('superheroBtn').innerHTML = this.icons.close;
 
         // Collapse sidebar
@@ -443,7 +422,6 @@ export class SuperheroMode {
             controls.enabled = true;
         }
 
-        document.getElementById('superheroControls').classList.add('hidden');
         document.getElementById('superheroBtn').innerHTML = this.icons.superhero;
 
         if (this.originalCameraPos && camera && controls) {
