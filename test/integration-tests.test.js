@@ -34,7 +34,7 @@ describe('Integration Tests Suite', () => {
     });
 
     describe('ModelViewer Integration', () => {
-        it('should initialize all core modules', async () => {
+        it('should initialize core modules', async () => {
             const { ModelViewer } = await import('../src/ModelViewer.js');
             modelViewer = new ModelViewer();
 
@@ -42,19 +42,15 @@ describe('Integration Tests Suite', () => {
             expect(modelViewer.renderingEngine).toBeDefined();
             expect(modelViewer.assetManager).toBeDefined();
             expect(modelViewer.uiManager).toBeDefined();
-            expect(modelViewer.exportSystem).toBeDefined();
-            expect(modelViewer.analysisManager).toBeDefined();
         });
 
-        it('should register all core modules with engine', async () => {
+        it('should register core modules with engine', async () => {
             const { ModelViewer } = await import('../src/ModelViewer.js');
             modelViewer = new ModelViewer();
 
             expect(modelViewer.core.modules.has('rendering')).toBe(true);
             expect(modelViewer.core.modules.has('assets')).toBe(true);
             expect(modelViewer.core.modules.has('ui')).toBe(true);
-            expect(modelViewer.core.modules.has('export')).toBe(true);
-            expect(modelViewer.core.modules.has('analysis')).toBe(true);
         });
     });
 });

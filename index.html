@@ -5,142 +5,67 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Model Viewer Pro</title>
-    <meta name="description"
-        content="Professional 3D model viewer with advanced controls, animations, and real-time rendering. Supports GLB, GLTF, FBX, OBJ formats with WebGL acceleration.">
-    <meta name="keywords"
-        content="3D model viewer, WebGL, Three.js, GLB, GLTF, FBX, OBJ, 3D visualization, model analysis">
-    <meta name="author" content="3D Model Viewer Pro">
+    <meta name="description" content="Professional 3D model viewer with advanced controls, animations, and real-time rendering.">
     <meta name="theme-color" content="#1a1a1a">
-    <meta name="color-scheme" content="dark light">
-
-    <!-- Resource hints for better performance -->
-    <link rel="dns-prefetch" href="//fonts.googleapis.com">
-    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- Preload critical resources -->
-    <script>
-        // Shim process.env for third-party libraries that expect a Node.js environment
-        window.process = { env: { NODE_ENV: 'development' } };
-    </script>
-    <link rel="preload" href="src/main.js" as="script">
-
-    <!-- Optimized favicon -->
-    <link rel="icon"
-        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
-    <link rel="apple-touch-icon" sizes="180x180"
-        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
-    <link rel="manifest" href="manifest.json">
-    <!-- Critical CSS inlined for faster first paint -->
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="src/editing/model-editing.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
     <style>
-        /* Critical above-the-fold styles */
-        body {
-            margin: 0;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-
-        #loadingScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            z-index: 9999;
-        }
-
-        .loader {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-top: 3px solid white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        .hidden {
-            display: none !important;
-        }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: #000; color: #fff; overflow: hidden; }
+        #loadingScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #111; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
+        .loader { width: 50px; height: 50px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #6366f1; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .hidden { display: none !important; }
     </style>
-
-    <!-- Load non-critical CSS asynchronously -->
-    <link rel="preload" href="styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript>
-        <link rel="stylesheet" href="styles.css">
-    </noscript>
-    <link rel="preload" href="src/editing/model-editing.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript>
-        <link rel="stylesheet" href="src/editing/model-editing.css">
-    </noscript>
 </head>
 
 <body class="keyboard-user">
-
     <div id="app">
         <div id="loadingScreen">
             <div class="loader"></div>
-            <p>Loading 3D Model Viewer...</p>
+            <p style="margin-top: 20px; font-weight: 500;">Initializing Engine...</p>
         </div>
 
-        <!-- Centralized Empty State for Drag & Drop -->
+        <!-- Drag & Drop / Initial View -->
         <div id="emptyStateOverlay" class="empty-state-overlay">
             <div class="empty-state-content">
-                <svg class="icon drop-hero-icon" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12" />
-                </svg>
-                <h2>Drop a 3D Model Here</h2>
-                <p>or</p>
+                <div class="hero-visual">
+                    <svg class="icon drop-hero-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg>
+                </div>
+                <h2>3D Model Viewer Pro</h2>
+                <p>Drag and drop a .GLB, .GLTF, .OBJ, or .FBX file</p>
+                
                 <div class="input-group centralized-input">
-                    <label for="modelUrl" class="sr-only">Model URL</label>
-                    <input type="text" id="modelUrl" placeholder="Enter model URL..."
-                        class="input-field centralized-search">
+                    <input type="text" id="modelUrl" placeholder="Paste model URL here..." class="input-field centralized-search">
                     <button id="loadUrlBtn" class="btn primary">Load</button>
                 </div>
 
-                <div class="file-drop" id="fileDrop" data-help="file-drop" role="button" tabindex="0"
-                    aria-label="Drag and drop 3D model files or click to browse">
-                    <input type="file" id="fileInput" accept=".glb,.gltf,.fbx,.obj,.dae,.stl,.ply,.mtl" hidden
-                        aria-label="Select 3D model file">
+                <div class="file-drop" id="fileDrop">
+                    <input type="file" id="fileInput" accept=".glb,.gltf,.fbx,.obj" hidden>
                     <div class="drop-content">
-                        <p><strong>Browse Files</strong></p>
-                        <div class="format-tags"><span class="format-tag">GLB</span><span
-                                class="format-tag">GLTF</span><span class="format-tag">FBX</span><span
-                                class="format-tag">OBJ</span></div>
+                        <button class="btn secondary">Browse Local Files</button>
                     </div>
                 </div>
 
                 <div class="quick-samples centralized-samples">
-                    <h4>Quick Samples</h4>
+                    <p>Or try a sample:</p>
                     <div class="sample-buttons">
                         <button class="sample-btn" data-sample-id="damaged-helmet">Helmet</button>
                         <button class="sample-btn" data-sample-id="duck">Duck</button>
-                        <button class="sample-btn" data-sample-id="littlest-tokyo">Tokyo</button>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- Main Viewer Interface -->
         <div id="mainContainer" class="hidden">
-            <div id="sidebar" class="sidebar collapsed" role="complementary" aria-label="Control panel">
+            <!-- Glassmorphism Sidebar -->
+            <aside id="sidebar" class="sidebar collapsed">
                 <div class="sidebar-header">
-                    <h2>Controls</h2>
+                    <h2>Engine Tools</h2>
                     <div class="theme-switcher">
                         <input type="checkbox" id="themeToggle" class="theme-toggle-checkbox">
                         <label for="themeToggle" class="theme-toggle-label">
@@ -150,341 +75,158 @@
                     </div>
                 </div>
 
-                <div class="accordion" role="tablist">
+                <div id="sidebarAccordion" class="accordion">
+                    <!-- Load Module -->
                     <div class="accordion-item is-open">
-                        <h3 class="accordion-header" role="tab" aria-expanded="true" tabindex="0" id="load-model-header"
-                            aria-controls="load-model-content">
-                            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M12 3v12M8 11l4 4 4-4" />
-                            </svg>
-                            <span>Load Model</span>
-                        </h3>
-                        <div class="accordion-content" role="tabpanel" id="load-model-content"
-                            aria-labelledby="load-model-header">
+                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg> Load Model</h3>
+                        <div class="accordion-content">
                             <div class="control-section">
-                                <p class="sidebar-tip">Load models using the main screen's drag & drop, or use the quick
-                                    samples below to test the viewer.</p>
-                                <div class="quick-samples">
-                                    <h4><svg class="icon" viewBox="0 0 24 24">
-                                            <path d="M5 12h14M12 5l7 7-7 7" />
-                                        </svg> Quick Samples</h4>
+                                <div class="input-group">
+                                    <input type="text" id="modelUrlSidebar" class="input-field" placeholder="Model URL">
+                                    <button id="loadUrlBtnSidebar" class="btn primary">Load</button>
+                                </div>
+                                <div class="quick-samples mt-2">
                                     <div class="sample-buttons">
-                                        <button class="sample-btn" data-sample-id="damaged-helmet">
-                                            <svg class="icon" viewBox="0 0 24 24">
-                                                <path
-                                                    d="M12 2L2 7v10c0 5.55 3.84 9.95 9 11 5.16-1.05 9-5.45 9-11V7l-10-5z" />
-                                            </svg>
-                                            Helmet
-                                        </button>
-                                        <button class="sample-btn" data-sample-id="duck">
-                                            <svg class="icon" viewBox="0 0 24 24">
-                                                <path
-                                                    d="M8.5 5A1.5 1.5 0 0 0 7 6.5A1.5 1.5 0 0 0 8.5 8A1.5 1.5 0 0 0 10 6.5A1.5 1.5 0 0 0 8.5 5M10 2A8 8 0 0 1 18 10A8 8 0 0 1 10 18A8 8 0 0 1 2 10A8 8 0 0 1 10 2Z" />
-                                            </svg>
-                                            Duck
-                                        </button>
+                                        <button class="sample-btn" data-sample-id="damaged-helmet">Helmet</button>
+                                        <button class="sample-btn" data-sample-id="duck">Duck</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="accordion-item">
-                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24">
-                                <path d="M3 12a9 9 0 1 1 18 0M3 20h18" />
-                            </svg> Environment & Scene</h3>
+                    <!-- Scene Controls Group -->
+                    <div class="accordion-item is-open">
+                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg> Scene Controls</h3>
                         <div class="accordion-content">
                             <div class="control-section">
-                                <h4>Environment</h4>
                                 <div class="control-group">
-                                    <label>Background</label>
+                                    <label>Background Type</label>
                                     <select id="backgroundSelect" class="select-field">
-                                        <option value="gradient">Gradient</option>
+                                        <option value="gradient">Glass Gradient</option>
                                         <option value="solid">Solid Color</option>
-                                        <option value="hdri">HDRI</option>
+                                        <option value="hdri">HDR Environment</option>
                                     </select>
-                                    <input type="color" id="bgColor" value="#f0f0f0" class="color-input">
                                 </div>
-                                <div class="control-group"><label class="checkbox-label"><input type="checkbox"
-                                            id="showGrid"><span class="checkmark"></span>Show Grid</label></div>
                                 <div class="control-group">
-                                    <label>Env Intensity</label>
-                                    <input type="range" id="envIntensity" min="0" max="3" step="0.1" value="1"
-                                        class="slider"><span class="value-display">1.0</span>
+                                    <label>Ambient Light <span id="ambientIntensityVal" class="value-display">0.5</span></label>
+                                    <input type="range" id="ambientIntensity" min="0" max="2" step="0.1" value="0.5" class="slider">
                                 </div>
-                                <div class="control-section"
-                                    style="margin-top:1rem;border-top:1px solid var(--border-color);padding-top:1rem">
-                                    <h4><svg class="icon" viewBox="0 0 24 24" fill-rule="evenodd" clip-rule="evenodd">
-                                            <path
-                                                d="M12 0c-3.315 0-6 2.685-6 6s6 18 6 18 6-15.315 6-18-2.685-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm0-6c-1.105 0-2 .895-2 2s.895 2 2 2 2-.895 2-2-.895-2-2-2z" />
-                                        </svg> Load HDRI Environment</h4>
-                                    <div class="input-group">
-                                        <input type="text" id="hdriUrl" placeholder="Enter .hdr URL..."
-                                            class="input-field">
-                                        <button id="loadHdriBtn" class="btn primary">Load</button>
-                                    </div>
-                                    <div class="quick-samples">
-                                        <p style="font-size:0.8rem;color:var(--text-color-light)">Enter a valid HDRI URL
-                                            above to load custom environments.</p>
-                                    </div>
+                                <div class="control-group">
+                                    <label>Environment Exposure <span id="envIntensityVal" class="value-display">1.0</span></label>
+                                    <input type="range" id="envIntensity" min="0" max="3" step="0.1" value="1" class="slider">
                                 </div>
-                            </div>
-
-                            <div class="control-section" data-feature="lighting-controls" style="margin-top:1rem;border-top:1px solid var(--border-color);padding-top:1rem">
-                                <h4>Lighting</h4>
-                                <div class="control-group"><label>Ambient</label><input type="range"
-                                        id="ambientIntensity" min="0" max="2" step="0.1" value="0.4"
-                                        class="slider"><span class="value-display">0.4</span></div>
-                                <div class="control-group"><label>Directional</label><input type="range"
-                                        id="directionalIntensity" min="0" max="3" step="0.1" value="1"
-                                        class="slider"><span class="value-display">1.0</span></div>
-                                <div class="control-group"><label>Light X</label><input type="range" id="lightPosX"
-                                        min="-10" max="10" step="0.5" value="5" class="slider"><span
-                                        class="value-display">5.0</span></div>
-                                <div class="control-group"><label>Light Y</label><input type="range" id="lightPosY"
-                                        min="-10" max="10" step="0.5" value="5" class="slider"><span
-                                        class="value-display">5.0</span></div>
-
-                                <div class="control-group"><label>Shadow Quality</label><select id="shadowQuality"
-                                        class="select-field advanced-feature">
-                                        <option value="low">Low</option>
-                                        <option value="medium" selected>Medium</option>
-                                        <option value="high">High</option>
-                                        <option value="ultra">Ultra</option>
-                                    </select></div>
-                                <div class="control-group"><label class="checkbox-label"><input type="checkbox"
-                                            id="contactShadows" class="advanced-feature"><span
-                                            class="checkmark"></span>Contact Shadows</label></div>
-                                <div class="control-group"><label>Light Temperature</label><input type="range"
-                                        id="lightTemperature" min="2000" max="10000" step="100" value="6500"
-                                        class="slider advanced-feature"><span class="value-display">6500K</span>
-                                </div>
-                            </div>
-
-                            <div class="control-section" data-feature="effects-controls" style="margin-top:1rem;border-top:1px solid var(--border-color);padding-top:1rem">
-                                <h4>Effects</h4>
-                                <div class="control-group"><label class="checkbox-label"><input type="checkbox"
-                                            id="bloomEnabled"><span class="checkmark"></span>Bloom</label></div>
-                                <div class="control-group"><label>Bloom Strength</label><input type="range"
-                                        id="bloomStrength" min="0" max="3" step="0.1" value="1.5" class="slider"><span
-                                        class="value-display">1.5</span></div>
-
-                                <div class="control-group"><label class="checkbox-label"><input type="checkbox"
-                                            id="ssaoEnabled" class="advanced-feature"><span
-                                            class="checkmark"></span>SSAO</label></div>
-                                <div class="control-group"><label class="checkbox-label"><input type="checkbox"
-                                            id="ssrEnabled" class="advanced-feature"><span
-                                            class="checkmark"></span>Screen Space Reflections</label></div>
-                                <div class="control-group"><label>Depth of Field</label><input type="range"
-                                        id="dofStrength" min="0" max="1" step="0.1" value="0"
-                                        class="slider advanced-feature"><span class="value-display">0.0</span></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item" data-feature="animation-controls">
-                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24">
-                                <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
-                                <path d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M17 17h5M17 7h5" />
-                            </svg> Animation</h3>
-                        <div class="accordion-content">
-                            <div class="control-section">
-                                <div class="control-group"><label class="checkbox-label"><input type="checkbox"
-                                            id="autoRotate"><span class="checkmark"></span>Auto Rotate</label></div>
-                                <div class="control-group"><label>Speed</label><input type="range" id="rotationSpeed"
-                                        min="0" max="5" step="0.1" value="1" class="slider"><span
-                                        class="value-display">1.0</span></div>
-                                <div class="animation-controls">
-                                    <button id="playBtn" class="btn secondary"><svg class="icon" viewBox="0 0 24 24">
-                                            <polygon points="5 3 19 12 5 21 5 3" />
-                                        </svg> Play</button>
-                                    <button id="pauseBtn" class="btn secondary"><svg class="icon" viewBox="0 0 24 24">
-                                            <rect x="6" y="4" width="4" height="16" />
-                                            <rect x="14" y="4" width="4" height="16" />
-                                        </svg> Pause</button>
-                                    <button id="resetBtn" class="btn secondary"><svg class="icon" viewBox="0 0 24 24">
-                                            <path d="M23 4v6h-6M1 20v-6h6" />
-                                            <path
-                                                d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-                                        </svg> Reset</button>
+                                <div class="control-group">
+                                    <label class="checkbox-label"><input type="checkbox" id="showGrid" checked><span class="checkmark"></span> Ground Grid</label>
                                 </div>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Interactive Tools Group -->
                     <div class="accordion-item">
-                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24">
-                                <path
-                                    d="M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3zM12 11l-4 4 1.41 1.41L12 13.83l2.59 2.58L16 15l-4-4z" />
-                            </svg> Superhero Mode</h3>
-                        <div class="accordion-content">
-                            <div class="control-section">
-                                <div class="audio-upload">
-                                    <input type="file" id="audioInput" accept=".mp3,.wav,.ogg,.m4a,.aac,.flac,.wma"
-                                        hidden>
-                                    <div class="audio-drop" id="audioDrop">
-                                        <div class="drop-content">
-                                            <span class="drop-icon"><svg class="icon" viewBox="0 0 24 24">
-                                                    <path
-                                                        d="M9 18V5l12-2v13M9 18a3 3 0 1 1-3-3 3 3 0 0 1 3 3zm12-2a3 3 0 1 1-3-3 3 3 0 0 1 3 3z" />
-                                                </svg></span>
-                                            <p><strong>Custom Audio</strong></p>
-                                            <small>or <span class="link-text">click to browse</span></small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="audio-status" id="audioStatus">
-                                    <span class="audio-indicator">Default theme</span>
-                                    <button id="clearAudio" class="btn secondary" style="display:none">Clear</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item" data-feature="camera-controls">
-                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24">
-                                <path
-                                    d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                                <circle cx="12" cy="13" r="4" />
-                            </svg> Camera</h3>
+                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.77 3.77z"/></svg> Interactive Tools</h3>
                         <div class="accordion-content">
                             <div class="control-section">
                                 <div class="control-group">
-                                    <button id="resetCamera" class="btn secondary full-width">Reset Camera</button>
-                                    <button id="fitToView" class="btn secondary full-width">Fit to View</button>
+                                    <label class="checkbox-label"><input type="checkbox" id="autoRotate"><span class="checkmark"></span> Auto-Orbit</label>
+                                </div>
+                                <div class="control-group">
+                                    <label>Playback Speed <span id="animSpeedVal" class="value-display">1.0x</span></label>
+                                    <input type="range" id="animSpeed" class="slider" min="0.1" max="3" step="0.1" value="1">
                                 </div>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Capture & Export -->
                     <div class="accordion-item">
-                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24">
-                                <path d="M12 20V10M18 20V4M6 20v-6" />
-                            </svg> Analysis</h3>
+                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Capture</h3>
                         <div class="accordion-content">
                             <div class="control-section">
-                                <div class="control-group">
-                                    <button id="statsBtn" class="btn secondary full-width">
-                                        <svg class="icon" viewBox="0 0 24 24">
-                                            <path d="M12 20V10M18 20V4M6 20v-6" />
-                                        </svg>
-                                        Model Statistics
-                                    </button>
-                                </div>
-                                <div class="control-group">
-                                    <button id="measureBtn" class="btn secondary full-width">Measure Distance</button>
-                                    <div id="measurementResult" class="measurement-result"></div>
-                                </div>
+                                <button id="resetCamera" class="btn secondary full-width mb-2">Reset Camera</button>
+                                <button id="screenshotBtn" class="btn primary full-width">High-Res Snapshot</button>
                             </div>
                         </div>
                     </div>
 
-                    <div class="accordion-item" data-feature="export-system">
-                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
-                            </svg> Export</h3>
-                        <div class="accordion-content">
-                            <div class="control-section">
-                                <div class="control-group">
-                                    <button id="screenshotBtn" class="btn primary full-width"><svg class="icon"
-                                            viewBox="0 0 24 24">
-                                            <path
-                                                d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                                            <circle cx="12" cy="13" r="4" />
-                                        </svg> Screenshot</button>
-                                    <button id="exportBtn" class="btn primary full-width"><svg class="icon"
-                                            viewBox="0 0 24 24">
-                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
-                                        </svg> Export Model</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
+                    <!-- Advanced Features Group -->
                     <div class="accordion-item">
-                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24">
-                                <path d="M3 6l9 4-9 4V6zm11 0v12l9-6-9-6z" />
-                            </svg> Hierarchy</h3>
+                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg> Advanced Plugins</h3>
                         <div class="accordion-content">
-                            <div id="hierarchyContainer" class="control-section">
-                                <!-- Hierarchy will be generated here -->
+                            <div class="control-section">
+                                <p class="text-small" style="color: var(--text-muted); margin-bottom: 10px;">These tools load on demand.</p>
+                                
+                                <h4 style="margin: 10px 0 5px; font-size: 0.9em; color: var(--text-color);">Physics Simulation</h4>
+                                <div class="control-group">
+                                    <label class="checkbox-label"><input type="checkbox" id="enablePhysics"><span class="checkmark"></span> Enable Physics</label>
+                                </div>
+                                <div class="control-group">
+                                    <label class="checkbox-label"><input type="checkbox" id="debugPhysics"><span class="checkmark"></span> Debug Physics</label>
+                                </div>
+                                <button id="resetPhysics" class="btn secondary full-width mt-2">Reset Simulation</button>
+
+                                <div class="divider" style="margin: 15px 0; height: 1px; background: var(--border-color); opacity: 0.5;"></div>
+
+                                <h4 style="margin: 10px 0 5px; font-size: 0.9em; color: var(--text-color);">Analysis & Tools</h4>
+                                <div class="tool-buttons mb-2">
+                                    <button class="tool-btn" data-tool="distance">Tape Measure</button>
+                                    <button class="tool-btn" data-tool="angle">Protractor</button>
+                                </div>
+                                <button id="clearMeasurements" class="btn secondary full-width mt-2">Clear Measurements</button>
+
+                                <div class="divider" style="margin: 15px 0; height: 1px; background: var(--border-color); opacity: 0.5;"></div>
+
+                                <h4 style="margin: 10px 0 5px; font-size: 0.9em; color: var(--text-color);">Export</h4>
+                                <button id="exportBtn" class="btn secondary full-width mt-2">Export optimized GLB</button>
                             </div>
                         </div>
                     </div>
-
                 </div>
-            </div>
+            </aside>
 
-            <div id="viewport" class="viewport">
+            <!-- Main Viewport -->
+            <main id="viewport" class="viewport">
                 <div id="viewerContainer"></div>
 
+                <!-- Floating Stats Overlay -->
                 <div id="stats" class="stats-panel">
-                    <div class="stats-header"><span class="stats-title"><svg class="icon" viewBox="0 0 24 24">
-                                <path d="M12 20V10M18 20V4M6 20V16" />
-                            </svg> Stats</span></div>
-                    <div class="stat-item"><span class="stat-label">Vertices</span><span id="vertexCount"
-                            class="stat-value">0</span></div>
-                    <div class="stat-item"><span class="stat-label">Faces</span><span id="faceCount"
-                            class="stat-value">0</span></div>
-                    <div class="stat-item"><span class="stat-label">FPS</span><span id="fpsCounter"
-                            class="stat-value">60</span></div>
+                    <div class="stats-header"><span>Real-time Metrics</span></div>
+                    <div class="stat-item"><span>Polycount</span><span id="faceCount">0</span></div>
+                    <div class="stat-item"><span>Performance</span><span id="fpsCounter">60</span> FPS</div>
                 </div>
+
+                <!-- Load Progress -->
                 <div id="progressBar" class="progress-bar hidden">
                     <div class="progress-fill"></div>
-                    <span class="progress-text">Loading...</span>
+                    <span class="progress-text">Processing Geometry...</span>
                 </div>
-            </div>
+            </main>
 
-            <button id="sidebarToggleBtn" class="sidebar-toggle-btn" aria-label="Toggle Advanced Tools"
-                aria-expanded="false" title="Advanced Settings">
-                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="3"></circle>
-                    <path
-                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
-                    </path>
-                </svg>
+            <!-- Navigation UI -->
+            <button id="sidebarToggleBtn" class="sidebar-toggle-btn" aria-label="Open Tools">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             </button>
 
-            <!-- Floating Bottom Toolbar -->
+            <!-- Cinematic Toolbar -->
             <div id="bottomToolbar" class="superhero-btn-container">
-                <div id="superheroControls" class="superhero-controls hidden"
-                    style="position:static; padding:0; background:none; box-shadow:none; gap: 8px;">
-                    <button id="superheroPlay" class="btn secondary"
-                        style="border-radius: 30px; height: 48px; border: none; background: rgba(255,255,255,0.2);"><svg
-                            class="icon" viewBox="0 0 24 24">
-                            <polygon points="5 3 19 12 5 21 5 3" />
-                        </svg></button>
-                    <button id="superheroPause" class="btn secondary"
-                        style="border-radius: 30px; height: 48px; border: none; background: rgba(255,255,255,0.2);"><svg
-                            class="icon" viewBox="0 0 24 24">
-                            <rect x="6" y="4" width="4" height="16" />
-                            <rect x="14" y="4" width="4" height="16" />
-                        </svg></button>
-                    <button id="superheroReset" class="btn secondary"
-                        style="border-radius: 30px; height: 48px; border: none; background: rgba(255,255,255,0.2);"><svg
-                            class="icon" viewBox="0 0 24 24">
-                            <path d="M23 4v6h-6M1 20v-6h6" />
-                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-                        </svg></button>
+                <div id="superheroControls" class="superhero-controls hidden">
+                    <button id="superheroPlay" class="btn secondary circular"><svg class="icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></button>
+                    <button id="superheroPause" class="btn secondary circular"><svg class="icon" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></button>
+                    <button id="superheroReset" class="btn secondary circular"><svg class="icon" viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></button>
                 </div>
-
-                <button id="superheroBtn" class="superhero-btn" title="Cinematic Mode"
-                    aria-label="Toggle cinematic mode">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3z" />
-                        <path d="M9 12l2 2 4-4" />
-                    </svg>
+                <button id="superheroBtn" class="superhero-btn" title="Toggle Cinematic Mode">
+                    <svg viewBox="0 0 24 24"><path d="M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3z"/></svg>
                     Cinematic Mode
                 </button>
             </div>
-
-            <div id="fadeOverlay" class="fade-overlay hidden"></div>
         </div>
-
     </div>
 
-    <!-- Import Three.js and the modular application -->
+    <!-- Cinematic Overlay -->
+    <div id="fadeOverlay" class="fade-overlay"></div>
+
+    <!-- Engine Dependencies -->
     <script type="importmap">
         {
             "imports": {
@@ -494,8 +236,7 @@
         }
     </script>
 
-    <!-- Load main application -->
+    <!-- Main Entry Point -->
     <script type="module" src="src/main.js"></script>
-
 </body>
 </html>

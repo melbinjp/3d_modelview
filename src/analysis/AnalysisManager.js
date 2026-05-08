@@ -77,369 +77,8 @@ export class AnalysisManager {
      * Setup analysis UI
      */
     setupUI() {
-        this.createAnalysisPanel();
-        this.createMeasurementTools();
-        this.createComparisonPanel();
-        this.createMaterialInspector();
-        this.createPresentationControls();
-    }
-
-    /**
-     * Create main analysis panel
-     */
-    createAnalysisPanel() {
-        const sidebar = document.getElementById('sidebar');
-        if (!sidebar) return;
-
-        const analysisPanel = document.createElement('div');
-        analysisPanel.className = 'accordion-item';
-        analysisPanel.innerHTML = `
-            <div class="accordion-header">
-                <h3>Model Analysis</h3>
-                <svg class="accordion-icon" viewBox="0 0 24 24">
-                    <path d="M6 9l6 6 6-6"/>
-                </svg>
-            </div>
-            <div class="accordion-content">
-                <div class="analysis-section">
-                    <h4>Model Statistics</h4>
-                    <div id="modelStats" class="stats-grid">
-                        <div class="stat-item">
-                            <span class="stat-label">Vertices:</span>
-                            <span id="vertexCount" class="stat-value">-</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Faces:</span>
-                            <span id="faceCount" class="stat-value">-</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Materials:</span>
-                            <span id="materialCount" class="stat-value">-</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Textures:</span>
-                            <span id="textureCount" class="stat-value">-</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Animations:</span>
-                            <span id="animationCount" class="stat-value">-</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">File Size:</span>
-                            <span id="fileSize" class="stat-value">-</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Bounding Box:</span>
-                            <span id="boundingBox" class="stat-value">-</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Memory Usage:</span>
-                            <span id="memoryUsage" class="stat-value">-</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="analysis-section">
-                    <h4>Performance Metrics</h4>
-                    <div class="performance-grid">
-                        <div class="stat-item">
-                            <span class="stat-label">Draw Calls:</span>
-                            <span id="drawCalls" class="stat-value">-</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Render Time:</span>
-                            <span id="renderTime" class="stat-value">-</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">FPS:</span>
-                            <span id="currentFPS" class="stat-value">-</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        sidebar.appendChild(analysisPanel);
-    }
-
-    /**
-     * Create measurement tools
-     */
-    createMeasurementTools() {
-        const sidebar = document.getElementById('sidebar');
-        if (!sidebar) return;
-
-        const measurementPanel = document.createElement('div');
-        measurementPanel.className = 'accordion-item';
-        measurementPanel.innerHTML = `
-            <div class="accordion-header">
-                <h3>Measurement Tools</h3>
-                <svg class="accordion-icon" viewBox="0 0 24 24">
-                    <path d="M6 9l6 6 6-6"/>
-                </svg>
-            </div>
-            <div class="accordion-content">
-                <div class="measurement-tools">
-                    <div class="tool-buttons">
-                        <button id="measureDistance" class="tool-btn" data-tool="distance">
-                            <svg viewBox="0 0 24 24">
-                                <path d="M3 17h18v2H3v-2zm0-6h18v2H3v-2zm0-6h18v2H3V5z"/>
-                            </svg>
-                            Distance
-                        </button>
-                        <button id="measureAngle" class="tool-btn" data-tool="angle">
-                            <svg viewBox="0 0 24 24">
-                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                            </svg>
-                            Angle
-                        </button>
-                        <button id="measureArea" class="tool-btn" data-tool="area">
-                            <svg viewBox="0 0 24 24">
-                                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
-                            </svg>
-                            Area
-                        </button>
-                        <button id="clearMeasurements" class="tool-btn secondary">
-                            <svg viewBox="0 0 24 24">
-                                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                            </svg>
-                            Clear
-                        </button>
-                    </div>
-                    
-                    <div id="measurementResults" class="measurement-results">
-                        <div class="measurement-instructions">
-                            Select a measurement tool and click on the model to start measuring.
-                        </div>
-                    </div>
-                    
-                    <div class="measurement-settings">
-                        <label>
-                            <input type="checkbox" id="showMeasurementLabels" checked>
-                            Show Labels
-                        </label>
-                        <label>
-                            <input type="checkbox" id="snapToVertices" checked>
-                            Snap to Vertices
-                        </label>
-                        <label>
-                            Units:
-                            <select id="measurementUnits">
-                                <option value="meters">Meters</option>
-                                <option value="centimeters">Centimeters</option>
-                                <option value="millimeters">Millimeters</option>
-                                <option value="inches">Inches</option>
-                                <option value="feet">Feet</option>
-                            </select>
-                        </label>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        sidebar.appendChild(measurementPanel);
         this.setupMeasurementEventListeners();
-    }
-
-    /**
-     * Create model comparison panel
-     */
-    createComparisonPanel() {
-        const sidebar = document.getElementById('sidebar');
-        if (!sidebar) return;
-
-        const comparisonPanel = document.createElement('div');
-        comparisonPanel.className = 'accordion-item';
-        comparisonPanel.innerHTML = `
-            <div class="accordion-header">
-                <h3>Model Comparison</h3>
-                <svg class="accordion-icon" viewBox="0 0 24 24">
-                    <path d="M6 9l6 6 6-6"/>
-                </svg>
-            </div>
-            <div class="accordion-content">
-                <div class="comparison-tools">
-                    <button id="enableComparison" class="btn primary">
-                        Enable Side-by-Side Comparison
-                    </button>
-                    
-                    <div id="comparisonControls" class="comparison-controls" style="display: none;">
-                        <div class="comparison-models">
-                            <div class="model-slot">
-                                <h4>Model A</h4>
-                                <div id="modelAInfo" class="model-info">No model loaded</div>
-                                <button id="loadModelA" class="btn secondary">Load Model</button>
-                            </div>
-                            <div class="model-slot">
-                                <h4>Model B</h4>
-                                <div id="modelBInfo" class="model-info">No model loaded</div>
-                                <button id="loadModelB" class="btn secondary">Load Model</button>
-                            </div>
-                        </div>
-                        
-                        <div class="comparison-options">
-                            <label>
-                                <input type="checkbox" id="syncCameras" checked>
-                                Synchronize Cameras
-                            </label>
-                            <label>
-                                <input type="checkbox" id="showDifferences">
-                                Highlight Differences
-                            </label>
-                            <label>
-                                <input type="checkbox" id="overlayMode">
-                                Overlay Mode
-                            </label>
-                        </div>
-                        
-                        <div class="comparison-stats">
-                            <h4>Comparison Results</h4>
-                            <div id="comparisonResults" class="comparison-results">
-                                Load two models to see comparison results.
-                            </div>
-                        </div>
-                        
-                        <button id="disableComparison" class="btn secondary">
-                            Exit Comparison Mode
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        sidebar.appendChild(comparisonPanel);
-        this.setupComparisonEventListeners();
-    }
-
-    /**
-     * Create material inspector
-     */
-    createMaterialInspector() {
-        const sidebar = document.getElementById('sidebar');
-        if (!sidebar) return;
-
-        const materialPanel = document.createElement('div');
-        materialPanel.className = 'accordion-item';
-        materialPanel.innerHTML = `
-            <div class="accordion-header">
-                <h3>Material Inspector</h3>
-                <svg class="accordion-icon" viewBox="0 0 24 24">
-                    <path d="M6 9l6 6 6-6"/>
-                </svg>
-            </div>
-            <div class="accordion-content">
-                <div class="material-inspector">
-                    <div class="material-selection">
-                        <label>Select Material:</label>
-                        <select id="materialSelect">
-                            <option value="">No materials available</option>
-                        </select>
-                    </div>
-                    
-                    <div id="materialProperties" class="material-properties">
-                        <div class="no-material">
-                            Load a model to inspect materials.
-                        </div>
-                    </div>
-                    
-                    <div class="material-actions">
-                        <button id="exportMaterial" class="btn secondary" disabled>
-                            Export Material
-                        </button>
-                        <button id="replaceMaterial" class="btn secondary" disabled>
-                            Replace Material
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        sidebar.appendChild(materialPanel);
         this.setupMaterialInspectorEventListeners();
-    }
-
-    /**
-     * Create presentation controls
-     */
-    createPresentationControls() {
-        const sidebar = document.getElementById('sidebar');
-        if (!sidebar) return;
-
-        const presentationPanel = document.createElement('div');
-        presentationPanel.className = 'accordion-item';
-        presentationPanel.innerHTML = `
-            <div class="accordion-header">
-                <h3>Presentation Mode</h3>
-                <svg class="accordion-icon" viewBox="0 0 24 24">
-                    <path d="M6 9l6 6 6-6"/>
-                </svg>
-            </div>
-            <div class="accordion-content">
-                <div class="presentation-tools">
-                    <button id="enterPresentation" class="btn primary">
-                        Enter Presentation Mode
-                    </button>
-                    
-                    <div id="presentationControls" class="presentation-controls" style="display: none;">
-                        <div class="camera-presets">
-                            <h4>Camera Presets</h4>
-                            <div class="preset-buttons">
-                                <button class="preset-btn" data-preset="front">Front</button>
-                                <button class="preset-btn" data-preset="back">Back</button>
-                                <button class="preset-btn" data-preset="left">Left</button>
-                                <button class="preset-btn" data-preset="right">Right</button>
-                                <button class="preset-btn" data-preset="top">Top</button>
-                                <button class="preset-btn" data-preset="bottom">Bottom</button>
-                                <button class="preset-btn" data-preset="isometric">Isometric</button>
-                            </div>
-                        </div>
-                        
-                        <div class="lighting-presets">
-                            <h4>Lighting Presets</h4>
-                            <div class="preset-buttons">
-                                <button class="lighting-btn" data-lighting="studio">Studio</button>
-                                <button class="lighting-btn" data-lighting="outdoor">Outdoor</button>
-                                <button class="lighting-btn" data-lighting="dramatic">Dramatic</button>
-                                <button class="lighting-btn" data-lighting="soft">Soft</button>
-                            </div>
-                        </div>
-                        
-                        <div class="presentation-navigation">
-                            <button id="prevView" class="nav-btn">
-                                <svg viewBox="0 0 24 24">
-                                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
-                                </svg>
-                                Previous
-                            </button>
-                            <span id="viewCounter">1 / 7</span>
-                            <button id="nextView" class="nav-btn">
-                                Next
-                                <svg viewBox="0 0 24 24">
-                                    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
-                                </svg>
-                            </button>
-                        </div>
-                        
-                        <div class="presentation-settings">
-                            <label>
-                                <input type="checkbox" id="autoTransition">
-                                Auto Transition (5s)
-                            </label>
-                            <label>
-                                <input type="checkbox" id="smoothTransitions" checked>
-                                Smooth Transitions
-                            </label>
-                        </div>
-                        
-                        <button id="exitPresentation" class="btn secondary">
-                            Exit Presentation Mode
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        sidebar.appendChild(presentationPanel);
         this.setupPresentationEventListeners();
     }
 
@@ -485,50 +124,7 @@ export class AnalysisManager {
         }
     }
 
-    /**
-     * Setup comparison event listeners
-     */
-    setupComparisonEventListeners() {
-        const enableBtn = document.getElementById('enableComparison');
-        const disableBtn = document.getElementById('disableComparison');
-        const controls = document.getElementById('comparisonControls');
 
-        if (enableBtn) {
-            enableBtn.addEventListener('click', () => {
-                this.enableComparison();
-                enableBtn.style.display = 'none';
-                controls.style.display = 'block';
-            });
-        }
-
-        if (disableBtn) {
-            disableBtn.addEventListener('click', () => {
-                this.disableComparison();
-                enableBtn.style.display = 'block';
-                controls.style.display = 'none';
-            });
-        }
-
-        // Model loading buttons
-        const loadModelA = document.getElementById('loadModelA');
-        const loadModelB = document.getElementById('loadModelB');
-
-        if (loadModelA) {
-            loadModelA.addEventListener('click', () => this.loadComparisonModel('A'));
-        }
-
-        if (loadModelB) {
-            loadModelB.addEventListener('click', () => this.loadComparisonModel('B'));
-        }
-
-        // Comparison options
-        const syncCameras = document.getElementById('syncCameras');
-        if (syncCameras) {
-            syncCameras.addEventListener('change', (e) => {
-                this.syncCameras = e.target.checked;
-            });
-        }
-    }
 
     /**
      * Setup material inspector event listeners
@@ -547,22 +143,13 @@ export class AnalysisManager {
      */
     setupPresentationEventListeners() {
         const enterBtn = document.getElementById('enterPresentation');
-        const exitBtn = document.getElementById('exitPresentation');
-        const controls = document.getElementById('presentationControls');
+        const controls = document.getElementById('presentationSidebarControls');
 
         if (enterBtn) {
             enterBtn.addEventListener('click', () => {
                 this.enterPresentationMode();
-                enterBtn.style.display = 'none';
-                controls.style.display = 'block';
-            });
-        }
-
-        if (exitBtn) {
-            exitBtn.addEventListener('click', () => {
-                this.exitPresentationMode();
-                enterBtn.style.display = 'block';
-                controls.style.display = 'none';
+                enterBtn.classList.add('hidden');
+                if (controls) controls.classList.remove('hidden');
             });
         }
 
@@ -740,25 +327,25 @@ export class AnalysisManager {
      */
     updateStatisticsDisplay(stats) {
         // Update basic stats
-        this.updateElement('vertexCount', stats.vertices.toLocaleString());
-        this.updateElement('faceCount', stats.faces.toLocaleString());
-        this.updateElement('materialCount', stats.materialCount);
-        this.updateElement('textureCount', stats.textureCount);
-        this.updateElement('animationCount', stats.animations);
+        this.updateElement('vertexCountSidebar', stats.vertices.toLocaleString());
+        this.updateElement('faceCountSidebar', stats.faces.toLocaleString());
+        this.updateElement('materialCountSidebar', stats.materialCount);
+        this.updateElement('textureCountSidebar', stats.textureCount);
+        this.updateElement('animationCountSidebar', stats.animations);
         
         // Update bounding box
         if (stats.boundingBox) {
             const size = stats.boundingBox.size;
             const sizeStr = `${size.x.toFixed(2)} × ${size.y.toFixed(2)} × ${size.z.toFixed(2)}`;
-            this.updateElement('boundingBox', sizeStr);
+            this.updateElement('boundingBoxSidebar', sizeStr);
         }
         
         // Update memory usage
         const memoryMB = (stats.memoryUsage / (1024 * 1024)).toFixed(2);
-        this.updateElement('memoryUsage', `${memoryMB} MB`);
+        this.updateElement('memoryUsageSidebar', `${memoryMB} MB`);
         
         // Update draw calls
-        this.updateElement('drawCalls', stats.drawCalls);
+        this.updateElement('drawCallsSidebar', stats.drawCalls);
     }
 
     /**
@@ -882,15 +469,30 @@ export class AnalysisManager {
      * Create measurement marker
      */
     createMeasurementMarker(point) {
-        const markerGeometry = new THREE.SphereGeometry(0.02, 16, 16);
-        const markerMaterial = new THREE.MeshBasicMaterial({ 
-            color: 0xff4444,
-            transparent: true,
-            opacity: 0.8
-        });
+        const marker = new THREE.Mesh(
+            new THREE.SphereGeometry(0.015, 16, 16),
+            new THREE.MeshBasicMaterial({ 
+                color: 0x6366f1,
+                transparent: true,
+                opacity: 0.8,
+                depthTest: false
+            })
+        );
         
-        const marker = new THREE.Mesh(markerGeometry, markerMaterial);
+        // Add a secondary glow sphere
+        const glow = new THREE.Mesh(
+            new THREE.SphereGeometry(0.03, 16, 16),
+            new THREE.MeshBasicMaterial({ 
+                color: 0x6366f1,
+                transparent: true,
+                opacity: 0.2,
+                depthTest: false
+            })
+        );
+        marker.add(glow);
+        
         marker.position.copy(point);
+        marker.renderOrder = 999;
         
         this.renderingEngine.scene.add(marker);
         this.measurementMarkers.push(marker);
@@ -905,12 +507,17 @@ export class AnalysisManager {
         const point1 = this.measurementPoints[0];
         const point2 = this.measurementPoints[1];
         const distance = point1.distanceTo(point2);
+        const formatted = this.formatDistance(distance);
         
         // Create line
         this.createMeasurementLine([point1, point2]);
         
+        // Create label in the middle
+        const midPoint = new THREE.Vector3().lerpVectors(point1, point2, 0.5);
+        this.createMeasurementLabel(formatted, midPoint);
+        
         // Display result
-        this.displayMeasurementResult('Distance', this.formatDistance(distance));
+        this.displayMeasurementResult('Distance', formatted);
     }
 
     /**
@@ -1086,10 +693,51 @@ export class AnalysisManager {
      * Toggle measurement labels
      */
     toggleMeasurementLabels(show) {
-        // Implementation for showing/hiding measurement labels
         this.measurementLabels.forEach(label => {
             label.visible = show;
         });
+    }
+
+    /**
+     * Create a 3D label for measurements
+     */
+    createMeasurementLabel(text, position) {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = 256;
+        canvas.height = 64;
+        
+        context.fillStyle = 'rgba(15, 23, 42, 0.85)';
+        context.roundRect(0, 0, 256, 64, 12);
+        context.fill();
+        
+        context.strokeStyle = '#6366f1';
+        context.lineWidth = 4;
+        context.roundRect(2, 2, 252, 60, 10);
+        context.stroke();
+        
+        context.fillStyle = '#ffffff';
+        context.font = 'bold 24px Outfit, sans-serif';
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillText(text, 128, 32);
+        
+        const texture = new THREE.CanvasTexture(canvas);
+        const spriteMaterial = new THREE.SpriteMaterial({ 
+            map: texture,
+            transparent: true,
+            depthTest: false
+        });
+        
+        const sprite = new THREE.Sprite(spriteMaterial);
+        sprite.position.copy(position);
+        sprite.position.y += 0.1; // Offset above the point
+        sprite.scale.set(0.2, 0.05, 1);
+        sprite.renderOrder = 1000;
+        
+        this.renderingEngine.scene.add(sprite);
+        this.measurementLabels.push(sprite);
+        return sprite;
     }
 
     /**
@@ -1152,9 +800,10 @@ export class AnalysisManager {
      * Populate material selection dropdown
      */
     populateMaterialSelect() {
-        const select = document.getElementById('materialSelect');
-        if (!select) return;
+        const accordion = document.getElementById('sidebarAccordion');
+        if (!accordion) return;
         
+        const select = document.getElementById('materialSelect');
         select.innerHTML = '<option value="">Select a material...</option>';
         
         this.materialInspector.materials.forEach((matInfo, key) => {
@@ -1338,10 +987,51 @@ export class AnalysisManager {
         // Hide UI elements
         document.body.classList.add('presentation-mode');
         
+        // Create HUD
+        this.createPresentationHUD();
+        
         // Apply first camera preset
         this.applyCameraPreset('front');
         
         this.core.emit('analysis:presentation:entered');
+    }
+
+    /**
+     * Create floating HUD for presentation mode
+     */
+    createPresentationHUD() {
+        if (document.querySelector('.presentation-hud')) return;
+
+        const hud = document.createElement('div');
+        hud.className = 'presentation-hud';
+        hud.innerHTML = `
+            <div class="hud-group">
+                <button id="hudPrev" class="hud-btn" title="Previous View">
+                    <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+                </button>
+                <div id="hudCounter" class="hud-counter">1 / ${this.presentationCameras.length}</div>
+                <button id="hudNext" class="hud-btn" title="Next View">
+                    <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+                </button>
+            </div>
+            <div class="hud-group" style="padding-left: 1rem; border-left: 1px solid rgba(255,255,255,0.1)">
+                <button class="hud-btn" data-preset="front" title="Front View">F</button>
+                <button class="hud-btn" data-preset="top" title="Top View">T</button>
+                <button class="hud-btn" data-preset="isometric" title="Isometric View">I</button>
+            </div>
+            <button id="hudExit" class="hud-exit">Exit Presentation</button>
+        `;
+
+        document.body.appendChild(hud);
+
+        // Bind HUD events
+        document.getElementById('hudPrev').addEventListener('click', () => this.previousPresentationView());
+        document.getElementById('hudNext').addEventListener('click', () => this.nextPresentationView());
+        document.getElementById('hudExit').addEventListener('click', () => this.exitPresentationMode());
+        
+        hud.querySelectorAll('.hud-btn[data-preset]').forEach(btn => {
+            btn.addEventListener('click', () => this.applyCameraPreset(btn.dataset.preset));
+        });
     }
 
     /**
@@ -1352,6 +1042,16 @@ export class AnalysisManager {
         
         // Show UI elements
         document.body.classList.remove('presentation-mode');
+        
+        // Remove HUD
+        const hud = document.querySelector('.presentation-hud');
+        if (hud) hud.remove();
+        
+        // Restore sidebar controls state
+        const enterBtn = document.getElementById('enterPresentation');
+        const controls = document.getElementById('presentationControls');
+        if (enterBtn) enterBtn.style.display = 'block';
+        if (controls) controls.style.display = 'none';
         
         this.core.emit('analysis:presentation:exited');
     }
@@ -1448,19 +1148,58 @@ export class AnalysisManager {
         if (counter) {
             counter.textContent = `${this.currentPresentationView + 1} / ${this.presentationCameras.length}`;
         }
+
+        const hudCounter = document.getElementById('hudCounter');
+        if (hudCounter) {
+            hudCounter.textContent = `${this.currentPresentationView + 1} / ${this.presentationCameras.length}`;
+        }
     }
 
     /**
      * Animate camera to position
      */
     animateCameraTo(position, target) {
-        // Simple implementation - in a full version you'd use GSAP or similar
         const camera = this.renderingEngine.camera;
         const controls = this.renderingEngine.controls;
         
-        camera.position.copy(position);
-        controls.target.copy(target);
-        controls.update();
+        const smoothTransitions = document.getElementById('smoothTransitions');
+        const isSmooth = smoothTransitions ? smoothTransitions.checked : true;
+
+        if (!isSmooth) {
+            camera.position.copy(position);
+            controls.target.copy(target);
+            controls.update();
+            return;
+        }
+
+        // Use simple lerp animation for camera and target
+        const startPos = camera.position.clone();
+        const startTarget = controls.target.clone();
+        const duration = 1000;
+        const startTime = performance.now();
+
+        const animate = (time) => {
+            if (!this.presentationMode && !this.isAnimating) return;
+            
+            const elapsed = time - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // Easing function (ease-out cubic)
+            const ease = 1 - Math.pow(1 - progress, 3);
+            
+            camera.position.lerpVectors(startPos, position, ease);
+            controls.target.lerpVectors(startTarget, target, ease);
+            controls.update();
+
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            } else {
+                this.isAnimating = false;
+            }
+        };
+
+        this.isAnimating = true;
+        requestAnimationFrame(animate);
     }
 
     /**

@@ -1,4 +1,4 @@
-/* Performance Optimizations */
+/* 3D Model Viewer Styles */
 html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -195,38 +195,76 @@ body.dark-mode .empty-state-content {
 }
 
 /* Sidebar (Converted to Centered Settings Modal) */
+/* Sidebar - Modern Left Docked Panel */
 .sidebar {
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0.95);
-    opacity: 0;
-    pointer-events: none;
-    height: 85vh;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 360px;
     z-index: 2000;
-    width: 440px;
-    max-width: 90vw;
     background: var(--sidebar-bg);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 24px;
-    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.15);
+    border-right: 1px solid var(--border-color);
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    transform: translateX(-100%);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     overflow-y: auto;
-    transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1), opacity 0.3s ease;
-    padding-top: 20px;
+    overflow-x: hidden;
 }
 
 body.dark-mode .sidebar {
-    background: var(--sidebar-bg);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+    background: rgba(18, 18, 18, 0.85);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 10px 0 50px rgba(0, 0, 0, 0.6);
 }
 
 .sidebar:not(.collapsed) {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-    pointer-events: all;
+    transform: translateX(0);
+}
+
+.sidebar-toggle-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 2100;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--sidebar-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-lg);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sidebar-toggle-btn:hover {
+    transform: scale(1.05);
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.sidebar-toggle-btn.active {
+    left: 380px; /* Moves with sidebar */
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+    }
+    .sidebar-toggle-btn.active {
+        left: calc(100% - 68px);
+    }
 }
 
 /* Floating Action Bar (FAB) Toolbar */
@@ -281,14 +319,6 @@ body.dark-mode .google-fab-toolbar {
     transform: scale(1.05);
 }
 
-.sidebar:not(.collapsed) {
-    transform: translateX(0);
-    opacity: 1;
-}
-
-.sidebar:not(.collapsed) {
-    transform: translateX(0);
-}
 
 .sidebar-header {
     display: flex;
@@ -1263,7 +1293,18 @@ body.dark-mode .superhero-btn-container {
 }
 
 /* Import additional stylesheets */
-@import url('analysis.css');
+@import url('./src/analysis/analysis.css');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+/* Presentation Mode */
+body.presentation-mode .sidebar,
+body.presentation-mode .toolbar {
+    display: none;
+}
+
+body.presentation-mode .viewport {
+    margin-left: 0;
+}
 
 /* Modal Styles */
 .modal {
@@ -1451,4 +1492,215 @@ body.dark-mode .superhero-btn-container {
         align-self: flex-end;
         margin-top: -0.5rem;
     }
+}
+
+/* Presentation Mode state */
+body.presentation-mode .sidebar {
+    transform: translateX(-100%) !important;
+    opacity: 0;
+    pointer-events: none;
+}
+
+body.presentation-mode #viewerContainer {
+    left: 0 !important;
+    width: 100% !important;
+}
+
+.presentation-hud {
+    position: fixed;
+    bottom: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    z-index: 10000;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body.presentation-mode .presentation-hud {
+    bottom: 2rem;
+}
+
+.hud-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.hud-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hud-btn:hover {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);
+}
+
+.hud-counter {
+    color: white;
+    font-size: 0.95rem;
+    font-weight: 600;
+    min-width: 70px;
+    text-align: center;
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: 0.05em;
+}
+
+.hud-exit {
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    padding: 0.6rem 1.25rem;
+    border-radius: 14px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'Outfit', sans-serif;
+}
+
+.hud-exit:hover {
+    background: #ef4444;
+    color: white;
+    border-color: #ef4444;
+    box-shadow: 0 8px 16px rgba(239, 68, 68, 0.3);
+}
+
+.hud-btn svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+}
+/* Sidebar Statistics Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.accordion-content .stat-item {
+    background: rgba(128, 128, 128, 0.08);
+    padding: 12px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+body.dark-mode .accordion-content .stat-item {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.accordion-content .stat-item:hover {
+    background: rgba(102, 126, 234, 0.1);
+    transform: translateY(-2px);
+}
+
+.accordion-content .stat-label {
+    font-size: 0.65rem;
+    color: var(--text-color-light);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+.accordion-content .stat-value, 
+.accordion-content [id$='Sidebar'] {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text-color);
+    font-family: 'Outfit', sans-serif;
+}
+
+/* UI Dividers */
+.divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 16px 0;
+    opacity: 0.4;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Tool Buttons Grid */
+.tool-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.tool-btn {
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--text-color);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tool-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.tool-btn.active {
+    background: var(--primary-gradient);
+    color: white;
+    border-color: transparent;
+}
+
+/* Utility Margins */
+.mt-2 { margin-top: 8px; }
+.mt-3 { margin-top: 16px; }
+.mb-3 { margin-bottom: 16px; }
+
+/* Section Specific Refinements */
+.audio-upload {
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 12px;
+    padding: 15px;
+    border: 1px dashed var(--border-color);
+}
+
+body.dark-mode .audio-upload {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.file-drop p {
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin: 0;
 }

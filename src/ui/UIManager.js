@@ -119,19 +119,23 @@ export class UIManager {
      * Setup accordion functionality
      */
     setupAccordion() {
-        document.querySelectorAll('.accordion-header').forEach(header => {
-            header.addEventListener('click', () => {
-                const item = header.parentElement;
-                if (item.classList.contains('is-open')) {
-                    item.classList.remove('is-open');
-                } else {
-                    // Close other accordion items
-                    document.querySelectorAll('.accordion-item.is-open').forEach(openItem => {
-                        openItem.classList.remove('is-open');
-                    });
-                    item.classList.add('is-open');
-                }
-            });
+        const accordion = document.getElementById('sidebarAccordion');
+        if (!accordion) return;
+
+        accordion.addEventListener('click', (e) => {
+            const header = e.target.closest('.accordion-header');
+            if (!header) return;
+
+            const item = header.parentElement;
+            if (item.classList.contains('is-open')) {
+                item.classList.remove('is-open');
+            } else {
+                // Close other accordion items
+                accordion.querySelectorAll('.accordion-item.is-open').forEach(openItem => {
+                    openItem.classList.remove('is-open');
+                });
+                item.classList.add('is-open');
+            }
         });
     }
 
@@ -341,11 +345,18 @@ export class UIManager {
             }
         });
 
-        const vertexCount = document.getElementById('vertexCount');
-        const faceCount = document.getElementById('faceCount');
+        const vertexCountEl = document.getElementById('vertexCountSidebar');
+        const faceCountEl = document.getElementById('faceCountSidebar');
+        const memoryUsageEl = document.getElementById('memoryUsageSidebar');
 
-        if (vertexCount) vertexCount.textContent = vertices.toLocaleString();
-        if (faceCount) faceCount.textContent = Math.floor(faces).toLocaleString();
+        if (vertexCountEl) vertexCountEl.textContent = vertices.toLocaleString();
+        if (faceCountEl) faceCountEl.textContent = Math.floor(faces).toLocaleString();
+        
+        // Estimate VRAM usage (rough approximation: 12 bytes per vertex + 12 bytes per face)
+        if (memoryUsageEl) {
+            const vramMB = ((vertices * 12 + faces * 12) / (1024 * 1024)).toFixed(1);
+            memoryUsageEl.textContent = `${vramMB} MB`;
+        }
     }
 
     /**

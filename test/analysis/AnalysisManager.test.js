@@ -24,7 +24,7 @@ describe('AnalysisManager', () => {
       <button id="clearAudio"></button>
     `;
     modelViewer = new ModelViewer();
-    await modelViewer.init();
+    await modelViewer.core.init();
     analysisManager = new AnalysisManager(modelViewer.core);
   });
 

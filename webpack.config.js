@@ -135,8 +135,6 @@ module.exports = (env, argv) => {
             from: 'src/ui/ux-enhancements.css', 
             to: 'src/ui/ux-enhancements.css'
           },
-          { from: 'superhero-theme.mp3', to: 'superhero-theme.mp3' },
-          { from: 'superhero-mode.js', to: 'superhero-mode.js' },
           { 
             from: 'manifest.json', 
             to: 'manifest.json',

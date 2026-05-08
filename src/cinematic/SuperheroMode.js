@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { CinematicEngine } from './src/cinematic/CinematicEngine.js';
+import { CinematicEngine } from './CinematicEngine.js';
 
 export class SuperheroMode {
     constructor(viewer) {
@@ -37,33 +37,44 @@ export class SuperheroMode {
             close: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 6L6 18"/><path d="M6 6L18 18"/></svg>`
         };
 
-        document.getElementById('superheroBtn').innerHTML = this.icons.superhero;
+        const btn = document.getElementById('superheroBtnSidebar');
+        if (btn) btn.innerHTML = `${this.icons.superhero} Launch Cinematic`;
         this.setupEventListeners();
     }
 
     setupEventListeners() {
-        document.getElementById('superheroBtn').addEventListener('click', () => {
-            if (this.superheroMode) {
-                this.exitSuperheroMode();
-            } else {
-                this.activateSuperheroMode();
+        const triggers = ['superheroBtn', 'superheroBtnSidebar'];
+        triggers.forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    if (this.superheroMode) {
+                        this.exitSuperheroMode();
+                    } else {
+                        this.activateSuperheroMode();
+                    }
+                });
             }
         });
 
         const audioDrop = document.getElementById('audioDrop');
         const audioInput = document.getElementById('audioInput');
-        audioDrop.addEventListener('click', () => audioInput.click());
-        audioDrop.addEventListener('dragover', (e) => { e.preventDefault(); audioDrop.classList.add('dragover'); });
-        audioDrop.addEventListener('dragleave', () => audioDrop.classList.remove('dragover'));
-        audioDrop.addEventListener('drop', (e) => {
-            e.preventDefault();
-            audioDrop.classList.remove('dragover');
-            if (e.dataTransfer.files.length > 0) this.loadAudioFile(e.dataTransfer.files[0]);
-        });
-        audioInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) this.loadAudioFile(e.target.files[0]);
-        });
-        document.getElementById('clearAudio').addEventListener('click', () => this.clearCustomAudio());
+        if (audioDrop && audioInput) {
+            audioDrop.addEventListener('click', () => audioInput.click());
+            audioDrop.addEventListener('dragover', (e) => { e.preventDefault(); audioDrop.classList.add('dragover'); });
+            audioDrop.addEventListener('dragleave', () => audioDrop.classList.remove('dragover'));
+            audioDrop.addEventListener('drop', (e) => {
+                e.preventDefault();
+                audioDrop.classList.remove('dragover');
+                if (e.dataTransfer.files.length > 0) this.loadAudioFile(e.dataTransfer.files[0]);
+            });
+            audioInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) this.loadAudioFile(e.target.files[0]);
+            });
+        }
+        
+        const clearBtn = document.getElementById('clearAudio');
+        if (clearBtn) clearBtn.addEventListener('click', () => this.clearCustomAudio());
     }
 
     activateSuperheroMode() {
@@ -224,7 +235,11 @@ export class SuperheroMode {
         this.superheroMode = true;
         controls.enabled = false;
 
-        document.getElementById('superheroBtn').innerHTML = this.icons.close;
+        const triggers = ['superheroBtn', 'superheroBtnSidebar'];
+        triggers.forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) btn.innerHTML = `${this.icons.close} Exit Mode`;
+        });
 
         // Collapse sidebar
         const sidebar = document.getElementById('sidebar');
@@ -239,10 +254,13 @@ export class SuperheroMode {
 
         // Start cinematic sequence after audio setup
         setTimeout(async () => {
+            // Disable physics during cinematic sequence to prevent interaction issues
+            this.viewer.core.emit('physics:toggle', false);
+
             // Setup audio for cinematic engine
             let audioElement = null;
             if (this.customAudioFile || true) { // Always try to play music
-                audioElement = new Audio(this.customAudioFile || 'superhero-theme.mp3');
+                audioElement = new Audio(this.customAudioFile || '../assets/audio/superhero-theme.mp3');
                 audioElement.volume = 0;
 
                 try {
@@ -422,7 +440,11 @@ export class SuperheroMode {
             controls.enabled = true;
         }
 
-        document.getElementById('superheroBtn').innerHTML = this.icons.superhero;
+        const triggers = ['superheroBtn', 'superheroBtnSidebar'];
+        triggers.forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) btn.innerHTML = id === 'superheroBtn' ? this.icons.superhero : `${this.icons.superhero} Launch Cinematic`;
+        });
 
         if (this.originalCameraPos && camera && controls) {
             camera.position.copy(this.originalCameraPos.position);
@@ -463,6 +485,9 @@ export class SuperheroMode {
         if (controls) {
             controls.update();
         }
+
+        // Resume physics if it was previously enabled
+        this.viewer.core.emit('physics:toggle', true);
     }
 
     playAmbientDrone() {
@@ -570,7 +595,7 @@ export class SuperheroMode {
 
     playSuperheroMusic() {
         try {
-            const audioSource = this.customAudioFile || 'superhero-theme.mp3';
+            const audioSource = this.customAudioFile || '../assets/audio/superhero-theme.mp3';
 
             this.superheroAudio = new Audio(audioSource);
             this.superheroAudio.volume = 0;

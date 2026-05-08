@@ -9,7 +9,7 @@ import { AdvancedRenderingManager } from './AdvancedRenderingManager.js';
 import { LightingManager } from './LightingManager.js';
 import { MaterialManager } from './MaterialManager.js';
 import { ContactShadowManager } from './ContactShadowManager.js';
-import { PhysicsEngine } from '../physics/PhysicsEngine.js';
+
 import { WebXRManager } from '../xr/WebXRManager.js';
 
 /**
@@ -32,7 +32,7 @@ export class RenderingEngine {
         this.lightingManager = null;
         this.materialManager = null;
         this.contactShadowManager = null;
-        this.physicsEngine = null;
+
         this.webXRManager = null;
 
         // Lighting system
@@ -72,9 +72,9 @@ export class RenderingEngine {
             await this.initRenderer(container);
             this.initControls();
             this.initLighting();
-            this.initPostProcessing();
             this.initSceneObjects();
-            this.initAdvancedSystems();
+            
+            // Advanced systems like PostProcessing, Contact Shadows, XR will be lazy loaded
 
             this.setupEventListeners();
             this.setupErrorHandling();
@@ -229,11 +229,14 @@ export class RenderingEngine {
         this.scene.add(this.groundPlane);
 
         // Grid helper
-        this.gridHelper = new THREE.GridHelper(20, 20, 0x888888, 0xcccccc);
-        this.gridHelper.material.transparent = true;
-        this.gridHelper.material.opacity = 0.3;
         this.gridHelper.visible = false;
         this.scene.add(this.gridHelper);
+
+        // Add static physics body for ground
+        const physics = this.core.getModule('physics');
+        if (physics) {
+            physics.addRigidBody(this.groundPlane, { type: 'static', shape: 'box' });
+        }
     }
 
     /**
@@ -258,8 +261,7 @@ export class RenderingEngine {
         // Initialize contact shadow manager
         this.contactShadowManager = new ContactShadowManager(this.core, this.renderer, this.scene, this.camera);
 
-        // Initialize physics engine
-        this.physicsEngine = new PhysicsEngine(this.core);
+
 
         // Initialize WebXR manager
         this.webXRManager = new WebXRManager(this.core, this.renderer, this.scene, this.camera);
@@ -271,7 +273,7 @@ export class RenderingEngine {
         this.core.registerModule('lighting', this.lightingManager);
         this.core.registerModule('materials', this.materialManager);
         this.core.registerModule('contactShadows', this.contactShadowManager);
-        this.core.registerModule('physics', this.physicsEngine);
+
         this.core.registerModule('webxr', this.webXRManager);
     }
 
@@ -671,10 +673,7 @@ export class RenderingEngine {
         }
         this.updateAnimations(delta);
 
-        // Update advanced systems
-        if (this.physicsEngine && this.physicsEngine.enabled) {
-            this.physicsEngine.step(delta);
-        }
+
 
         if (this.webXRManager) {
             this.webXRManager.update();
@@ -723,7 +722,7 @@ export class RenderingEngine {
     }
 
     getPhysicsEngine() {
-        return this.physicsEngine;
+        return this.core.getModule('physics');
     }
 
     getWebXRManager() {
@@ -752,8 +751,9 @@ export class RenderingEngine {
      * Add physics body to a mesh
      */
     addPhysicsBody(mesh, options = {}) {
-        if (this.physicsEngine) {
-            return this.physicsEngine.addRigidBody(mesh, options);
+        const physics = this.core.getModule('physics');
+        if (physics) {
+            return physics.addRigidBody(mesh, options);
         }
         return null;
     }
@@ -846,6 +846,21 @@ export class RenderingEngine {
         if (this.lightingManager) {
             this.lightingManager.setBackground(type);
         }
+    }
+
+    /**
+     * Toggle HDR environment mapping
+     */
+    toggleHDR(enabled) {
+        if (!this.lightingManager) return;
+
+        if (enabled) {
+            this.lightingManager.setBackground('environment');
+        } else {
+            this.lightingManager.setBackground('gradient');
+        }
+        
+        this.core.emit('rendering:hdr:toggled', { enabled });
     }
 
     /**

@@ -7,7 +7,8 @@ import { ExportSystem } from './export/ExportSystem.js';
 import { AnalysisManager } from './analysis/AnalysisManager.js';
 import { PerformanceManager } from './performance/PerformanceManager.js';
 import { ModelEditingManager } from './editing/ModelEditingManager.js';
-import { SuperheroMode } from '../superhero-mode.js';
+import { PhysicsEngine } from './physics/PhysicsEngine.js';
+import { SuperheroMode } from './cinematic/SuperheroMode.js';
 
 /**
  * @class ModelViewer
@@ -37,21 +38,11 @@ export class ModelViewer {
         this.renderingEngine = new RenderingEngine(this.core);
         this.assetManager = new AssetManager(this.core);
         this.uiManager = new UIManager(this.core);
-        this.exportSystem = new ExportSystem(this.core);
-        this.analysisManager = new AnalysisManager(this.core);
-        this.modelEditingManager = new ModelEditingManager(this.core);
-        this.performanceManager = null; // Will be initialized after rendering engine
 
         // Register modules with core
         this.core.registerModule('rendering', this.renderingEngine);
         this.core.registerModule('assets', this.assetManager);
         this.core.registerModule('ui', this.uiManager);
-        this.core.registerModule('export', this.exportSystem);
-        this.core.registerModule('analysis', this.analysisManager);
-        this.core.registerModule('editing', this.modelEditingManager);
-
-        // Legacy superhero mode (will be refactored in later tasks)
-        this.superhero = null;
 
         // Stats tracking
         this.stats = { vertices: 0, faces: 0, fps: 60 };
@@ -132,9 +123,6 @@ export class ModelViewer {
     }
 
     _setupEventListeners() {
-        // Initialize superhero mode with legacy interface
-        this.superhero = new SuperheroMode(this);
-
         // Set initial sidebar state
         const sidebar = document.getElementById('sidebar');
         const toggleBtn = document.getElementById('sidebarToggleBtn');
@@ -186,38 +174,28 @@ export class ModelViewer {
      */
     setupFileHandling() {
         // URL loading
+        // URL loading
         const loadUrlBtn = document.getElementById('loadUrlBtn');
         const modelUrl = document.getElementById('modelUrl');
+        const loadUrlBtnSidebar = document.getElementById('loadUrlBtnSidebar');
+        const modelUrlSidebar = document.getElementById('modelUrlSidebar');
 
-        if (loadUrlBtn) {
-            loadUrlBtn.addEventListener('click', () => {
-                const url = modelUrl?.value?.trim();
-                if (url) {
-                    if (this.isValidModelUrl(url)) {
-                        this.loadModelFromUrl(url);
-                    } else {
-                        // Silent validation - no user message
-                        console.warn('Invalid model URL provided:', url);
-                    }
+        const handleUrlLoad = (inputEl) => {
+            const url = inputEl?.value?.trim();
+            if (url) {
+                if (this.isValidModelUrl(url)) {
+                    this.loadModelFromUrl(url);
+                } else {
+                    console.warn('Invalid model URL provided:', url);
                 }
-            });
-        }
+            }
+        };
 
-        if (modelUrl) {
-            modelUrl.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    const url = e.target.value.trim();
-                    if (url) {
-                        if (this.isValidModelUrl(url)) {
-                            this.loadModelFromUrl(url);
-                        } else {
-                            // Silent validation - no user message
-                            console.warn('Invalid model URL provided:', url);
-                        }
-                    }
-                }
-            });
-        }
+        if (loadUrlBtn) loadUrlBtn.addEventListener('click', () => handleUrlLoad(modelUrl));
+        if (loadUrlBtnSidebar) loadUrlBtnSidebar.addEventListener('click', () => handleUrlLoad(modelUrlSidebar));
+
+        if (modelUrl) modelUrl.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleUrlLoad(modelUrl); });
+        if (modelUrlSidebar) modelUrlSidebar.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleUrlLoad(modelUrlSidebar); });
 
         // File drag & drop
         const fileDrop = document.getElementById('fileDrop');
@@ -292,36 +270,14 @@ export class ModelViewer {
      * Setup lighting controls
      */
     setupLightingControls() {
-        const ambientIntensity = document.getElementById('ambientIntensity');
-        const directionalIntensity = document.getElementById('directionalIntensity');
-        const lightPosX = document.getElementById('lightPosX');
-        const lightPosY = document.getElementById('lightPosY');
+        const ambient = document.getElementById('ambientIntensity');
 
-        if (ambientIntensity) {
-            ambientIntensity.addEventListener('input', (e) => {
-                this.renderingEngine.lights.ambient.intensity = parseFloat(e.target.value);
-                this.updateValueDisplay(e.target);
-            });
-        }
-
-        if (directionalIntensity) {
-            directionalIntensity.addEventListener('input', (e) => {
-                this.renderingEngine.lights.directional.intensity = parseFloat(e.target.value);
-                this.updateValueDisplay(e.target);
-            });
-        }
-
-        if (lightPosX) {
-            lightPosX.addEventListener('input', (e) => {
-                this.renderingEngine.lights.directional.position.x = parseFloat(e.target.value);
-                this.updateValueDisplay(e.target);
-            });
-        }
-
-        if (lightPosY) {
-            lightPosY.addEventListener('input', (e) => {
-                this.renderingEngine.lights.directional.position.y = parseFloat(e.target.value);
-                this.updateValueDisplay(e.target);
+        if (ambient) {
+            ambient.addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value);
+                this.renderingEngine.lights.ambient.intensity = val;
+                const valEl = document.getElementById('ambientIntensityVal');
+                if (valEl) valEl.textContent = val.toFixed(1);
             });
         }
     }
@@ -330,32 +286,23 @@ export class ModelViewer {
      * Setup environment controls
      */
     setupEnvironmentControls() {
-        const loadHdriBtn = document.getElementById('loadHdriBtn');
-        const hdriUrl = document.getElementById('hdriUrl');
         const envIntensity = document.getElementById('envIntensity');
-
-        if (loadHdriBtn && hdriUrl) {
-            loadHdriBtn.addEventListener('click', () => {
-                const url = hdriUrl.value.trim();
-                if (url) this.loadEnvironment(url);
-            });
-        }
+        const hdrToggle = document.getElementById('hdrToggle');
 
         if (envIntensity) {
             envIntensity.addEventListener('input', (e) => {
-                this.renderingEngine.renderer.toneMappingExposure = parseFloat(e.target.value);
-                this.updateValueDisplay(e.target);
+                const val = parseFloat(e.target.value);
+                this.renderingEngine.renderer.toneMappingExposure = val;
+                const valEl = document.getElementById('envIntensityVal');
+                if (valEl) valEl.textContent = val.toFixed(1);
             });
         }
 
-        // Sample HDRI buttons
-        document.querySelectorAll('.sample-hdri-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const url = btn.dataset.url;
-                if (hdriUrl) hdriUrl.value = url;
-                this.loadEnvironment(url);
+        if (hdrToggle) {
+            hdrToggle.addEventListener('change', (e) => {
+                this.renderingEngine.toggleHDR(e.target.checked);
             });
-        });
+        }
     }
 
     /**
@@ -363,29 +310,11 @@ export class ModelViewer {
      */
     setupCameraControls() {
         const autoRotate = document.getElementById('autoRotate');
-        const rotationSpeed = document.getElementById('rotationSpeed');
-        const resetCamera = document.getElementById('resetCamera');
-        const fitToView = document.getElementById('fitToView');
 
         if (autoRotate) {
             autoRotate.addEventListener('change', (e) => {
                 this.renderingEngine.controls.autoRotate = e.target.checked;
             });
-        }
-
-        if (rotationSpeed) {
-            rotationSpeed.addEventListener('input', (e) => {
-                this.renderingEngine.controls.autoRotateSpeed = parseFloat(e.target.value);
-                this.updateValueDisplay(e.target);
-            });
-        }
-
-        if (resetCamera) {
-            resetCamera.addEventListener('click', () => this.renderingEngine.resetCamera());
-        }
-
-        if (fitToView) {
-            fitToView.addEventListener('click', () => this.renderingEngine.fitCameraToModel());
         }
     }
 
@@ -393,22 +322,18 @@ export class ModelViewer {
      * Setup export controls
      */
     setupExportControls() {
-        const screenshotBtn = document.getElementById('screenshotBtn');
-        const exportBtn = document.getElementById('exportBtn');
+        const screenshotBtn = document.getElementById('screenshotBtnSidebar') || document.getElementById('screenshotBtn');
+        const exportBtn = document.getElementById('exportBtnSidebar') || document.getElementById('exportBtn');
 
         if (screenshotBtn) {
-            screenshotBtn.addEventListener('click', () => this.exportSystem.exportScreenshot());
+            screenshotBtn.addEventListener('click', () => {
+                this.exportSystem.exportScreenshot();
+            });
         }
 
         if (exportBtn) {
             exportBtn.addEventListener('click', () => {
-                // Show the comprehensive export panel
-                if (this.uiManager && this.uiManager.exportPanel) {
-                    this.uiManager.exportPanel.show();
-                } else {
-                    // Fallback to simple export
-                    this.exportSystem.exportModel();
-                }
+                this.exportSystem.exportModel('glb');
             });
         }
     }
@@ -420,31 +345,20 @@ export class ModelViewer {
         const playBtn = document.getElementById('playBtn');
         const pauseBtn = document.getElementById('pauseBtn');
         const resetBtn = document.getElementById('resetBtn');
+        const animSpeed = document.getElementById('animSpeed');
 
-        if (playBtn) {
-            playBtn.addEventListener('click', () => {
-                this.renderingEngine.animationPaused = false;
+        if (playBtn) playBtn.addEventListener('click', () => { if (this.renderingEngine.mixer) this.renderingEngine.mixer.timeScale = 1; });
+        if (pauseBtn) pauseBtn.addEventListener('click', () => { if (this.renderingEngine.mixer) this.renderingEngine.mixer.timeScale = 0; });
+        if (resetBtn) resetBtn.addEventListener('click', () => { if (this.renderingEngine.mixer) this.renderingEngine.mixer.setTime(0); });
+        
+        if (animSpeed) {
+            animSpeed.addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value);
                 if (this.renderingEngine.mixer) {
-                    this.renderingEngine.mixer.timeScale = 1;
+                    this.renderingEngine.mixer.timeScale = val;
                 }
-            });
-        }
-
-        if (pauseBtn) {
-            pauseBtn.addEventListener('click', () => {
-                this.renderingEngine.animationPaused = true;
-                if (this.renderingEngine.mixer) {
-                    this.renderingEngine.mixer.timeScale = 0;
-                }
-            });
-        }
-
-        if (resetBtn) {
-            resetBtn.addEventListener('click', () => {
-                this.renderingEngine.animationPaused = false;
-                if (this.renderingEngine.mixer) {
-                    this.renderingEngine.mixer.setTime(0);
-                }
+                const valEl = document.getElementById('animSpeedVal');
+                if (valEl) valEl.textContent = `${val.toFixed(1)}x`;
             });
         }
     }
@@ -454,30 +368,68 @@ export class ModelViewer {
      */
     setupVisualControls() {
         const showGrid = document.getElementById('showGrid');
-        const bloomEnabled = document.getElementById('bloomEnabled');
-        const bloomStrength = document.getElementById('bloomStrength');
-
         if (showGrid) {
             showGrid.addEventListener('change', (e) => {
                 this.renderingEngine.gridHelper.visible = e.target.checked;
             });
         }
 
-        if (bloomEnabled) {
-            bloomEnabled.addEventListener('change', (e) => {
-                this.renderingEngine.bloomPass.enabled = e.target.checked;
+        // Physics controls
+        this.setupPhysicsControls();
+        
+        // Cinematic controls
+        this.setupCinematicControls();
+    }
+
+    /**
+     * Setup cinematic controls
+     */
+    setupCinematicControls() {
+        const superheroBtn = document.getElementById('superheroBtn');
+        if (superheroBtn) {
+            superheroBtn.addEventListener('click', async () => {
+                try {
+                    const superhero = await this.core.loadModule('superhero');
+                    if (!superhero.isActive) {
+                        superhero.activate();
+                    } else {
+                        superhero.deactivate();
+                    }
+                } catch (e) {
+                    console.warn('Cinematic module not available:', e);
+                }
+            });
+        }
+    }
+
+    /**
+     * Setup physics controls
+     */
+    setupPhysicsControls() {
+        const enablePhysics = document.getElementById('enablePhysics');
+        const debugPhysics = document.getElementById('debugPhysics');
+        const resetPhysics = document.getElementById('resetPhysics');
+
+        if (enablePhysics) {
+            enablePhysics.addEventListener('change', async (e) => {
+                const physics = await this.core.loadModule('physics');
+                physics.enabled = e.target.checked;
             });
         }
 
-        if (bloomStrength) {
-            bloomStrength.addEventListener('input', (e) => {
-                this.renderingEngine.bloomPass.strength = parseFloat(e.target.value);
-                this.updateValueDisplay(e.target);
+        if (debugPhysics) {
+            debugPhysics.addEventListener('change', async (e) => {
+                const physics = await this.core.loadModule('physics');
+                physics.debug = e.target.checked;
             });
         }
 
-        // Initialize value displays
-        document.querySelectorAll('.slider').forEach(slider => this.updateValueDisplay(slider));
+        if (resetPhysics) {
+            resetPhysics.addEventListener('click', async () => {
+                const physics = await this.core.loadModule('physics');
+                physics.reset();
+            });
+        }
     }
 
     /**
@@ -742,6 +694,16 @@ export class ModelViewer {
             // Force complete refresh to ensure visibility
             this.renderingEngine.forceRefresh();
 
+            // Add physics body to model
+            if (this.physicsEngine) {
+                this.physicsEngine.addRigidBody(data.model, { 
+                    type: 'dynamic', 
+                    shape: 'box', 
+                    mass: 5 
+                });
+                this.physicsEngine.enable();
+            }
+
             // Additional refresh after a short delay
             setTimeout(() => {
                 this.renderingEngine.forceRefresh();
@@ -783,10 +745,15 @@ export class ModelViewer {
     /**
      * Update model statistics
      */
-    updateModelStats(model) {
-        const stats = this.analysisManager.calculateModelStatistics(model);
-        this.stats.vertices = stats.vertices;
-        this.stats.faces = stats.faces;
+    async updateModelStats(model) {
+        try {
+            const analysisManager = await this.core.loadModule('analysis');
+            const stats = analysisManager.calculateModelStatistics(model);
+            this.stats.vertices = stats.vertices;
+            this.stats.faces = stats.faces;
+        } catch (e) {
+            console.warn('Could not update model stats:', e);
+        }
     }
 
     /**
@@ -891,9 +858,16 @@ export class ModelViewer {
         // Always update rendering engine
         this.renderingEngine.update();
 
+        // Update physics engine
+        const physicsEngine = this.core.getModule('physics');
+        if (physicsEngine) {
+            physicsEngine.step(delta);
+        }
+
         // Update superhero mode (legacy)
-        if (this.superhero) {
-            this.superhero.update();
+        const superhero = this.core.getModule('superhero');
+        if (superhero) {
+            superhero.update();
         }
     }
 

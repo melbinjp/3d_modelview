@@ -90,6 +90,65 @@ export class CoreEngine {
     }
 
     /**
+     * Load an advanced module dynamically
+     */
+    async loadModule(name) {
+        if (this.modules.has(name)) {
+            return this.modules.get(name);
+        }
+
+        try {
+            this.setState({ isLoading: true });
+            let moduleInstance;
+
+            switch (name) {
+                case 'physics':
+                    const { PhysicsEngine } = await import('../physics/PhysicsEngine.js');
+                    moduleInstance = new PhysicsEngine(this);
+                    break;
+                case 'analysis':
+                    const { AnalysisManager } = await import('../analysis/AnalysisManager.js');
+                    moduleInstance = new AnalysisManager(this);
+                    moduleInstance.init();
+                    break;
+                case 'export':
+                    const { ExportSystem } = await import('../export/ExportSystem.js');
+                    moduleInstance = new ExportSystem(this);
+                    moduleInstance.init();
+                    break;
+                case 'editing':
+                    const { ModelEditingManager } = await import('../editing/ModelEditingManager.js');
+                    moduleInstance = new ModelEditingManager(this);
+                    await moduleInstance.initialize();
+                    break;
+                case 'superhero':
+                    const { SuperheroMode } = await import('../cinematic/SuperheroMode.js');
+                    // We might need to handle circular dependency with ModelViewer here,
+                    // but for now we pass 'this' (CoreEngine) or modify SuperheroMode later.
+                    moduleInstance = new SuperheroMode(window.modelViewer);
+                    break;
+                default:
+                    throw new Error(`Unknown module: ${name}`);
+            }
+
+            this.registerModule(name, moduleInstance);
+            this.setState({ isLoading: false });
+            return moduleInstance;
+        } catch (error) {
+            this.setState({ isLoading: false });
+            console.error(`Failed to load module ${name}:`, error);
+            if (this.errorManager) {
+                this.errorManager.handleError(error, {
+                    type: 'module_load_error',
+                    severity: 'medium',
+                    context: { moduleName: name }
+                });
+            }
+            throw error;
+        }
+    }
+
+    /**
      * Event system for module communication
      */
     emit(event, data = null) {
