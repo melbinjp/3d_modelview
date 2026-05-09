@@ -3,6 +3,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { PostProcessingManager } from './PostProcessingManager.js';
 import { ShaderManager } from './ShaderManager.js';
 import { AdvancedRenderingManager } from './AdvancedRenderingManager.js';
@@ -114,12 +115,13 @@ export class RenderingEngine {
 
     initScene() {
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0xf0f0f0);
+        // Load the default 'studio' HDR environment on startup
+        this.applyHDRPreset('studio');
     }
 
     initCamera(container) {
         this.camera = new THREE.PerspectiveCamera(
-            75,
+            45,
             container.clientWidth / container.clientHeight,
             0.1,
             1000
@@ -229,6 +231,7 @@ export class RenderingEngine {
         this.scene.add(this.groundPlane);
 
         // Grid helper
+        this.gridHelper = new THREE.GridHelper(50, 50, 0x888888, 0x444444);
         this.gridHelper.visible = false;
         this.scene.add(this.gridHelper);
 
@@ -904,6 +907,50 @@ export class RenderingEngine {
     updateContactShadowSettings(settings) {
         if (this.contactShadowManager) {
             this.contactShadowManager.updateSettings(settings);
+        }
+    }
+
+    /**
+     * Set a solid background color
+     */
+    setBackground(color) {
+        if (!this.scene) return;
+        this.scene.background = color;
+        this.scene.environment = null; // Clear environment map if setting solid color
+    }
+
+    /**
+     * Apply a specific HDR preset
+     */
+    applyHDRPreset(presetName) {
+        const hdriMap = {
+            'studio': 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/equirectangular/royal_esplanade_1k.hdr',
+            'outdoor': 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/equirectangular/venice_sunset_1k.hdr',
+            'sunset': 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/equirectangular/venice_sunset_1k.hdr',
+            'night': 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/equirectangular/moonless_golf_1k.hdr',
+            'forest': 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/equirectangular/pedestrian_overpass_1k.hdr'
+        };
+
+        const url = hdriMap[presetName] || hdriMap['studio'];
+        
+        new RGBELoader().load(url, (texture) => {
+            texture.mapping = THREE.EquirectangularReflectionMapping;
+            this.scene.background = texture;
+            this.scene.environment = texture;
+        }, undefined, (error) => {
+            console.error('Error loading HDRI:', error);
+        });
+    }
+
+    /**
+     * Toggle HDR lighting
+     */
+    toggleHDR(enabled) {
+        if (enabled) {
+            this.applyHDRPreset('studio');
+        } else {
+            this.scene.background = null;
+            this.scene.environment = null;
         }
     }
 

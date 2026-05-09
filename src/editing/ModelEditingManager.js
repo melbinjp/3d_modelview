@@ -205,86 +205,40 @@ export class ModelEditingManager {
      * Create main editing panel
      */
     createEditingPanel() {
-        const sidebar = document.getElementById('sidebar');
-        if (!sidebar) return;
+        // Inject into the accordion div, not the sidebar root, so styling works
+        const accordion = document.querySelector('#sidebar .accordion');
+        if (!accordion) return;
 
         const editingPanel = document.createElement('div');
         editingPanel.className = 'accordion-item';
+        editingPanel.id = 'editingAccordionItem';
         editingPanel.innerHTML = `
-            <div class="accordion-header">
-                <h3>Model Editing</h3>
-                <svg class="accordion-icon" viewBox="0 0 24 24">
-                    <path d="M6 9l6 6 6-6"/>
-                </svg>
-            </div>
+            <h3 class="accordion-header">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                Model Editing
+            </h3>
             <div class="accordion-content">
-                <div class="editing-modes">
-                    <div class="mode-buttons">
-                        <button id="transformMode" class="mode-btn" data-mode="transform">
-                            <svg viewBox="0 0 24 24">
-                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                            </svg>
-                            Transform
-                        </button>
-                        <button id="materialMode" class="mode-btn" data-mode="material">
-                            <svg viewBox="0 0 24 24">
-                                <circle cx="12" cy="12" r="10"/>
-                                <path d="M12 6v6l4 2"/>
-                            </svg>
-                            Material
-                        </button>
-                        <button id="textureMode" class="mode-btn" data-mode="texture">
-                            <svg viewBox="0 0 24 24">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                                <path d="M9 9h6v6H9z"/>
-                            </svg>
-                            Texture
-                        </button>
-                        <button id="geometryMode" class="mode-btn" data-mode="geometry">
-                            <svg viewBox="0 0 24 24">
-                                <polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5"/>
-                            </svg>
-                            Geometry
-                        </button>
-                        <button id="annotateMode" class="mode-btn" data-mode="annotate">
-                            <svg viewBox="0 0 24 24">
-                                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                            </svg>
-                            Annotate
-                        </button>
+                <div class="control-section">
+                    <p class="text-small" style="color:var(--text-muted);margin-bottom:10px;">Select a mesh, then choose an editing mode below.</p>
+                    <div class="mode-buttons" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
+                        <button id="transformMode" class="tool-btn" data-mode="transform" title="Move, Rotate, Scale the model">Transform</button>
+                        <button id="materialMode" class="tool-btn" data-mode="material" title="Edit material colors, roughness, metalness">Material</button>
+                        <button id="textureMode" class="tool-btn" data-mode="texture" title="Swap or upload textures for the model">Texture</button>
+                        <button id="annotateMode" class="tool-btn" data-mode="annotate" title="Add sticky notes and labels to the model">Annotate</button>
                     </div>
-                    
-                    <div class="editing-info">
-                        <div id="selectionInfo" class="selection-info">
-                            No object selected. Click on a model to start editing.
-                        </div>
+                    <div id="selectionInfo" style="font-size:0.78em;color:var(--text-muted);padding:6px;border:1px dashed var(--border-color);border-radius:6px;text-align:center;">
+                        Click on a loaded model to select a part.
                     </div>
-                </div>
-                
-                <div class="editing-actions">
-                    <button id="undoEdit" class="action-btn" disabled>
-                        <svg viewBox="0 0 24 24">
-                            <path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/>
-                        </svg>
-                        Undo
-                    </button>
-                    <button id="redoEdit" class="action-btn" disabled>
-                        <svg viewBox="0 0 24 24">
-                            <path d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z"/>
-                        </svg>
-                        Redo
-                    </button>
-                    <button id="resetEdits" class="action-btn secondary">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
-                        </svg>
-                        Reset
-                    </button>
+                    <div style="display:flex;gap:6px;margin-top:10px;">
+                        <button id="undoEdit" class="btn secondary" style="flex:1;" disabled title="Undo last edit">↩ Undo</button>
+                        <button id="redoEdit" class="btn secondary" style="flex:1;" disabled title="Redo last undone edit">↪ Redo</button>
+                    </div>
+                    <button id="resetEdits" class="btn secondary full-width mt-2" title="Reset all edits to original state">Reset All Edits</button>
                 </div>
             </div>
         `;
 
-        sidebar.appendChild(editingPanel);
+        accordion.appendChild(editingPanel);
         this.setupEditingEventListeners();
     }
 
@@ -292,20 +246,18 @@ export class ModelEditingManager {
      * Create transform controls UI
      */
     createTransformControls() {
-        const sidebar = document.getElementById('sidebar');
-        if (!sidebar) return;
+        const accordion = document.querySelector('#sidebar .accordion');
+        if (!accordion) return;
 
         const transformPanel = document.createElement('div');
         transformPanel.className = 'accordion-item editing-panel';
         transformPanel.id = 'transformPanel';
         transformPanel.style.display = 'none';
         transformPanel.innerHTML = `
-            <div class="accordion-header">
-                <h3>Transform Tools</h3>
-                <svg class="accordion-icon" viewBox="0 0 24 24">
-                    <path d="M6 9l6 6 6-6"/>
-                </svg>
-            </div>
+            <h3 class="accordion-header">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+                Transform Tools
+            </h3>
             <div class="accordion-content">
                 <div class="transform-tools">
                     <div class="transform-modes">
@@ -371,7 +323,7 @@ export class ModelEditingManager {
             </div>
         `;
 
-        sidebar.appendChild(transformPanel);
+        accordion.appendChild(transformPanel);
         this.setupTransformEventListeners();
     }
 
@@ -379,20 +331,18 @@ export class ModelEditingManager {
      * Create material editor UI
      */
     createMaterialEditor() {
-        const sidebar = document.getElementById('sidebar');
-        if (!sidebar) return;
+        const accordion = document.querySelector('#sidebar .accordion');
+        if (!accordion) return;
 
         const materialPanel = document.createElement('div');
         materialPanel.className = 'accordion-item editing-panel';
         materialPanel.id = 'materialPanel';
         materialPanel.style.display = 'none';
         materialPanel.innerHTML = `
-            <div class="accordion-header">
-                <h3>Material Editor</h3>
-                <svg class="accordion-icon" viewBox="0 0 24 24">
-                    <path d="M6 9l6 6 6-6"/>
-                </svg>
-            </div>
+            <h3 class="accordion-header">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+                Material Editor
+            </h3>
             <div class="accordion-content">
                 <div class="material-editor">
                     <div class="material-selection">
@@ -452,7 +402,7 @@ export class ModelEditingManager {
             </div>
         `;
 
-        sidebar.appendChild(materialPanel);
+        accordion.appendChild(materialPanel);
         this.setupMaterialEventListeners();
     }
 
@@ -460,20 +410,18 @@ export class ModelEditingManager {
      * Create texture swapper UI
      */
     createTextureSwapper() {
-        const sidebar = document.getElementById('sidebar');
-        if (!sidebar) return;
+        const accordion = document.querySelector('#sidebar .accordion');
+        if (!accordion) return;
 
         const texturePanel = document.createElement('div');
         texturePanel.className = 'accordion-item editing-panel';
         texturePanel.id = 'texturePanel';
         texturePanel.style.display = 'none';
         texturePanel.innerHTML = `
-            <div class="accordion-header">
-                <h3>Texture Swapper</h3>
-                <svg class="accordion-icon" viewBox="0 0 24 24">
-                    <path d="M6 9l6 6 6-6"/>
-                </svg>
-            </div>
+            <h3 class="accordion-header">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+                Texture Swapper
+            </h3>
             <div class="accordion-content">
                 <div class="texture-swapper">
                     <div class="texture-slot-selection">
@@ -545,7 +493,7 @@ export class ModelEditingManager {
             </div>
         `;
 
-        sidebar.appendChild(texturePanel);
+        accordion.appendChild(texturePanel);
         this.setupTextureEventListeners();
     }
 
@@ -553,20 +501,18 @@ export class ModelEditingManager {
      * Create geometry editor UI
      */
     createGeometryEditor() {
-        const sidebar = document.getElementById('sidebar');
-        if (!sidebar) return;
+        const accordion = document.querySelector('#sidebar .accordion');
+        if (!accordion) return;
 
         const geometryPanel = document.createElement('div');
         geometryPanel.className = 'accordion-item editing-panel';
         geometryPanel.id = 'geometryPanel';
         geometryPanel.style.display = 'none';
         geometryPanel.innerHTML = `
-            <div class="accordion-header">
-                <h3>Geometry Editor</h3>
-                <svg class="accordion-icon" viewBox="0 0 24 24">
-                    <path d="M6 9l6 6 6-6"/>
-                </svg>
-            </div>
+            <h3 class="accordion-header">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+                Geometry Editor
+            </h3>
             <div class="accordion-content">
                 <div class="geometry-editor">
                     <div class="geometry-info">
@@ -629,7 +575,7 @@ export class ModelEditingManager {
             </div>
         `;
 
-        sidebar.appendChild(geometryPanel);
+        accordion.appendChild(geometryPanel);
         this.setupGeometryEventListeners();
     }
 
@@ -637,20 +583,18 @@ export class ModelEditingManager {
      * Create annotation tools UI
      */
     createAnnotationTools() {
-        const sidebar = document.getElementById('sidebar');
-        if (!sidebar) return;
+        const accordion = document.querySelector('#sidebar .accordion');
+        if (!accordion) return;
 
         const annotationPanel = document.createElement('div');
         annotationPanel.className = 'accordion-item editing-panel';
         annotationPanel.id = 'annotationPanel';
         annotationPanel.style.display = 'none';
         annotationPanel.innerHTML = `
-            <div class="accordion-header">
-                <h3>Annotations</h3>
-                <svg class="accordion-icon" viewBox="0 0 24 24">
-                    <path d="M6 9l6 6 6-6"/>
-                </svg>
-            </div>
+            <h3 class="accordion-header">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+                Annotations
+            </h3>
             <div class="accordion-content">
                 <div class="annotation-tools">
                     <div class="annotation-controls">
@@ -703,7 +647,7 @@ export class ModelEditingManager {
             </div>
         `;
 
-        sidebar.appendChild(annotationPanel);
+        accordion.appendChild(annotationPanel);
         this.setupAnnotationEventListeners();
     }
 
@@ -711,20 +655,18 @@ export class ModelEditingManager {
      * Create screenshot tools UI
      */
     createScreenshotTools() {
-        const sidebar = document.getElementById('sidebar');
-        if (!sidebar) return;
+        const accordion = document.querySelector('#sidebar .accordion');
+        if (!accordion) return;
 
         const screenshotPanel = document.createElement('div');
         screenshotPanel.className = 'accordion-item editing-panel';
         screenshotPanel.id = 'screenshotPanel';
         screenshotPanel.style.display = 'none';
         screenshotPanel.innerHTML = `
-            <div class="accordion-header">
-                <h3>Screenshot & Capture</h3>
-                <svg class="accordion-icon" viewBox="0 0 24 24">
-                    <path d="M6 9l6 6 6-6"/>
-                </svg>
-            </div>
+            <h3 class="accordion-header">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+                Screenshot & Capture
+            </h3>
             <div class="accordion-content">
                 <div class="screenshot-tools">
                     <div class="resolution-settings">
@@ -787,7 +729,7 @@ export class ModelEditingManager {
             </div>
         `;
 
-        sidebar.appendChild(screenshotPanel);
+        accordion.appendChild(screenshotPanel);
         this.setupScreenshotEventListeners();
     }
 

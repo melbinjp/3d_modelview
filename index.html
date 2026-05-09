@@ -85,6 +85,10 @@
                                     <input type="text" id="modelUrlSidebar" class="input-field" placeholder="Model URL">
                                     <button id="loadUrlBtnSidebar" class="btn primary">Load</button>
                                 </div>
+                                <button id="uploadLocalBtnSidebar" class="btn secondary full-width mt-2">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" style="display:inline-block; vertical-align:text-bottom; margin-right:4px;" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                    Upload from Device
+                                </button>
                                 <div class="quick-samples mt-2">
                                     <div class="sample-buttons">
                                         <button class="sample-btn" data-sample-id="damaged-helmet">Helmet</button>
@@ -100,14 +104,24 @@
                         <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg> Scene Controls</h3>
                         <div class="accordion-content">
                             <div class="control-section">
-                                <div class="control-group">
-                                    <label>Background Type</label>
-                                    <select id="backgroundSelect" class="select-field">
-                                        <option value="gradient">Glass Gradient</option>
-                                        <option value="solid">Solid Color</option>
-                                        <option value="hdri">HDR Environment</option>
-                                    </select>
-                                </div>
+                        <div class="control-group">
+                            <label>Background Type</label>
+                            <select id="backgroundSelect" class="select-field">
+                                <option value="hdri" selected>HDR Environment</option>
+                                <option value="gradient">Glass Gradient</option>
+                                <option value="solid">Solid Color</option>
+                            </select>
+                        </div>
+                        <div id="hdrPresetGroup" class="control-group">
+                            <label>HDR Preset</label>
+                            <select id="hdrPresetSelect" class="select-field">
+                                <option value="studio" selected>🏢 Studio (Neutral)</option>
+                                <option value="outdoor">☀️ Outdoor Sunlight</option>
+                                <option value="sunset">🌅 Sunset / Golden Hour</option>
+                                <option value="night">🌙 Night / City Lights</option>
+                                <option value="forest">🌲 Forest</option>
+                            </select>
+                        </div>
                                 <div class="control-group">
                                     <label>Ambient Light <span id="ambientIntensityVal" class="value-display">0.5</span></label>
                                     <input type="range" id="ambientIntensity" min="0" max="2" step="0.1" value="0.5" class="slider">
@@ -168,10 +182,22 @@
 
                                 <div class="divider" style="margin: 15px 0; height: 1px; background: var(--border-color); opacity: 0.5;"></div>
 
-                                <h4 style="margin: 10px 0 5px; font-size: 0.9em; color: var(--text-color);">Analysis & Tools</h4>
+                                <h4 style="margin: 10px 0 5px; font-size: 0.9em; color: var(--text-color);">Analysis & Measurement</h4>
+                                <p class="text-small" style="color:var(--text-muted);margin-bottom:8px;">
+                                    Load a model, then click a tool. Click points directly on the 3D model in the viewport.
+                                </p>
                                 <div class="tool-buttons mb-2">
-                                    <button class="tool-btn" data-tool="distance">Tape Measure</button>
-                                    <button class="tool-btn" data-tool="angle">Protractor</button>
+                                    <button class="tool-btn" data-tool="distance"
+                                        title="📏 Tape Measure: Click 2 points on the model to measure the distance between them">
+                                        📏 Tape Measure
+                                    </button>
+                                    <button class="tool-btn" data-tool="angle"
+                                        title="📐 Protractor: Click 3 points (A → Vertex → B) to measure the angle at the Vertex">
+                                        📐 Protractor
+                                    </button>
+                                </div>
+                                <div id="measurementResults" style="min-height:40px;padding:8px;background:var(--bg-secondary,rgba(0,0,0,0.15));border-radius:8px;font-size:0.8em;color:var(--text-muted);margin-bottom:8px;">
+                                    Select a tool above and click on the model to start measuring.
                                 </div>
                                 <button id="clearMeasurements" class="btn secondary full-width mt-2">Clear Measurements</button>
 
@@ -205,7 +231,7 @@
 
             <!-- Navigation UI -->
             <button id="sidebarToggleBtn" class="sidebar-toggle-btn" aria-label="Open Tools">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
             </button>
 
             <!-- Cinematic Toolbar -->

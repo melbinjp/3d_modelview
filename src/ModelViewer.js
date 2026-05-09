@@ -3,12 +3,10 @@ import { CoreEngine } from './core/CoreEngine.js';
 import { RenderingEngine } from './rendering/RenderingEngine.js';
 import { AssetManager } from './assets/AssetManager.js';
 import { UIManager } from './ui/UIManager.js';
+import { PerformanceManager } from './performance/PerformanceManager.js';
 import { ExportSystem } from './export/ExportSystem.js';
 import { AnalysisManager } from './analysis/AnalysisManager.js';
-import { PerformanceManager } from './performance/PerformanceManager.js';
 import { ModelEditingManager } from './editing/ModelEditingManager.js';
-import { PhysicsEngine } from './physics/PhysicsEngine.js';
-import { SuperheroMode } from './cinematic/SuperheroMode.js';
 
 /**
  * @class ModelViewer
@@ -21,11 +19,6 @@ import { SuperheroMode } from './cinematic/SuperheroMode.js';
  * @property {RenderingEngine} renderingEngine - Manages all Three.js rendering.
  * @property {AssetManager} assetManager - Handles loading and managing assets.
  * @property {UIManager} uiManager - Manages the user interface.
- * @property {ExportSystem} exportSystem - Handles exporting models and screenshots.
- * @property {AnalysisManager} analysisManager - Provides analysis and measurement tools.
- * @property {ModelEditingManager} modelEditingManager - Manages model editing features.
- * @property {PerformanceManager} performanceManager - Manages performance monitoring and optimization.
- * @property {SuperheroMode} superhero - Legacy superhero mode instance.
  * @property {object} stats - Tracks basic model and performance statistics.
  * @property {boolean} initialized - Flag indicating if the viewer has been initialized.
  */
@@ -43,6 +36,14 @@ export class ModelViewer {
         this.core.registerModule('rendering', this.renderingEngine);
         this.core.registerModule('assets', this.assetManager);
         this.core.registerModule('ui', this.uiManager);
+
+        this.exportSystem = new ExportSystem(this.core);
+        this.analysisManager = new AnalysisManager(this.core);
+        this.modelEditingManager = new ModelEditingManager(this.core);
+
+        this.core.registerModule('export', this.exportSystem);
+        this.core.registerModule('analysis', this.analysisManager);
+        this.core.registerModule('editing', this.modelEditingManager);
 
         // Stats tracking
         this.stats = { vertices: 0, faces: 0, fps: 60 };
@@ -200,9 +201,14 @@ export class ModelViewer {
         // File drag & drop
         const fileDrop = document.getElementById('fileDrop');
         const fileInput = document.getElementById('fileInput');
+        const uploadLocalBtnSidebar = document.getElementById('uploadLocalBtnSidebar');
 
         if (fileDrop && fileInput) {
             fileDrop.addEventListener('click', () => fileInput.click());
+            
+            if (uploadLocalBtnSidebar) {
+                uploadLocalBtnSidebar.addEventListener('click', () => fileInput.click());
+            }
 
             fileDrop.addEventListener('dragover', (e) => {
                 e.preventDefault();
@@ -236,9 +242,23 @@ export class ModelViewer {
         // Background controls
         const backgroundSelect = document.getElementById('backgroundSelect');
         const bgColor = document.getElementById('bgColor');
+        const hdrPresetGroup = document.getElementById('hdrPresetGroup');
+        const hdrPresetSelect = document.getElementById('hdrPresetSelect');
 
         if (backgroundSelect) {
-            backgroundSelect.addEventListener('change', (e) => this.updateBackground(e.target.value));
+            backgroundSelect.addEventListener('change', (e) => {
+                const val = e.target.value;
+                this.updateBackground(val);
+                if (hdrPresetGroup) {
+                    hdrPresetGroup.style.display = val === 'hdri' ? 'block' : 'none';
+                }
+            });
+        }
+
+        if (hdrPresetSelect) {
+            hdrPresetSelect.addEventListener('change', (e) => {
+                this.renderingEngine.applyHDRPreset(e.target.value);
+            });
         }
 
         if (bgColor) {
@@ -266,6 +286,26 @@ export class ModelViewer {
         this.setupVisualControls();
     }
 
+    /**
+     * Update scene background
+     */
+    updateBackground(type) {
+        if (!this.renderingEngine) return;
+        switch (type) {
+            case 'gradient':
+                this.renderingEngine.scene.background = null;
+                this.renderingEngine.renderer.setClearColor(0x0f1729, 1);
+                break;
+            case 'solid':
+                this.renderingEngine.scene.background = new THREE.Color(0x1a1a2e);
+                break;
+            case 'hdri': {
+                const preset = document.getElementById('hdrPresetSelect')?.value || 'studio';
+                this.renderingEngine.applyHDRPreset(preset);
+                break;
+            }
+        }
+    }
     /**
      * Setup lighting controls
      */
@@ -845,9 +885,16 @@ export class ModelViewer {
         // Update FPS counter
         const delta = this.renderingEngine.clock.getDelta();
         this.stats.fps = Math.round(1 / delta);
-        const fpsCounter = document.getElementById('fpsCounter');
-        if (fpsCounter) {
-            fpsCounter.textContent = this.stats.fps;
+        
+        // Throttle DOM updates for FPS to prevent flickering
+        const now = performance.now();
+        if (!this.lastFpsUpdate || now - this.lastFpsUpdate > 500) {
+            const fpsCounter = document.getElementById('fpsCounter');
+            if (fpsCounter) {
+                // Pad to 2 digits to prevent layout shift
+                fpsCounter.textContent = this.stats.fps.toString().padStart(2, '0');
+            }
+            this.lastFpsUpdate = now;
         }
 
         // Update performance manager
