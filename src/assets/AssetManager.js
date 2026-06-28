@@ -146,6 +146,7 @@ export class AssetManager {
             this.core.emit('assets:model:loaded', { 
                 model: processedModel.model, 
                 animations: processedModel.animations,
+                cameras: processedModel.cameras,
                 url 
             });
             
@@ -287,6 +288,7 @@ export class AssetManager {
             this.core.emit('assets:model:loaded', { 
                 model: processedModel.model, 
                 animations: processedModel.animations,
+                cameras: processedModel.cameras,
                 file: file.name 
             });
             
@@ -342,21 +344,38 @@ export class AssetManager {
     processLoadedModel(loadedModel) {
         let model;
         let animations = [];
+        let cameras = [];
 
         if (loadedModel.scene) {
-            // GLTF format
+            // GLTF / Collada format (loader returns a wrapper object)
             model = loadedModel.scene;
             animations = loadedModel.animations || [];
+            cameras = loadedModel.cameras || [];
         } else if (loadedModel.isBufferGeometry || loadedModel.isGeometry) {
             // Geometry format (STL, PLY)
-            const material = new THREE.MeshPhongMaterial({ color: 0x888888 });
+            const material = new THREE.MeshStandardMaterial({
+                color: 0xcccccc,
+                metalness: 0.1,
+                roughness: 0.6
+            });
             model = new THREE.Mesh(loadedModel, material);
         } else {
-            // Other formats
+            // Other formats (FBX, OBJ, 3DS, ...) — loader returns the object directly.
+            // Animations for these are attached to the returned object.
             model = loadedModel;
+            animations = loadedModel.animations || [];
         }
 
-        return { model, animations };
+        // Collect any cameras embedded in the model's scene graph (FBX, OBJ groups, etc.)
+        if (model && typeof model.traverse === 'function') {
+            model.traverse((child) => {
+                if (child.isCamera && !cameras.includes(child)) {
+                    cameras.push(child);
+                }
+            });
+        }
+
+        return { model, animations, cameras };
     }
 
     /**

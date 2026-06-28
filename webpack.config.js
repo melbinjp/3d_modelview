@@ -136,6 +136,10 @@ module.exports = (env, argv) => {
             to: 'src/ui/ux-enhancements.css'
           },
           { 
+            from: 'src/editing/model-editing.css', 
+            to: 'src/editing/model-editing.css'
+          },
+          { 
             from: 'manifest.json', 
             to: 'manifest.json',
             transform: isProduction ? (content) => {

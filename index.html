@@ -19,6 +19,17 @@
         .loader { width: 50px; height: 50px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #6366f1; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .hidden { display: none !important; }
+        .viewport-drop-overlay {
+            position: absolute; inset: 0; z-index: 50;
+            display: none; align-items: center; justify-content: center;
+            background: rgba(15, 23, 41, 0.78);
+            border: 3px dashed #6366f1; border-radius: 12px;
+            backdrop-filter: blur(4px); pointer-events: none;
+        }
+        .viewport-drop-overlay.active { display: flex; }
+        .viewport-drop-inner { text-align: center; color: #c7d2fe; }
+        .viewport-drop-inner svg { stroke: #818cf8; fill: none; stroke-width: 1.5; margin-bottom: 12px; }
+        .viewport-drop-inner p { font-size: 1.1rem; font-weight: 600; margin: 0; }
     </style>
 </head>
 
@@ -36,7 +47,7 @@
                     <svg class="icon drop-hero-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg>
                 </div>
                 <h2>3D Model Viewer Pro</h2>
-                <p>Drag and drop a .GLB, .GLTF, .OBJ, or .FBX file</p>
+                <p>Drag and drop a model file (.glb, .gltf, .obj, .fbx, .stl, .ply, .dae, .3ds, .usdz) anywhere</p>
                 
                 <div class="input-group centralized-input">
                     <input type="text" id="modelUrl" placeholder="Paste model URL here..." class="input-field centralized-search">
@@ -44,7 +55,7 @@
                 </div>
 
                 <div class="file-drop" id="fileDrop">
-                    <input type="file" id="fileInput" accept=".glb,.gltf,.fbx,.obj" hidden>
+                    <input type="file" id="fileInput" accept=".glb,.gltf,.fbx,.obj,.dae,.stl,.ply,.3ds,.usdz,.usd,.amf" hidden>
                     <div class="drop-content">
                         <button class="btn secondary">Browse Local Files</button>
                     </div>
@@ -121,6 +132,12 @@
                                 <option value="night">🌙 Night / City Lights</option>
                                 <option value="forest">🌲 Forest</option>
                             </select>
+                            <div class="input-group mt-2">
+                                <input type="text" id="hdriUrl" class="input-field" placeholder="Custom .hdr / .exr URL">
+                                <button id="loadHdriUrlBtn" class="btn primary">Load</button>
+                            </div>
+                            <button id="uploadHdriBtn" class="btn secondary full-width mt-2">Upload HDRI from Device</button>
+                            <input type="file" id="hdriFileInput" accept=".hdr,.exr" hidden>
                         </div>
                                 <div class="control-group">
                                     <label>Ambient Light <span id="ambientIntensityVal" class="value-display">0.5</span></label>
@@ -142,8 +159,25 @@
                         <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.77 3.77z"/></svg> Interactive Tools</h3>
                         <div class="accordion-content">
                             <div class="control-section">
+                                <div class="control-group" id="cameraSelectGroup">
+                                    <label for="cameraSelect">Active Camera</label>
+                                    <select id="cameraSelect" class="select-field">
+                                        <option value="free">Free Orbit Camera</option>
+                                    </select>
+                                </div>
                                 <div class="control-group">
                                     <label class="checkbox-label"><input type="checkbox" id="autoRotate"><span class="checkmark"></span> Auto-Orbit</label>
+                                </div>
+                                <div id="animationControls" class="control-group" style="display:none;">
+                                    <label for="animClipSelect">Animation Clip</label>
+                                    <select id="animClipSelect" class="select-field">
+                                        <option value="all">All Clips</option>
+                                    </select>
+                                    <div class="anim-buttons" style="display:flex; gap:6px; margin-top:8px;">
+                                        <button id="playBtn" class="btn secondary" style="flex:1;" title="Play">▶ Play</button>
+                                        <button id="pauseBtn" class="btn secondary" style="flex:1;" title="Pause">⏸ Pause</button>
+                                        <button id="resetBtn" class="btn secondary" style="flex:1;" title="Restart">⟲ Reset</button>
+                                    </div>
                                 </div>
                                 <div class="control-group">
                                     <label>Playback Speed <span id="animSpeedVal" class="value-display">1.0x</span></label>
@@ -158,8 +192,25 @@
                         <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Capture</h3>
                         <div class="accordion-content">
                             <div class="control-section">
+                                <button id="fitToView" class="btn secondary full-width mb-2">Fit Model to View</button>
                                 <button id="resetCamera" class="btn secondary full-width mb-2">Reset Camera</button>
                                 <button id="screenshotBtn" class="btn primary full-width">High-Res Snapshot</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3D Print Check -->
+                    <div class="accordion-item">
+                        <h3 class="accordion-header"><svg class="icon" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg> 3D Print Check</h3>
+                        <div class="accordion-content">
+                            <div class="control-section">
+                                <p class="text-small" style="color:var(--text-muted);margin-bottom:8px;">
+                                    Check whether the loaded model is suitable for 3D printing (watertightness, holes, size and material estimate).
+                                </p>
+                                <button id="checkPrintabilityBtn" class="btn primary full-width">Check Printability</button>
+                                <div id="printabilityResults" style="margin-top:10px;padding:10px;background:var(--bg-secondary,rgba(0,0,0,0.15));border-radius:8px;font-size:0.8em;line-height:1.4;color:var(--text-color);">
+                                    Load a model and click “Check Printability”.
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -215,6 +266,14 @@
             <main id="viewport" class="viewport">
                 <div id="viewerContainer"></div>
 
+                <!-- Full-viewport drag & drop overlay -->
+                <div id="viewportDropOverlay" class="viewport-drop-overlay">
+                    <div class="viewport-drop-inner">
+                        <svg class="icon" viewBox="0 0 24 24" width="64" height="64"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg>
+                        <p>Drop your 3D model anywhere to load</p>
+                    </div>
+                </div>
+
                 <!-- Floating Stats Overlay -->
                 <div id="stats" class="stats-panel">
                     <div class="stats-header"><span>Real-time Metrics</span></div>
@@ -251,18 +310,5 @@
 
     <!-- Cinematic Overlay -->
     <div id="fadeOverlay" class="fade-overlay"></div>
-
-    <!-- Engine Dependencies -->
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
-                "three/examples/jsm/": "https://unpkg.com/three@0.164.1/examples/jsm/"
-            }
-        }
-    </script>
-
-    <!-- Main Entry Point -->
-    <script type="module" src="src/main.js"></script>
 </body>
 </html>

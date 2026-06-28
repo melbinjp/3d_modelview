@@ -163,6 +163,11 @@ export class ModelViewer {
         this.core.on('assets:model:loaded', (data) => this.onModelLoaded(data));
         this.core.on('rendering:model:added', (data) => this.onModelAddedToScene(data));
         this.core.on('assets:load:sample', (data) => this.handleLoadSample(data));
+        this.core.on('camera:reset', () => {
+            const sel = document.getElementById('cameraSelect');
+            if (sel) sel.value = 'free';
+            this.renderingEngine.resetCamera();
+        });
 
         // UI event listeners
         this.setupFileHandling();
@@ -183,11 +188,20 @@ export class ModelViewer {
 
         const handleUrlLoad = (inputEl) => {
             const url = inputEl?.value?.trim();
-            if (url) {
-                if (this.isValidModelUrl(url)) {
-                    this.loadModelFromUrl(url);
+            if (!url) return;
+            if (this.isValidModelUrl(url)) {
+                this.loadModelFromUrl(url);
+            } else {
+                const msg = 'That doesn\'t look like a supported model URL. Supported: .glb, .gltf, .fbx, .obj, .dae, .stl, .ply, .3ds, .usdz, .amf';
+                if (this.uiManager?.notificationSystem) {
+                    this.uiManager.notificationSystem.showNotification({
+                        id: `invalid-url-${Date.now()}`,
+                        type: 'warning',
+                        message: msg,
+                        duration: 8000
+                    });
                 } else {
-                    console.warn('Invalid model URL provided:', url);
+                    console.warn(msg, url);
                 }
             }
         };
@@ -233,6 +247,51 @@ export class ModelViewer {
                 }
             });
         }
+
+        // Full-viewport drag & drop — let users drop a model anywhere on the page.
+        this.setupGlobalDropZone();
+    }
+
+    /**
+     * Enable drag & drop across the whole window with a visual overlay.
+     */
+    setupGlobalDropZone() {
+        const overlay = document.getElementById('viewportDropOverlay');
+        let dragDepth = 0;
+
+        const hasFiles = (e) => {
+            if (!e.dataTransfer) return false;
+            return Array.from(e.dataTransfer.types || []).includes('Files');
+        };
+
+        window.addEventListener('dragenter', (e) => {
+            if (!hasFiles(e)) return;
+            e.preventDefault();
+            dragDepth++;
+            if (overlay) overlay.classList.add('active');
+        });
+
+        window.addEventListener('dragover', (e) => {
+            if (!hasFiles(e)) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+        });
+
+        window.addEventListener('dragleave', (e) => {
+            if (!hasFiles(e)) return;
+            dragDepth = Math.max(0, dragDepth - 1);
+            if (dragDepth === 0 && overlay) overlay.classList.remove('active');
+        });
+
+        window.addEventListener('drop', (e) => {
+            if (!hasFiles(e)) return;
+            e.preventDefault();
+            dragDepth = 0;
+            if (overlay) overlay.classList.remove('active');
+            if (e.dataTransfer.files.length > 0) {
+                this.loadModelFromFile(e.dataTransfer.files[0]);
+            }
+        });
     }
 
     /**
@@ -343,6 +402,41 @@ export class ModelViewer {
                 this.renderingEngine.toggleHDR(e.target.checked);
             });
         }
+
+        // Custom HDRI / EXR loading (URL + file upload)
+        const hdriUrl = document.getElementById('hdriUrl');
+        const loadHdriUrlBtn = document.getElementById('loadHdriUrlBtn');
+        const uploadHdriBtn = document.getElementById('uploadHdriBtn');
+        const hdriFileInput = document.getElementById('hdriFileInput');
+
+        const loadHdri = (source) => {
+            this.renderingEngine.loadCustomHDRI(source).catch((err) => {
+                const msg = `Failed to load HDRI: ${err?.message || 'unknown error'}`;
+                if (this.uiManager?.notificationSystem) {
+                    this.uiManager.notificationSystem.showNotification({
+                        id: `hdri-error-${Date.now()}`, type: 'error', message: msg, duration: 8000
+                    });
+                } else {
+                    console.error(msg);
+                }
+            });
+        };
+
+        if (loadHdriUrlBtn && hdriUrl) {
+            loadHdriUrlBtn.addEventListener('click', () => {
+                const url = hdriUrl.value.trim();
+                if (url) loadHdri(url);
+            });
+            hdriUrl.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && hdriUrl.value.trim()) loadHdri(hdriUrl.value.trim());
+            });
+        }
+        if (uploadHdriBtn && hdriFileInput) {
+            uploadHdriBtn.addEventListener('click', () => hdriFileInput.click());
+            hdriFileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) loadHdri(e.target.files[0]);
+            });
+        }
     }
 
     /**
@@ -356,6 +450,83 @@ export class ModelViewer {
                 this.renderingEngine.controls.autoRotate = e.target.checked;
             });
         }
+
+        // Active camera selector (free orbit vs. embedded model cameras)
+        const cameraSelect = document.getElementById('cameraSelect');
+        if (cameraSelect) {
+            cameraSelect.addEventListener('change', (e) => {
+                const re = this.renderingEngine;
+                const val = e.target.value;
+                if (val === 'free') {
+                    re.setActiveCamera(re.freeCamera);
+                } else {
+                    const cam = re.modelCameras?.[parseInt(val, 10)];
+                    if (cam) {
+                        re.setActiveCamera(cam);
+                    }
+                }
+                // Auto-orbit only applies to the free camera
+                if (autoRotate) {
+                    re.controls.autoRotate = (val === 'free') && autoRotate.checked;
+                }
+            });
+        }
+
+        // Reset Camera button
+        const resetCameraBtn = document.getElementById('resetCamera');
+        if (resetCameraBtn) {
+            resetCameraBtn.addEventListener('click', () => {
+                if (cameraSelect) cameraSelect.value = 'free';
+                this.renderingEngine.resetCamera();
+            });
+        }
+
+        // Fit Model to View button
+        const fitToViewBtn = document.getElementById('fitToView');
+        if (fitToViewBtn) {
+            fitToViewBtn.addEventListener('click', () => {
+                const re = this.renderingEngine;
+                if (re.camera !== re.freeCamera) {
+                    if (cameraSelect) cameraSelect.value = 'free';
+                    re.setActiveCamera(re.freeCamera);
+                }
+                re.fitCameraToModel();
+            });
+        }
+
+        // 3D printability check
+        this.setupPrintabilityCheck();
+    }
+
+    /**
+     * Wire the "Check Printability" button to the PrintabilityChecker.
+     */
+    setupPrintabilityCheck() {
+        const btn = document.getElementById('checkPrintabilityBtn');
+        const results = document.getElementById('printabilityResults');
+        if (!btn || !results) return;
+
+        btn.addEventListener('click', async () => {
+            const model = this.core.getState().currentModel;
+            if (!model) {
+                results.innerHTML = 'Load a model first, then run the check.';
+                return;
+            }
+            results.innerHTML = 'Analyzing model…';
+            // Defer so the UI can paint the "Analyzing" state for big meshes
+            await new Promise(r => setTimeout(r, 30));
+            try {
+                if (!this._printabilityChecker) {
+                    const { PrintabilityChecker } = await import('./analysis/PrintabilityChecker.js');
+                    this._printabilityChecker = new PrintabilityChecker(this.core);
+                }
+                const report = this._printabilityChecker.analyzeModel(model);
+                results.innerHTML = this._printabilityChecker.renderReportHTML(report);
+            } catch (err) {
+                console.error('Printability check failed:', err);
+                results.innerHTML = `Could not analyze this model: ${err?.message || 'unknown error'}`;
+            }
+        });
     }
 
     /**
@@ -386,11 +557,33 @@ export class ModelViewer {
         const pauseBtn = document.getElementById('pauseBtn');
         const resetBtn = document.getElementById('resetBtn');
         const animSpeed = document.getElementById('animSpeed');
+        const animClipSelect = document.getElementById('animClipSelect');
 
-        if (playBtn) playBtn.addEventListener('click', () => { if (this.renderingEngine.mixer) this.renderingEngine.mixer.timeScale = 1; });
-        if (pauseBtn) pauseBtn.addEventListener('click', () => { if (this.renderingEngine.mixer) this.renderingEngine.mixer.timeScale = 0; });
-        if (resetBtn) resetBtn.addEventListener('click', () => { if (this.renderingEngine.mixer) this.renderingEngine.mixer.setTime(0); });
-        
+        if (playBtn) playBtn.addEventListener('click', () => {
+            const re = this.renderingEngine;
+            re.animationPaused = false;
+            if (re.mixer) re.mixer.timeScale = parseFloat(animSpeed?.value || '1');
+        });
+
+        if (pauseBtn) pauseBtn.addEventListener('click', () => {
+            this.renderingEngine.animationPaused = true;
+        });
+
+        if (resetBtn) resetBtn.addEventListener('click', () => {
+            const re = this.renderingEngine;
+            if (re.mixer) {
+                re.mixer.setTime(0);
+                re.animationActions?.forEach(a => a.reset().play());
+                re.animationPaused = false;
+            }
+        });
+
+        if (animClipSelect) {
+            animClipSelect.addEventListener('change', (e) => {
+                this.playAnimationClip(e.target.value);
+            });
+        }
+
         if (animSpeed) {
             animSpeed.addEventListener('input', (e) => {
                 const val = parseFloat(e.target.value);
@@ -598,9 +791,21 @@ export class ModelViewer {
     isValidModelUrl(url) {
         try {
             const urlObj = new URL(url);
-            const supportedExtensions = ['.glb', '.gltf', '.fbx', '.obj', '.dae', '.stl', '.ply'];
+            const supportedExtensions = [
+                '.glb', '.gltf', '.fbx', '.obj', '.dae',
+                '.stl', '.ply', '.3ds', '.usdz', '.usd', '.amf'
+            ];
             const pathname = urlObj.pathname.toLowerCase();
-            return supportedExtensions.some(ext => pathname.endsWith(ext));
+            const hasKnownExtension = supportedExtensions.some(ext => pathname.endsWith(ext));
+
+            // Accept known extensions outright. For URLs without a recognizable
+            // file extension (proxies, CDN endpoints, blob/data URLs) we still
+            // allow the attempt — the loader will surface a clear error if the
+            // format is unsupported, which is friendlier than silently refusing.
+            const lastSegment = pathname.split('/').pop() || '';
+            const looksLikeFile = lastSegment.includes('.');
+
+            return hasKnownExtension || !looksLikeFile;
         } catch (error) {
             return false;
         }
@@ -696,8 +901,6 @@ export class ModelViewer {
      * Handle model loaded event
      */
     onModelLoaded(data) {
-        // Silent model loading
-
         if (!data.model) {
             console.error('No model in loaded data');
             return;
@@ -706,16 +909,105 @@ export class ModelViewer {
         // Add model to scene through rendering engine
         this.renderingEngine.addModel(data.model);
 
-        // Handle animations
-        if (data.animations && data.animations.length > 0) {
-            // Silent animation setup
-            this.renderingEngine.mixer = new THREE.AnimationMixer(data.model);
-            data.animations.forEach(clip => {
-                this.renderingEngine.mixer.clipAction(clip).play();
-            });
-        } else {
-            // Silent - no animations
+        // Setup animations (works for GLTF, FBX, etc.) and the clip UI
+        this.setupModelAnimations(data.model, data.animations);
+
+        // Populate the camera selector with any embedded model cameras
+        this.setupModelCameras(data.cameras);
+    }
+
+    /**
+     * Setup the animation mixer and wire the clip selector / playback UI.
+     * Works whether or not the model contains animations.
+     */
+    setupModelAnimations(model, animations) {
+        const re = this.renderingEngine;
+
+        // Clean up any previous mixer
+        if (re.mixer) {
+            re.mixer.stopAllAction();
+            re.mixer = null;
         }
+        re.animationActions = [];
+        re.animationClips = animations || [];
+        re.animationPaused = false;
+
+        const clipSelect = document.getElementById('animClipSelect');
+        const animControls = document.getElementById('animationControls');
+
+        if (!animations || animations.length === 0) {
+            if (animControls) animControls.style.display = 'none';
+            if (clipSelect) clipSelect.innerHTML = '<option value="all">All Clips</option>';
+            return;
+        }
+
+        re.mixer = new THREE.AnimationMixer(model);
+        animations.forEach((clip) => {
+            re.animationActions.push(re.mixer.clipAction(clip));
+        });
+
+        // Play everything by default
+        re.animationActions.forEach(a => a.reset().play());
+
+        // Honor the current speed slider
+        const speed = parseFloat(document.getElementById('animSpeed')?.value || '1');
+        re.mixer.timeScale = speed;
+
+        if (clipSelect) {
+            clipSelect.innerHTML = '<option value="all">All Clips</option>' +
+                animations.map((c, i) =>
+                    `<option value="${i}">${c.name || ('Clip ' + (i + 1))}</option>`
+                ).join('');
+            clipSelect.value = 'all';
+        }
+        if (animControls) animControls.style.display = '';
+    }
+
+    /**
+     * Play a single animation clip by index, or all clips when index is null.
+     */
+    playAnimationClip(index) {
+        const re = this.renderingEngine;
+        if (!re.mixer || !re.animationActions?.length) return;
+
+        re.animationPaused = false;
+        re.mixer.timeScale = parseFloat(document.getElementById('animSpeed')?.value || '1');
+
+        if (index === null || index === 'all') {
+            re.animationActions.forEach(a => a.reset().play());
+            return;
+        }
+        const i = parseInt(index, 10);
+        re.animationActions.forEach((a, idx) => {
+            if (idx === i) {
+                a.reset().play();
+            } else {
+                a.stop();
+            }
+        });
+    }
+
+    /**
+     * Populate the camera selector with embedded cameras and reset to free view.
+     */
+    setupModelCameras(cameras) {
+        const re = this.renderingEngine;
+        re.modelCameras = cameras || [];
+
+        // Always view a freshly loaded model through the free orbit camera first
+        if (re.freeCamera) {
+            re.setActiveCamera(re.freeCamera);
+        }
+
+        const select = document.getElementById('cameraSelect');
+        if (!select) return;
+
+        let html = '<option value="free">Free Orbit Camera</option>';
+        re.modelCameras.forEach((cam, i) => {
+            html += `<option value="${i}">${cam.name || ('Model Camera ' + (i + 1))}</option>`;
+        });
+        select.innerHTML = html;
+        select.value = 'free';
     }
 
     /**
@@ -902,8 +1194,8 @@ export class ModelViewer {
             this.performanceManager.update(delta);
         }
 
-        // Always update rendering engine
-        this.renderingEngine.update();
+        // Always update rendering engine (pass delta to avoid double getDelta)
+        this.renderingEngine.update(delta);
 
         // Update physics engine
         const physicsEngine = this.core.getModule('physics');

@@ -4,6 +4,8 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
+import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { PostProcessingManager } from './PostProcessingManager.js';
 import { ShaderManager } from './ShaderManager.js';
 import { AdvancedRenderingManager } from './AdvancedRenderingManager.js';
@@ -21,6 +23,9 @@ export class RenderingEngine {
         this.core = core;
         this.scene = null;
         this.camera = null;
+        this.freeCamera = null;      // The user-controlled orbit camera
+        this.modelCameras = [];      // Cameras embedded in the loaded model
+        this.renderPass = null;      // Reference to the post-processing render pass
         this.renderer = null;
         this.controls = null;
         this.composer = null;
@@ -127,6 +132,9 @@ export class RenderingEngine {
             1000
         );
         this.camera.position.set(5, 5, 5);
+        // Keep a permanent reference to the free orbit camera so we can always
+        // switch back to it after viewing through an embedded model camera.
+        this.freeCamera = this.camera;
     }
 
     async initRenderer(container) {
@@ -204,6 +212,7 @@ export class RenderingEngine {
         this.composer = new EffectComposer(this.renderer);
 
         const renderPass = new RenderPass(this.scene, this.camera);
+        this.renderPass = renderPass;
         this.composer.addPass(renderPass);
 
         this.bloomPass = new UnrealBloomPass(
@@ -282,6 +291,23 @@ export class RenderingEngine {
 
     setupEventListeners() {
         window.addEventListener('resize', () => this.onWindowResize());
+
+        // Observe the actual viewport container so the canvas stays correctly
+        // sized when layout changes (sidebar open/close, orientation, etc.),
+        // not only on window resize. Debounced via requestAnimationFrame.
+        const container = this.renderer?.domElement?.parentElement;
+        if (container && typeof ResizeObserver !== 'undefined') {
+            let pending = false;
+            this._resizeObserver = new ResizeObserver(() => {
+                if (pending) return;
+                pending = true;
+                requestAnimationFrame(() => {
+                    pending = false;
+                    this.onWindowResize();
+                });
+            });
+            this._resizeObserver.observe(container);
+        }
 
         // Listen to core events
         this.core.on('model:loaded', (data) => this.onModelLoaded(data));
@@ -369,27 +395,82 @@ export class RenderingEngine {
     }
 
     /**
+     * Switch the camera the scene is rendered through.
+     * Pass the free orbit camera (this.freeCamera) for interactive viewing,
+     * or an embedded model camera to view "through" the model's own camera.
+     */
+    setActiveCamera(camera) {
+        if (!camera) return;
+
+        this.camera = camera;
+
+        const container = this.renderer?.domElement?.parentElement;
+        if (container && camera.isPerspectiveCamera) {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+        }
+
+        const isFree = camera === this.freeCamera;
+
+        // OrbitControls only make sense for the free camera. When viewing
+        // through an embedded camera, the view is fixed by the model.
+        if (this.controls) {
+            this.controls.enabled = isFree;
+        }
+
+        // Keep post-processing / advanced systems pointed at the active camera.
+        if (this.renderPass) this.renderPass.camera = camera;
+        if (this.postProcessingManager) this.postProcessingManager.camera = camera;
+        if (this.advancedRenderingManager) this.advancedRenderingManager.camera = camera;
+        if (this.contactShadowManager) this.contactShadowManager.camera = camera;
+
+        this.core.emit('rendering:camera:changed', { camera, isFree });
+        this.render();
+    }
+
+    /**
      * Fit camera to the current model
      */
     fitCameraToModel() {
         const currentModel = this.core.getState().currentModel;
         if (!currentModel) return;
 
+        // Make sure world matrices are current before measuring
+        currentModel.updateWorldMatrix(true, true);
+
         const box = new THREE.Box3().setFromObject(currentModel);
+        if (box.isEmpty()) return;
         const center = box.getCenter(new THREE.Vector3());
 
         // Adjust model position if it's below ground
         if (box.min.y < 0) {
-            currentModel.position.y = -box.min.y;
+            currentModel.position.y -= box.min.y;
+            currentModel.updateWorldMatrix(true, true);
             box.setFromObject(currentModel);
             center.copy(box.getCenter(new THREE.Vector3()));
         }
 
         const boundingSphere = new THREE.Sphere();
         box.getBoundingSphere(boundingSphere);
-        const radius = boundingSphere.radius;
+        const radius = Math.max(boundingSphere.radius, 0.0001);
 
-        const distance = radius / Math.sin(THREE.MathUtils.degToRad(this.camera.fov / 2));
+        // Frame the bounding sphere within the vertical FOV, with a little padding
+        const fitDistance = radius / Math.sin(THREE.MathUtils.degToRad(this.camera.fov / 2));
+        const distance = fitDistance * 1.15;
+
+        // Adapt the camera clip planes to the model size so huge or tiny
+        // models are never clipped.
+        if (this.camera.isPerspectiveCamera) {
+            this.camera.near = Math.max(radius / 1000, 0.001);
+            this.camera.far = Math.max(radius * 100, 1000);
+            this.camera.updateProjectionMatrix();
+        }
+
+        // Let the user zoom all the way out (and in) regardless of model scale.
+        if (this.controls) {
+            this.controls.minDistance = radius * 0.05;
+            this.controls.maxDistance = distance * 10;
+        }
 
         this.camera.position.set(
             center.x,
@@ -400,18 +481,72 @@ export class RenderingEngine {
         this.controls.target.copy(center);
         this.controls.update();
 
+        // Scale ground grid and shadow range to suit the model
+        this._adaptSceneHelpersToModel(box, radius, center);
+
         // Force render after camera positioning
         this.render();
+    }
+
+    /**
+     * Resize the grid/ground and directional-light shadow frustum so they
+     * remain useful for models of any scale.
+     */
+    _adaptSceneHelpersToModel(box, radius, center) {
+        const span = Math.max(radius * 2.5, 1);
+
+        // Rebuild the grid helper at an appropriate size
+        if (this.gridHelper) {
+            const wasVisible = this.gridHelper.visible;
+            const divisions = 50;
+            const gridSize = Math.ceil(span);
+            this.scene.remove(this.gridHelper);
+            this.gridHelper.geometry?.dispose?.();
+            this.gridHelper = new THREE.GridHelper(gridSize, divisions, 0x888888, 0x444444);
+            this.gridHelper.position.set(center.x, box.min.y, center.z);
+            this.gridHelper.visible = wasVisible;
+            this.scene.add(this.gridHelper);
+        }
+
+        // Resize the shadow-catching ground plane
+        if (this.groundPlane) {
+            this.groundPlane.scale.setScalar(Math.max(span / 50, 0.02));
+            this.groundPlane.position.set(center.x, box.min.y, center.z);
+        }
+
+        // Widen the directional light shadow camera to cover the model
+        const dir = this.lights?.directional;
+        if (dir && dir.shadow) {
+            const cam = dir.shadow.camera;
+            cam.left = -span; cam.right = span;
+            cam.top = span; cam.bottom = -span;
+            cam.near = 0.01;
+            cam.far = span * 6;
+            cam.updateProjectionMatrix();
+            // Position the light relative to the model
+            dir.position.set(center.x + span, center.y + span, center.z + span);
+            dir.target.position.copy(center);
+            dir.target.updateMatrixWorld();
+        }
     }
 
     /**
      * Reset camera to default position
      */
     resetCamera() {
+        // Always return control to the free orbit camera
+        if (this.freeCamera && this.camera !== this.freeCamera) {
+            this.setActiveCamera(this.freeCamera);
+        }
         this.camera.position.set(5, 5, 5);
         this.camera.lookAt(0, 0, 0);
         this.controls.target.set(0, 0, 0);
+        this.controls.enabled = true;
         this.controls.reset();
+        // Re-frame the current model if one is loaded
+        if (this.core.getState().currentModel) {
+            this.fitCameraToModel();
+        }
     }
 
     /**
@@ -422,8 +557,19 @@ export class RenderingEngine {
         const width = container.clientWidth;
         const height = container.clientHeight;
 
-        this.camera.aspect = width / height;
-        this.camera.updateProjectionMatrix();
+        // Avoid NaN aspect ratios when the container is momentarily hidden/zero-sized
+        if (width === 0 || height === 0) return;
+
+        // Update whichever camera is currently active (free or embedded)
+        if (this.camera.isPerspectiveCamera) {
+            this.camera.aspect = width / height;
+            this.camera.updateProjectionMatrix();
+        }
+        // Keep the free camera's aspect in sync too, so switching back is correct.
+        if (this.freeCamera && this.freeCamera !== this.camera) {
+            this.freeCamera.aspect = width / height;
+            this.freeCamera.updateProjectionMatrix();
+        }
         this.renderer.setSize(width, height);
 
         if (this.composer) {
@@ -665,10 +811,12 @@ export class RenderingEngine {
     /**
      * Update the rendering engine (called in animation loop)
      */
-    update() {
+    update(deltaArg) {
         if (!this.initialized) return;
 
-        const delta = this.clock.getDelta();
+        // Accept a delta from the main loop to avoid calling getDelta() twice
+        // per frame (which would starve animations of time).
+        const delta = (typeof deltaArg === 'number') ? deltaArg : this.clock.getDelta();
         const time = this.clock.getElapsedTime();
 
         if (this.controls) {
@@ -923,23 +1071,132 @@ export class RenderingEngine {
      * Apply a specific HDR preset
      */
     applyHDRPreset(presetName) {
+        // The neutral "studio" environment is generated procedurally so it
+        // always works offline and never depends on a remote file.
+        if (presetName === 'studio' || !presetName) {
+            this.applyStudioEnvironment();
+            return;
+        }
+
         const hdriMap = {
-            'studio': 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/equirectangular/royal_esplanade_1k.hdr',
-            'outdoor': 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/equirectangular/venice_sunset_1k.hdr',
-            'sunset': 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/equirectangular/venice_sunset_1k.hdr',
-            'night': 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/equirectangular/moonless_golf_1k.hdr',
-            'forest': 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/equirectangular/pedestrian_overpass_1k.hdr'
+            'outdoor': 'https://threejs.org/examples/textures/equirectangular/venice_sunset_1k.hdr',
+            'sunset': 'https://threejs.org/examples/textures/equirectangular/venice_sunset_1k.hdr',
+            'night': 'https://threejs.org/examples/textures/equirectangular/moonless_golf_1k.hdr',
+            'forest': 'https://threejs.org/examples/textures/equirectangular/pedestrian_overpass_1k.hdr'
         };
 
-        const url = hdriMap[presetName] || hdriMap['studio'];
-        
+        const url = hdriMap[presetName];
+        if (!url) {
+            this.applyStudioEnvironment();
+            return;
+        }
+
         new RGBELoader().load(url, (texture) => {
-            texture.mapping = THREE.EquirectangularReflectionMapping;
-            this.scene.background = texture;
-            this.scene.environment = texture;
+            this._applyEnvironmentTexture(texture);
         }, undefined, (error) => {
-            console.error('Error loading HDRI:', error);
+            console.warn(`Could not load "${presetName}" HDRI, falling back to studio:`, error?.message || error);
+            this.applyStudioEnvironment();
         });
+    }
+
+    /**
+     * Build a neutral, high-quality studio environment using a procedural
+     * RoomEnvironment prefiltered through PMREM. No network required.
+     */
+    applyStudioEnvironment() {
+        try {
+            if (!this._pmremGenerator) {
+                this._pmremGenerator = new THREE.PMREMGenerator(this.renderer);
+            }
+            const envTexture = this._pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+
+            if (this._currentEnvMap && this._currentEnvMap !== envTexture) {
+                this._currentEnvMap.dispose();
+            }
+            this._currentEnvMap = envTexture;
+
+            this.scene.environment = envTexture;
+            // Clean neutral backdrop that suits the dark UI
+            this.scene.background = new THREE.Color(0x15151f);
+            this.core.emit('rendering:environment:changed', { environment: envTexture });
+            this.render();
+        } catch (e) {
+            console.warn('Failed to build studio environment:', e);
+        }
+    }
+
+    /**
+     * Load a custom HDRI/EXR environment from a URL or File.
+     * @param {string|File} source
+     */
+    loadCustomHDRI(source) {
+        return new Promise((resolve, reject) => {
+            const isFile = (typeof File !== 'undefined') && source instanceof File;
+            const name = (isFile ? source.name : source).toLowerCase();
+            const isExr = name.endsWith('.exr');
+            const Loader = isExr ? EXRLoader : RGBELoader;
+            const loader = new Loader();
+
+            const onLoaded = (texture) => {
+                try {
+                    this._applyEnvironmentTexture(texture);
+                    this.core.emit('rendering:environment:loaded', { source: isFile ? name : source });
+                    resolve(texture);
+                } catch (e) {
+                    reject(e);
+                }
+            };
+            const onError = (err) => {
+                console.error('Error loading custom HDRI:', err);
+                reject(err);
+            };
+
+            if (isFile) {
+                const objectUrl = URL.createObjectURL(source);
+                loader.load(objectUrl, (tex) => {
+                    URL.revokeObjectURL(objectUrl);
+                    onLoaded(tex);
+                }, undefined, (err) => {
+                    URL.revokeObjectURL(objectUrl);
+                    onError(err);
+                });
+            } else {
+                loader.load(source, onLoaded, undefined, onError);
+            }
+        });
+    }
+
+    /**
+     * Convert an equirectangular HDR texture into a prefiltered environment map
+     * (PMREM) for high-quality reflections, and use it for background + IBL.
+     */
+    _applyEnvironmentTexture(texture) {
+        texture.mapping = THREE.EquirectangularReflectionMapping;
+
+        try {
+            if (!this._pmremGenerator) {
+                this._pmremGenerator = new THREE.PMREMGenerator(this.renderer);
+                this._pmremGenerator.compileEquirectangularShader();
+            }
+            const envMap = this._pmremGenerator.fromEquirectangular(texture).texture;
+
+            // Dispose the previous generated environment to avoid leaks
+            if (this._currentEnvMap && this._currentEnvMap !== envMap) {
+                this._currentEnvMap.dispose();
+            }
+            this._currentEnvMap = envMap;
+
+            this.scene.environment = envMap;   // High-quality reflections / IBL
+            this.scene.background = texture;    // Crisp equirect background
+        } catch (e) {
+            // Fallback: use the raw texture directly if PMREM fails
+            console.warn('PMREM generation failed, using raw texture:', e);
+            this.scene.environment = texture;
+            this.scene.background = texture;
+        }
+
+        this.core.emit('rendering:environment:changed', { environment: this.scene.environment });
+        this.render();
     }
 
     /**
