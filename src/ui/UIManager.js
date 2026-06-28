@@ -56,11 +56,26 @@ export class UIManager {
      * Setup core event listeners
      */
     setupEventListeners() {
-        // Listen to core events - only show loading progress, no error messages to users
-        this.core.on('assets:loading:start', () => this.showProgress(true));
-        this.core.on('assets:loading:progress', (data) => this.updateProgress(data.progress));
-        this.core.on('assets:loading:complete', () => this.showProgress(false));
+        // Loading progress (reference-counted so overlapping loads — e.g. a model
+        // plus its textures plus an HDRI — keep the bar visible until all finish)
+        this._loadingCount = 0;
+        this.core.on('assets:loading:start', () => {
+            this._loadingCount += 1;
+            this.showProgress(true);
+            this.setProgressIndeterminate(true);
+        });
+        this.core.on('assets:loading:progress', (data) => {
+            if (data && typeof data.progress === 'number' && isFinite(data.progress) && data.progress > 0) {
+                this.setProgressIndeterminate(false);
+                this.updateProgress(data.progress);
+            }
+        });
+        this.core.on('assets:loading:complete', () => {
+            this._loadingCount = Math.max(0, this._loadingCount - 1);
+            if (this._loadingCount === 0) this.showProgress(false);
+        });
         this.core.on('assets:loading:error', (data) => {
+            this._loadingCount = 0;
             this.showProgress(false);
             if (this.notificationSystem) {
                 this.notificationSystem.showNotification({
@@ -74,6 +89,7 @@ export class UIManager {
 
         this.core.on('assets:model:loaded', (data) => this.onModelLoaded(data));
         this.core.on('assets:model:error', (data) => {
+            this._loadingCount = 0;
             this.showProgress(false);
             if (this.notificationSystem) {
                 this.notificationSystem.showNotification({
@@ -247,7 +263,6 @@ export class UIManager {
      * Show progress indicator
      */
     showProgress(show, text = 'Loading...') {
-        const progressBar = document.getElementById('progressBar');
         const progressText = document.querySelector('.progress-text');
 
         if (show) {
@@ -256,7 +271,26 @@ export class UIManager {
                 progressText.textContent = text;
             }
         } else {
+            this.setProgressIndeterminate(false);
+            const progressFill = document.querySelector('.progress-fill');
+            if (progressFill) progressFill.style.width = '0%';
             this.hidePanel('progress');
+        }
+    }
+
+    /**
+     * Toggle the indeterminate (animated sweeping) state of the progress bar,
+     * used while loading something whose total size is unknown (parsed files,
+     * HDRIs, effects).
+     */
+    setProgressIndeterminate(on) {
+        const progressFill = document.querySelector('.progress-fill');
+        if (!progressFill) return;
+        if (on) {
+            progressFill.classList.add('indeterminate');
+            progressFill.style.width = '';
+        } else {
+            progressFill.classList.remove('indeterminate');
         }
     }
 
@@ -266,7 +300,8 @@ export class UIManager {
     updateProgress(progress) {
         const progressFill = document.querySelector('.progress-fill');
         if (progressFill) {
-            progressFill.style.width = `${progress * 100}%`;
+            progressFill.classList.remove('indeterminate');
+            progressFill.style.width = `${Math.min(100, progress * 100)}%`;
         }
     }
 

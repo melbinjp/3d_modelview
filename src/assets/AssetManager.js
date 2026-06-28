@@ -243,6 +243,7 @@ export class AssetManager {
     async loadModelFromFile(file) {
         try {
             this.core.setState({ isLoading: true });
+            this.core.emit('assets:loading:start', { url: file.name, itemsLoaded: 0, itemsTotal: 1 });
             
             // Check file size
             const maxFileSize = 100 * 1024 * 1024; // 100MB
@@ -285,6 +286,7 @@ export class AssetManager {
             const processedModel = this.processLoadedModel(loadedModel);
             
             this.core.setState({ isLoading: false });
+            this.core.emit('assets:loading:complete');
             this.core.emit('assets:model:loaded', { 
                 model: processedModel.model, 
                 animations: processedModel.animations,
@@ -296,8 +298,132 @@ export class AssetManager {
             
         } catch (error) {
             this.core.setState({ isLoading: false, error: error.message });
+            this.core.emit('assets:loading:complete');
             this.core.emit('assets:model:error', { error, file: file.name });
             throw error;
+        }
+    }
+
+    /**
+     * Load a model that is split across multiple files (e.g. a .gltf with an
+     * external .bin and texture images, or an .obj with a .mtl and textures).
+     * Accepts a FileList / array of File objects (from a multi-select or a
+     * folder upload). Resources are served from in-memory blob URLs and
+     * resolved by basename/relative-path via the LoadingManager URL modifier.
+     * @param {FileList|File[]} fileList
+     */
+    async loadModelFromFiles(fileList) {
+        const files = Array.from(fileList || []);
+        if (files.length === 0) {
+            throw new Error('No files provided');
+        }
+        if (files.length === 1) {
+            return this.loadModelFromFile(files[0]);
+        }
+
+        const modelExts = ['glb', 'gltf', 'fbx', 'obj', 'dae', 'stl', 'ply', '3ds', 'usdz', 'usd', 'amf'];
+        const objectUrls = [];
+        const blobByPath = new Map();
+
+        const entries = files.map((file) => {
+            const url = URL.createObjectURL(file);
+            objectUrls.push(url);
+            const rel = (file.webkitRelativePath || file.name).replace(/\\/g, '/').toLowerCase();
+            const base = rel.split('/').pop();
+            // Register multiple keys so resources resolve whether referenced by
+            // full relative path or by bare filename.
+            blobByPath.set(rel, url);
+            blobByPath.set(base, url);
+            return { file, url, rel, base, ext: base.split('.').pop() };
+        });
+
+        const cleanup = () => {
+            this.loadingManager.setURLModifier(undefined);
+            objectUrls.forEach((u) => URL.revokeObjectURL(u));
+        };
+
+        // Pick the primary model file: prefer glTF/GLB, then any known model format
+        const primary =
+            entries.find((e) => e.ext === 'gltf' || e.ext === 'glb') ||
+            entries.find((e) => modelExts.includes(e.ext));
+
+        if (!primary) {
+            cleanup();
+            const error = new Error('No supported 3D model file was found in the selected files/folder.');
+            this.core.emit('assets:model:error', { error });
+            throw error;
+        }
+
+        const loader = this.getLoaderForExtension(primary.ext);
+        if (!loader) {
+            cleanup();
+            const error = new Error(`Unsupported file format: .${primary.ext}`);
+            this.core.emit('assets:model:error', { error });
+            throw error;
+        }
+
+        // Resolve any resource URL the loaders request to our in-memory blobs
+        this.loadingManager.setURLModifier((requested) => {
+            if (/^(data:|blob:)/i.test(requested)) return requested;
+            let key = requested.split('?')[0].replace(/\\/g, '/');
+            try { key = decodeURIComponent(key); } catch (e) { /* keep as-is */ }
+            key = key.toLowerCase();
+            if (blobByPath.has(key)) return blobByPath.get(key);
+            const base = key.split('/').pop();
+            if (blobByPath.has(base)) return blobByPath.get(base);
+            return requested;
+        });
+
+        try {
+            this.core.setState({ isLoading: true });
+            this.core.emit('assets:loading:start', { url: primary.base, itemsLoaded: 0, itemsTotal: files.length });
+
+            let loadedModel;
+            if (primary.ext === 'gltf') {
+                // Parse the JSON text with an empty path so relative URIs are
+                // requested as-is and remapped by the URL modifier.
+                const text = await this.readFileAsText(primary.file);
+                loadedModel = await this.parseWithLoader(loader, text, '');
+            } else if (primary.ext === 'glb') {
+                const buffer = await this.readFileAsArrayBuffer(primary.file);
+                loadedModel = await this.parseWithLoader(loader, buffer, '');
+            } else if (primary.ext === 'obj') {
+                // Apply an accompanying .mtl (and its textures) if present
+                const mtlEntry = entries.find((e) => e.ext === 'mtl');
+                if (mtlEntry && typeof loader.setMaterials === 'function') {
+                    const mtlLoader = this.getLoaderForExtension('mtl');
+                    if (mtlLoader) {
+                        const materials = await this.loadWithLoader(mtlLoader, mtlEntry.url);
+                        if (materials && typeof materials.preload === 'function') materials.preload();
+                        loader.setMaterials(materials);
+                    }
+                }
+                loadedModel = await this.loadWithLoader(loader, primary.url);
+            } else {
+                // FBX/DAE/etc. — load via the primary blob URL; external textures
+                // resolve through the URL modifier by basename.
+                loadedModel = await this.loadWithLoader(loader, primary.url);
+            }
+
+            const processedModel = this.processLoadedModel(loadedModel);
+
+            this.core.setState({ isLoading: false });
+            this.core.emit('assets:loading:complete');
+            this.core.emit('assets:model:loaded', {
+                model: processedModel.model,
+                animations: processedModel.animations,
+                cameras: processedModel.cameras,
+                file: primary.base
+            });
+
+            return processedModel;
+        } catch (error) {
+            this.core.setState({ isLoading: false, error: error.message });
+            this.core.emit('assets:loading:complete');
+            this.core.emit('assets:model:error', { error, file: primary.base });
+            throw error;
+        } finally {
+            cleanup();
         }
     }
 
@@ -417,6 +543,18 @@ export class AssetManager {
             reader.onload = (e) => resolve(e.target.result);
             reader.onerror = (e) => reject(e);
             reader.readAsArrayBuffer(file);
+        });
+    }
+
+    /**
+     * Read file as text (Promise wrapper)
+     */
+    readFileAsText(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.onerror = (e) => reject(e);
+            reader.readAsText(file);
         });
     }
 

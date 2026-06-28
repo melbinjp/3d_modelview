@@ -47,7 +47,7 @@
                     <svg class="icon drop-hero-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg>
                 </div>
                 <h2>3D Model Viewer Pro</h2>
-                <p>Drag and drop a model file (.glb, .gltf, .obj, .fbx, .stl, .ply, .dae, .3ds, .usdz) anywhere</p>
+                <p>Drag and drop a model file or a whole folder (with textures) anywhere. Supports .glb, .gltf, .obj, .fbx, .stl, .ply, .dae, .3ds, .usdz</p>
                 
                 <div class="input-group centralized-input">
                     <input type="text" id="modelUrl" placeholder="Paste model URL here..." class="input-field centralized-search">
@@ -55,9 +55,11 @@
                 </div>
 
                 <div class="file-drop" id="fileDrop">
-                    <input type="file" id="fileInput" accept=".glb,.gltf,.fbx,.obj,.dae,.stl,.ply,.3ds,.usdz,.usd,.amf" hidden>
+                    <input type="file" id="fileInput" accept=".glb,.gltf,.fbx,.obj,.dae,.stl,.ply,.3ds,.usdz,.usd,.amf,.bin,.mtl,.png,.jpg,.jpeg,.webp,.ktx2,.basis,.tga" multiple hidden>
+                    <input type="file" id="folderInput" webkitdirectory directory multiple hidden>
                     <div class="drop-content">
-                        <button class="btn secondary">Browse Local Files</button>
+                        <button class="btn secondary">Browse Files</button>
+                        <button id="uploadFolderBtn" class="btn secondary">Upload Folder</button>
                     </div>
                 </div>
 
@@ -99,6 +101,10 @@
                                 <button id="uploadLocalBtnSidebar" class="btn secondary full-width mt-2">
                                     <svg viewBox="0 0 24 24" width="16" height="16" style="display:inline-block; vertical-align:text-bottom; margin-right:4px;" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
                                     Upload from Device
+                                </button>
+                                <button id="uploadFolderBtnSidebar" class="btn secondary full-width mt-2">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" style="display:inline-block; vertical-align:text-bottom; margin-right:4px;" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                                    Upload Folder (with textures)
                                 </button>
                                 <div class="quick-samples mt-2">
                                     <div class="sample-buttons">

@@ -85,6 +85,9 @@ export class SuperheroMode {
             return;
         }
 
+        // Capture full scene/camera/model state so we can fully restore on exit
+        this._snapshotState();
+
         // Use enhanced cinematic mode if available
         if (this.useCinematicMode && this.cinematicEngine) {
             this.activateCinematicSuperheroMode();
@@ -211,6 +214,9 @@ export class SuperheroMode {
             return;
         }
 
+        // Capture full scene/camera/model state so we can fully restore on exit
+        if (!this._snapshot) this._snapshotState();
+
         // Access camera and controls through rendering engine
         const camera = this.viewer.renderingEngine?.camera || this.viewer.camera;
         const controls = this.viewer.renderingEngine?.controls || this.viewer.controls;
@@ -260,7 +266,7 @@ export class SuperheroMode {
             // Setup audio for cinematic engine
             let audioElement = null;
             if (this.customAudioFile || true) { // Always try to play music
-                audioElement = new Audio(this.customAudioFile || '../assets/audio/superhero-theme.mp3');
+                audioElement = new Audio(this.customAudioFile || 'assets/audio/superhero-theme.mp3');
                 audioElement.volume = 0;
 
                 try {
@@ -412,9 +418,24 @@ export class SuperheroMode {
     }
 
     exitSuperheroMode() {
+        // Idempotent: ignore repeat calls (auto-exit timer + completion callback)
+        if (!this.superheroMode && !this._snapshot) return;
+
         // Stop cinematic engine if active
         if (this.useCinematicMode && this.cinematicEngine) {
-            this.cinematicEngine.stopReveal();
+            try { this.cinematicEngine.stopReveal(); } catch (e) { /* noop */ }
+            // Force-stop the loop and run director cleanup even if the sequence
+            // already completed (stopReveal early-returns when not active),
+            // which is the root cause of leftover cinematic artifacts.
+            try {
+                this.cinematicEngine.isActive = false;
+                if (this.cinematicEngine.animationId) {
+                    cancelAnimationFrame(this.cinematicEngine.animationId);
+                    this.cinematicEngine.animationId = null;
+                }
+                this.cinematicEngine.lightingDirector?.cleanup?.();
+                this.cinematicEngine.environmentDirector?.cleanup?.();
+            } catch (e) { /* noop */ }
         }
 
         if (this.superheroAudio) {
@@ -486,8 +507,118 @@ export class SuperheroMode {
             controls.update();
         }
 
+        // Authoritatively restore the full captured state (background, environment,
+        // fog, lights, bloom, exposure, camera, and the model's transform). This
+        // removes any objects the cinematic sequence added and undoes the model
+        // re-centering, eliminating leftover artifacts.
+        this._restoreState();
+
         // Resume physics if it was previously enabled
         this.viewer.core.emit('physics:toggle', true);
+    }
+
+    /**
+     * Capture the complete scene/camera/model state before entering a cinematic
+     * sequence so it can be fully restored on exit.
+     */
+    _snapshotState() {
+        const re = this.viewer.renderingEngine;
+        if (!re || !re.scene) return;
+        const scene = re.scene;
+        const model = this.viewer.core?.getState()?.currentModel || this.viewer.currentModel || null;
+
+        this._snapshot = {
+            background: scene.background,
+            environment: scene.environment,
+            fog: scene.fog,
+            children: new Set(scene.children),
+            toneMappingExposure: re.renderer ? re.renderer.toneMappingExposure : 1,
+            ambientIntensity: re.lights?.ambient?.intensity,
+            directionalIntensity: re.lights?.directional?.intensity,
+            directionalPosition: re.lights?.directional?.position?.clone(),
+            bloom: re.bloomPass ? {
+                enabled: re.bloomPass.enabled,
+                strength: re.bloomPass.strength,
+                radius: re.bloomPass.radius,
+                threshold: re.bloomPass.threshold
+            } : null,
+            cameraPosition: re.camera?.position?.clone(),
+            cameraQuaternion: re.camera?.quaternion?.clone(),
+            cameraFov: re.camera?.fov,
+            controlsTarget: re.controls?.target?.clone(),
+            model: model ? {
+                ref: model,
+                position: model.position.clone(),
+                quaternion: model.quaternion.clone(),
+                scale: model.scale.clone()
+            } : null
+        };
+    }
+
+    /**
+     * Restore the state captured by _snapshotState and remove anything that was
+     * added to the scene during the cinematic/superhero sequence.
+     */
+    _restoreState() {
+        const re = this.viewer.renderingEngine;
+        const s = this._snapshot;
+        if (!re || !re.scene || !s) { this._snapshot = null; return; }
+        const scene = re.scene;
+
+        // Remove any objects added to the scene during the mode
+        [...scene.children].forEach((child) => {
+            if (!s.children.has(child)) {
+                scene.remove(child);
+            }
+        });
+
+        scene.background = s.background;
+        scene.environment = s.environment;
+        scene.fog = s.fog;
+
+        if (re.renderer && typeof s.toneMappingExposure === 'number') {
+            re.renderer.toneMappingExposure = s.toneMappingExposure;
+        }
+        if (re.lights?.ambient && typeof s.ambientIntensity === 'number') {
+            re.lights.ambient.intensity = s.ambientIntensity;
+        }
+        if (re.lights?.directional) {
+            if (typeof s.directionalIntensity === 'number') {
+                re.lights.directional.intensity = s.directionalIntensity;
+            }
+            if (s.directionalPosition) {
+                re.lights.directional.position.copy(s.directionalPosition);
+            }
+        }
+        if (re.bloomPass && s.bloom) {
+            re.bloomPass.enabled = s.bloom.enabled;
+            re.bloomPass.strength = s.bloom.strength;
+            re.bloomPass.radius = s.bloom.radius;
+            re.bloomPass.threshold = s.bloom.threshold;
+        }
+
+        // Undo the cinematic model re-centering / rotation
+        if (s.model && s.model.ref) {
+            s.model.ref.position.copy(s.model.position);
+            s.model.ref.quaternion.copy(s.model.quaternion);
+            s.model.ref.scale.copy(s.model.scale);
+        }
+
+        // Restore the camera
+        if (re.camera) {
+            if (s.cameraPosition) re.camera.position.copy(s.cameraPosition);
+            if (s.cameraQuaternion) re.camera.quaternion.copy(s.cameraQuaternion);
+            if (typeof s.cameraFov === 'number') {
+                re.camera.fov = s.cameraFov;
+                re.camera.updateProjectionMatrix();
+            }
+        }
+        if (re.controls && s.controlsTarget) {
+            re.controls.target.copy(s.controlsTarget);
+            re.controls.update();
+        }
+
+        this._snapshot = null;
     }
 
     playAmbientDrone() {
@@ -595,7 +726,7 @@ export class SuperheroMode {
 
     playSuperheroMusic() {
         try {
-            const audioSource = this.customAudioFile || '../assets/audio/superhero-theme.mp3';
+            const audioSource = this.customAudioFile || 'assets/audio/superhero-theme.mp3';
 
             this.superheroAudio = new Audio(audioSource);
             this.superheroAudio.volume = 0;

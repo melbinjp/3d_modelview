@@ -139,6 +139,11 @@ module.exports = (env, argv) => {
             from: 'src/editing/model-editing.css', 
             to: 'src/editing/model-editing.css'
           },
+          {
+            from: 'src/assets/audio/superhero-theme.mp3',
+            to: 'assets/audio/superhero-theme.mp3',
+            noErrorOnMissing: true
+          },
           { 
             from: 'manifest.json', 
             to: 'manifest.json',

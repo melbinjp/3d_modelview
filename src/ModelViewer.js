@@ -235,16 +235,41 @@ export class ModelViewer {
 
             fileDrop.addEventListener('drop', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 fileDrop.classList.remove('dragover');
-                if (e.dataTransfer.files.length > 0) {
-                    this.loadModelFromFile(e.dataTransfer.files[0]);
-                }
+                this.handleDroppedItems(e.dataTransfer);
             });
 
             fileInput.addEventListener('change', (e) => {
-                if (e.target.files.length > 0) {
-                    this.loadModelFromFile(e.target.files[0]);
+                const files = e.target.files;
+                if (files.length > 1) {
+                    this.loadModelFromFiles(files);
+                } else if (files.length === 1) {
+                    this.loadModelFromFile(files[0]);
                 }
+                // Allow selecting the same file(s) again later
+                fileInput.value = '';
+            });
+        }
+
+        // Folder upload (for models split across many files + textures)
+        const folderInput = document.getElementById('folderInput');
+        const uploadFolderBtns = [
+            document.getElementById('uploadFolderBtn'),
+            document.getElementById('uploadFolderBtnSidebar')
+        ];
+        if (folderInput) {
+            uploadFolderBtns.forEach((btn) => {
+                if (btn) btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    folderInput.click();
+                });
+            });
+            folderInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    this.loadModelFromFiles(e.target.files);
+                }
+                folderInput.value = '';
             });
         }
 
@@ -288,10 +313,101 @@ export class ModelViewer {
             e.preventDefault();
             dragDepth = 0;
             if (overlay) overlay.classList.remove('active');
-            if (e.dataTransfer.files.length > 0) {
-                this.loadModelFromFile(e.dataTransfer.files[0]);
+            this.handleDroppedItems(e.dataTransfer);
+        });
+    }
+
+    /**
+     * Handle a drop, supporting single files, multiple files, and folders
+     * (via the webkit entries API). Routes to the right loader.
+     */
+    async handleDroppedItems(dataTransfer) {
+        if (!dataTransfer) return;
+        let files = [];
+        try {
+            files = await this._collectFilesFromDataTransfer(dataTransfer);
+        } catch (e) {
+            files = Array.from(dataTransfer.files || []);
+        }
+        if (files.length > 1) {
+            this.loadModelFromFiles(files);
+        } else if (files.length === 1) {
+            this.loadModelFromFile(files[0]);
+        }
+    }
+
+    /**
+     * Collect File objects from a DataTransfer, recursing into dropped folders
+     * when the browser supports the entries API.
+     */
+    async _collectFilesFromDataTransfer(dataTransfer) {
+        const items = dataTransfer.items;
+        const supportsEntries = items && items.length &&
+            typeof items[0].webkitGetAsEntry === 'function';
+
+        if (!supportsEntries) {
+            return Array.from(dataTransfer.files || []);
+        }
+
+        const entries = [];
+        for (let i = 0; i < items.length; i++) {
+            const entry = items[i].webkitGetAsEntry && items[i].webkitGetAsEntry();
+            if (entry) entries.push(entry);
+        }
+        if (entries.length === 0) {
+            return Array.from(dataTransfer.files || []);
+        }
+
+        const files = [];
+        const readEntry = (entry, path = '') => new Promise((resolve) => {
+            if (entry.isFile) {
+                entry.file((file) => {
+                    // Preserve relative path so resources resolve correctly
+                    try {
+                        Object.defineProperty(file, 'webkitRelativePath', {
+                            value: path + entry.name,
+                            configurable: true
+                        });
+                    } catch (e) { /* read-only in some browsers; basename still works */ }
+                    files.push(file);
+                    resolve();
+                }, () => resolve());
+            } else if (entry.isDirectory) {
+                const reader = entry.createReader();
+                const readBatch = () => {
+                    reader.readEntries(async (batch) => {
+                        if (!batch.length) { resolve(); return; }
+                        for (const child of batch) {
+                            await readEntry(child, path + entry.name + '/');
+                        }
+                        readBatch(); // directories may return entries in batches
+                    }, () => resolve());
+                };
+                readBatch();
+            } else {
+                resolve();
             }
         });
+
+        await Promise.all(entries.map((e) => readEntry(e)));
+        return files;
+    }
+
+    /**
+     * Load a model from multiple files / a folder (delegates to AssetManager).
+     */
+    async loadModelFromFiles(files) {
+        try {
+            this.core.setState({ isLoading: true });
+            const result = await this.assetManager.loadModelFromFiles(files);
+            this.core.setState({ isLoading: false });
+            return result;
+        } catch (error) {
+            this.core.setState({ isLoading: false, error: error.message });
+            const arr = Array.from(files || []);
+            this.showLoadingError(error, arr[0] || { name: 'selection' });
+            throw error;
+        }
     }
 
     /**

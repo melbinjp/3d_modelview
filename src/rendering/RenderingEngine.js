@@ -1091,10 +1091,13 @@ export class RenderingEngine {
             return;
         }
 
+        this.core.emit('assets:loading:start', { url, itemsLoaded: 0, itemsTotal: 1 });
         new RGBELoader().load(url, (texture) => {
             this._applyEnvironmentTexture(texture);
+            this.core.emit('assets:loading:complete');
         }, undefined, (error) => {
             console.warn(`Could not load "${presetName}" HDRI, falling back to studio:`, error?.message || error);
+            this.core.emit('assets:loading:complete');
             this.applyStudioEnvironment();
         });
     }
@@ -1137,17 +1140,22 @@ export class RenderingEngine {
             const Loader = isExr ? EXRLoader : RGBELoader;
             const loader = new Loader();
 
+            this.core.emit('assets:loading:start', { url: isFile ? name : source, itemsLoaded: 0, itemsTotal: 1 });
+
             const onLoaded = (texture) => {
                 try {
                     this._applyEnvironmentTexture(texture);
+                    this.core.emit('assets:loading:complete');
                     this.core.emit('rendering:environment:loaded', { source: isFile ? name : source });
                     resolve(texture);
                 } catch (e) {
+                    this.core.emit('assets:loading:complete');
                     reject(e);
                 }
             };
             const onError = (err) => {
                 console.error('Error loading custom HDRI:', err);
+                this.core.emit('assets:loading:complete');
                 reject(err);
             };
 
